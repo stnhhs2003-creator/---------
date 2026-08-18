@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中理化第三冊：波動聲學與光學透鏡 | 霓虹光波特訓</title>
+  <meta name="description" content="國中理化會考第三冊（八上第三、四章）：波速公式v=fλ、聲音三要素、回聲測距、針孔成像、光的折射與凸透鏡/凹透鏡成像作圖規律。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Orbitron:wght@700;900&family=JetBrains+Mono:wght@700&display=swap">
+  <style>
+    :root {
+      --bg-synth: #090514;
+      --bg-card: #150d2a;
+      --bg-surface: #261747;
+      --color-neon-cyan: #00f0ff;
+      --color-neon-pink: #ff007f;
+      --color-neon-yellow: #ffe600;
+      --color-neon-purple: #bd00ff;
+      --color-neon-green: #00ff66;
+      --color-text: #f5f0ff;
+      --font-orbitron: 'Orbitron', monospace;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #200f3d 0%, #06020c 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-neon-cyan);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(0, 240, 255, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(9, 5, 20, 0.95);
+      border-bottom: 2px solid var(--color-neon-cyan); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-neon-cyan); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-orbitron); }
+    .synth-bar { flex: 1; height: 12px; background: #040108; border: 1px solid var(--color-neon-cyan); border-radius: 3px; position: relative; overflow: hidden; }
+    .synth-bar-fill { height: 100%; background: linear-gradient(90deg, #bd00ff, #00f0ff); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-neon-cyan); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-neon-cyan); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-neon-cyan); box-shadow: 0 0 8px var(--color-neon-cyan); }
+    .progress-dot.cleared { background: var(--color-neon-green); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-neon-cyan); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #d8b4fe; font-family: var(--font-orbitron); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-orbitron); color: var(--color-neon-cyan); }
+    .btn-synth-icon { background: var(--bg-surface); border: 1px solid var(--color-neon-cyan); color: var(--color-neon-cyan); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .synth-arena {
+      flex: 1.1; background: linear-gradient(180deg, #05020a 0%, #170d30 100%);
+      border: 1.5px solid #3c1e75; border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-neon-cyan);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(9, 5, 20, 0.9); border: 1px solid var(--color-neon-cyan); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-orbitron); animation: floatSynth 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .synth-board-container { height: 75px; background: var(--bg-surface); border: 1px solid #3c1e75; border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .synth-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-neon-cyan); margin-bottom: 2px; }
+    .synth-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #synth-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid #3c1e75; border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(0, 240, 255, 0.15); color: var(--color-neon-cyan); border: 1px solid var(--color-neon-cyan); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #090514; border: 1px solid #3c1e75; border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .synth-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1px solid #3c1e75; border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px;
+      transition: all 0.15s ease; outline: none; text-align: left;
+    }
+    .synth-btn:hover { background: #371a68; border-color: var(--color-neon-cyan); transform: translateY(-1px); }
+    .synth-btn .btn-key { width: 26px; height: 26px; background: #090514; color: var(--color-neon-cyan); border: 1px solid var(--color-neon-cyan); border-radius: 4px; font-size: 13px; font-family: var(--font-orbitron); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .synth-btn.btn-correct { background: rgba(0, 255, 102, 0.25) !important; border-color: var(--color-neon-green) !important; color: var(--color-neon-green) !important; }
+    .synth-btn.btn-wrong { background: rgba(255, 0, 127, 0.25) !important; border-color: var(--color-neon-pink) !important; color: #ffb3d9 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(9, 5, 20, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .synth-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-neon-cyan); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-neon-cyan); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-neon-cyan); }
+    .misconception-box { background: rgba(255, 0, 127, 0.15); border-left: 4px solid var(--color-neon-pink); border-radius: 4px; padding: 8px 12px; font-size: 15px; color: #ffb3d9; line-height: 1.5; }
+    .step-by-step { background: #090514; border: 1px solid #3c1e75; border-radius: 6px; padding: 10px 12px; font-size: 15px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-neon-cyan); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-neon-pink); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-neon-cyan); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-synth { background: var(--color-neon-cyan); color: #090514; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-orbitron); cursor: pointer; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+    @keyframes floatSynth { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>📡</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-neon-cyan); font-size:10px;">OPTIC</span>
+            <div class="synth-bar"><div id="player-hp-bar" class="synth-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-neon-cyan);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-neon-pink); font-size:10px;">PHYCHEM VOL.3</span>
+            <span style="font-size:10px; color:#d8b4fe;">WAVES & OPTICS</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 波動特性與週期頻率</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-synth-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="synth-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>⚡</span></div>
+          <div class="char-nametag">光波光學使者</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">🪞</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-neon-pink);">折射幻影魔</div>
+          <div class="monster-hp-wrap">
+            <div class="synth-bar" style="height:8px;"><div id="monster-hp-bar" class="synth-bar-fill" style="width: 100%; background:var(--color-neon-pink);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="synth-board-container">
+        <div class="synth-board-header">
+          <span>🌊 波速公式 v=fλ・聲音三要素・凸透鏡成像(p>2f, 2f>p>f, p<f)圖解</span>
+          <span style="color:var(--color-neon-cyan); font-size:10px;">★ 光波光譜儀即時反饋</span>
+        </div>
+        <div class="synth-canvas-wrap"><canvas id="synth-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#d8b4fe;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入光學聲波核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="synth-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">🔬</span>
+          <div id="modal-title" class="dialog-title">光波成像診斷：觀念拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-synth" style="font-size:13px; padding:6px 20px;">校準完畢，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">📡🌈</div>
+      <h1 class="game-title-main">國中理化第三冊：波動聲學與光學透鏡</h1>
+      <h2 class="game-subtitle">★ 國中會考理化第三冊（八上第三、四章）聲光特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-neon-cyan);">【四大聲光核心主題領域】：</strong>
+        <ul>
+          <li>🌊 <strong>Level 1 波動物理量與波速</strong>：橫波/縱波、波長 $\lambda$、頻率 $f$、週期 $T=1/f$、波速 $v = f\lambda$（波速只由介質決定！）。</li>
+          <li>🔊 <strong>Level 2 聲音三要素與回聲</strong>：介質速度固>液>氣、響度(振幅/分貝)、音調(頻率/赫茲)、音色(波形)、回聲測距。</li>
+          <li>🪞 <strong>Level 3 光的直線傳播與面鏡</strong>：針孔成像(上下顛倒左右相反/實像)、影子的形成、平面鏡(正立等大虛像對稱)。</li>
+          <li>🔍 <strong>Level 4 光的折射與透鏡成像</strong>：折射角與法線偏折、凸透鏡規律($p>2f$ 倒小實 / $p<f$ 正大虛放大鏡)、凹透鏡。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-synth">啟動光波核心 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆✨</div>
+      <h1 class="game-title-main" style="color:var(--color-neon-green);">OPTICAL RESONANCE!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通八上理化波動、聲學與透鏡光學成像！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得認證：<strong style="color:var(--color-neon-cyan);">【八上理化聲光大宗師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-neon-green); font-size:24px; font-family:var(--font-orbitron);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-synth">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">⚡💥</div>
+      <h1 class="game-title-main" style="color:var(--color-neon-pink);">光波失真！</h1>
+      <h2 class="game-subtitle">透鏡成像或波速計算出現偏差，重整光學系統再來一次！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-orbitron);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-synth" style="background:var(--color-neon-pink); color:#fff;">重新聚焦 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class SynthAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(587.33, 'sine', 0.08, 0); this.playTone(880.00, 'sine', 0.1, 0.06); this.playTone(1174.66, 'sine', 0.2, 0.12); }
+      playWrong() { this.playTone(250, 'sawtooth', 0.15, 0); this.playTone(180, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(440, 'triangle', 0.08, 0); this.playTone(880, 'sawtooth', 0.1, 0.04); }
+      playLevelUp() { [523.25, 659.25, 783.99, 1046.50].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new SynthAudioEngine();
+
+    class SynthVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawWavePhysics(ctx, w, h);
+        else if (level === 2) this.drawSoundProps(ctx, w, h);
+        else if (level === 3) this.drawPinholeMirror(ctx, w, h);
+        else this.drawLensOptics(ctx, w, h);
+      }
+      drawWavePhysics(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00f0ff"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("波速基本公式： v = f × λ = λ / T (波速 = 頻率 × 波長) ｜ 【波速大小只由介質種類與狀態決定】！", midX, h / 2 - 4);
+        ctx.fillStyle = "#ff007f";
+        ctx.fillText("波傳播特徵：波只傳遞『能量與波形』，介質質點只在原處上下/前後振動，【不隨波前進】", midX, h / 2 + 12);
+      }
+      drawSoundProps(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#ffe600"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🔊 聲音三要素：【響度 (振幅/分貝 dB)】・【音調 (頻率/赫茲 Hz)】・【音色 (波形/發聲體材質)】", midX, h / 2 - 4);
+        ctx.fillStyle = "#00f0ff";
+        ctx.fillText("聲速傳播：固體 > 液體 > 氣體 (真空中不能傳聲) ｜ 回聲測距公式： 距離 S = (聲速 v × 時間 t) ÷ 2", midX, h / 2 + 12);
+      }
+      drawPinholeMirror(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00ff66"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🕯️ 光的直線傳播：針孔成像成『倒立實像（上下顛倒、左右相反）』 ｜ 影子的形成・日食月食", midX, h / 2 - 4);
+        ctx.fillStyle = "#00f0ff";
+        ctx.fillText("🪞 面鏡反射：平面鏡成『正立等大虛像（物距=像距/左右相反）』 ｜ 凸面鏡成正小虛(視野廣/轉彎後視鏡)", midX, h / 2 + 12);
+      }
+      drawLensOptics(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#ff007f"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🔍 凸透鏡成像：物距 p > 2f ➔ 倒立縮小實像(照相機) ｜ 2f > p > f ➔ 倒立放大實像(投影機)", midX, h / 2 - 4);
+        ctx.fillStyle = "#00f0ff";
+        ctx.fillText("放大鏡：物距 p < f ➔ 【正立放大虛像】 ｜ 凹透鏡恆成【正立縮小虛像】(近視眼鏡)", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 波動特性與週期頻率波速 ($v = f\\lambda$)",
+        monsterName: "波形振盪怪",
+        monsterEmoji: "🌊",
+        questions: [
+          {
+            formula: "連續振動繩子產生週期波，若 2 秒鐘內共產生 10 次完整全波，且測得波長為 4 公分。試問此繩波的『頻率（f）』與『波速（v）』分別為何？",
+            options: ["頻率 f = 5 Hz，波速 v = 20 cm/s", "頻率 f = 0.2 Hz，波速 v = 0.8 cm/s", "頻率 f = 10 Hz，波速 v = 40 cm/s", "頻率 f = 5 Hz，波速 v = 8 cm/s"],
+            correct: "頻率 f = 5 Hz，波速 v = 20 cm/s",
+            hint: "頻率 f = 次數 ÷ 秒數 = 10 / 2 = 5 Hz。波速 v = f × λ = 5 × 4 = 20 cm/s。",
+            misconceptions: {
+              "頻率 f = 10 Hz，波速 v = 40 cm/s": "【頻率定義盲點】頻率是『每 1 秒產生的全波次數』！2 秒 10 次，則每秒為 $10 / 2 = 5$ Hz，波速 $v = 5 \\times 4 = 20$ cm/s。"
+            },
+            explanation: "週期 $T = 2 / 10 = 0.2$ s；頻率 $f = 1 / T = 5$ Hz。波速公式 $v = f \\lambda = 5 \\times 4 = 20$ cm/s。"
+          },
+          {
+            formula: "當水波由左向右水平傳播時，浮在水面上的小軟木塞會產生何種運動？",
+            options: ["在原處附近隨水波上下垂直振動，不會隨水波向右漂移", "隨水波以相同波速一直向右快速漂去", "沉入水底不動", "以圓周軌道飛出水面"],
+            correct: "在原處附近隨水波上下垂直振動，不會隨水波向右漂移",
+            hint: "波傳播時只傳遞『能量與波形』，介質質點只在平衡位置原處振動，不會隨波前進！",
+            misconceptions: {
+              "隨水波以相同波速一直向右快速漂去": "【波動最經典觀念考點】波只傳遞【能量】，介質（水與軟木塞）只在【原地上下振動】，【絕對不會隨波前進】！"
+            },
+            explanation: "機械波之介質粒子僅在其平衡位置附近作週期性往復振動，並不隨波向前遷移。"
+          },
+          {
+            formula: "下列關於『橫波（高低波）』與『縱波（疏密波）』的介質振動方向比較，何者完全正確？",
+            options: ["橫波介質振動方向與波前進方向『垂直』（如繩波、水波）；縱波介質振動方向與波前進方向『平行』（如聲波、彈簧疏密波）", "橫波介質振動與前進方向平行", "縱波介質完全不振動", "聲波是橫波，光波是縱波"],
+            correct: "橫波介質振動方向與波前進方向『垂直』（如繩波、水波）；縱波介質振動方向與波前進方向『平行』（如聲波、彈簧疏密波）",
+            hint: "橫波＝垂直（上下振、水平走）；縱波＝平行（前後疏密振、水平走）。聲波是縱波！",
+            misconceptions: {
+              "聲波是橫波，光波是縱波": "【聲波與光波類型】聲波在空氣中是【縱波（疏密波）】；電磁波（光波）則是【橫波】！"
+            },
+            explanation: "橫波（Transverse wave）：質點振動與波速方向垂直；縱波（Longitudinal wave）：質點振動與波速方向平行（具疏部與密部）。"
+          },
+          {
+            formula: "在相同均勻的一條長繩上，用力甩動繩子使『振幅變為原本的 2 倍』，但甩動頻率維持不變。試問該繩波的『波速（v）』會產生何種變化？",
+            options: ["波速完全保持不變（因為波速只由繩子材質與張力等介質特性決定）", "波速變為原來的 2 倍", "波速變為原來的 4 倍", "波速減半"],
+            correct: "波速完全保持不變（因為波速只由繩子材質與張力等介質特性決定）",
+            hint: "記住黃金定則：在同一種均勻介質中，波速恆為定值！振幅變大只代表能量變大，波速不變。",
+            misconceptions: {
+              "波速變為原來的 2 倍": "【波速決定因素陷阱】波速只由【介質種類與狀態（如繩子粗細張力）】決定！改變振幅或頻率，波速【完全不變】！"
+            },
+            explanation: "機械波波速取決於介質之彈性與密度（$v = \\sqrt{F/\\mu}$），與振幅及頻率無關；同一介質中波速為常數。"
+          },
+          {
+            formula: "若某單擺或週期波的週期為 0.05 秒，則其頻率為何？",
+            options: ["20 Hz", "50 Hz", "5 Hz", "0.05 Hz"],
+            correct: "20 Hz",
+            hint: "頻率 f = 1 / T = 1 / 0.05 = 20 Hz。",
+            misconceptions: {
+              "50 Hz": "【倒數計算】$f = 1 / T = 1 / 0.05 = 100 / 5 = 20$ Hz。"
+            },
+            explanation: "週期 $T$ 與頻率 $f$ 互為倒數：$f = \\frac{1}{T} = \\frac{1}{0.05} = 20$ Hz（每秒振動 20 次）。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 聲音三要素與傳播 (響度、音調與回聲)",
+        monsterName: "聲波共振巨獸",
+        monsterEmoji: "🔊",
+        questions: [
+          {
+            formula: "在 15°C 的無風乾燥空氣中，聲速約為 340 m/s。若小明對著遠處大山絕壁大喊一聲，經過 3 秒鐘後聽到了回聲。試問小明與大山絕壁之間的距離約為多少公尺？",
+            options: ["510 公尺", "1020 公尺", "340 公尺", "170 公尺"],
+            correct: "510 公尺",
+            hint: "回聲是聲音去回雙程！單程距離 S = (聲速 340 × 時間 3) ÷ 2 = 1020 ÷ 2 = 510 公尺。",
+            misconceptions: {
+              "1020 公尺": "【忘記除以 2 陷阱】3 秒鐘是聲音『去+回』的總時間！單程距離必須【除以 2】：$340 \\times 3 \\div 2 = 510$ 公尺！"
+            },
+            explanation: "回聲測距原理：聲音傳播距離為來回雙程 $2S = v \\times t \\Rightarrow S = \\frac{340 \\times 3}{2} = 510$ 公尺。"
+          },
+          {
+            formula: "下列關於聲音傳播介質速度的比較，何者敘述完全正確？",
+            options: ["固體中的傳播速率 > 液體（水）中 > 氣體（空氣）中；真空中完全無法傳遞聲音", "氣體中傳播最快，固體中最慢", "真空中聲速等於光速", "水中的聲速比在鐵軌中更快"],
+            correct: "固體中的傳播速率 > 液體（水）中 > 氣體（空氣）中；真空中完全無法傳遞聲音",
+            hint: "介質顆粒排列越緊密，碰撞傳遞越快：固體（如鋼鐵約5000m/s）> 液體（水約1500m/s）> 氣體（空氣約340m/s）。真空無介質不能傳聲。",
+            misconceptions: {
+              "真空中聲速等於光速": "【聲波是力學波】聲波需要介質振動傳播（力學波），在【真空中聲速為 0（無法傳遞）】！光波是電磁波才能在真空中傳播。"
+            },
+            explanation: "聲波藉介質分子碰撞傳遞，介質密度與彈性模數越大傳播越快（固體 > 液體 > 氣體），真空無分子故無法傳播。"
+          },
+          {
+            formula: "音樂會中，小提琴與鋼琴彈奏同一個音階『中央 C（頻率皆為 261.6 Hz）』且響度相同，但人耳依然能輕易分辨出是哪一種樂器在發聲。這主要是因為兩種樂器的何種聲音特性不同？",
+            options: ["音色（發聲體的材質與波形不同）", "音調（頻率高低不同）", "響度（振幅大小不同）", "聲速不同"],
+            correct: "音色（發聲體的材質與波形不同）",
+            hint: "辨別樂器種類、說話人聲音特色，靠的是『音色（波形）』。",
+            misconceptions: {
+              "音調（頻率高低不同）": "【聲音三要素判斷】題幹已說明『頻率皆為 261.6 Hz（音調相同）』！辨別不同樂器獨特音質的是【音色（由波形決定）】。"
+            },
+            explanation: "聲音三要素：響度（振幅決定強弱）、音調（頻率決定高低）、音色（泛音波形決定音質特性）。"
+          },
+          {
+            formula: "蚊子飛行時翅膀每秒快速振動約 500 次，發出惱人的『嗡嗡』高頻尖銳聲；而蝴蝶飛行時翅膀每秒振動約 5 次，人類卻完全聽不到。其主要原因為何？",
+            options: ["正常人耳能聽到的聲音頻率範圍為 20 Hz ～ 20000 Hz；蝴蝶振動頻率（5 Hz）低於人耳聽覺下限（次聲波）", "蝴蝶飛行時完全沒有產生任何空氣振動", "蚊子發出的聲音是超聲波", "蝴蝶飛行產生的聲音在空氣中傳播速度為 0"],
+            correct: "正常人耳能聽到的聲音頻率範圍為 20 Hz ～ 20000 Hz；蝴蝶振動頻率（5 Hz）低於人耳聽覺下限（次聲波）",
+            hint: "人耳聽覺極限：20 Hz ~ 20000 Hz。< 20 Hz 為次聲波；> 20000 Hz 為超聲波。",
+            misconceptions: {
+              "蚊子發出的聲音是超聲波": "【人耳聽覺頻率範圍】蚊子 500 Hz 在 20~20000 Hz 內（聽得到）；蝴蝶 5 Hz 小於 20 Hz（次聲波），人耳聽不到。"
+            },
+            explanation: "人耳可聽音頻範圍為 20 Hz 至 20000 Hz。低於 20 Hz 稱為次聲波（Infrasound）；高於 20000 Hz 稱為超聲波（Ultrasound）。"
+          },
+          {
+            formula: "醫院婦產科用於檢查孕婦腹中胎兒健康狀況的『超音波（超聲波）掃描』，其物理本質為下列何者？",
+            options: ["頻率大於 20000 Hz 的高頻聲波（非放射線，對胎兒安全）", "波長極短的 X 光輻射線", "高能量雷射光束", "放射性核能伽馬射線"],
+            correct: "頻率大於 20000 Hz 的高頻聲波（非放射線，對胎兒安全）",
+            hint: "超音波是高頻機械聲波，無游離輻射危險。",
+            misconceptions: {
+              "波長極短的 X 光輻射線": "【超音波不是輻射】超音波是【頻率高於 20000 Hz 的聲波（力學波）】，不具游離輻射，故安全用於產檢與聲納探測。"
+            },
+            explanation: "醫療超聲波利用壓電效應產生 > 20 kHz 之高頻聲波，利用組織介面反射波成像，無游離輻射傷害。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 光的直線傳播與面鏡成像",
+        monsterName: "針孔鏡面怪",
+        monsterEmoji: "🪞",
+        questions: [
+          {
+            formula: "利用不透光紙盒製作『針孔成像』實驗裝置，在半透明紙幕上觀察點燃的蠟燭火焰。紙幕上所形成的蠟燭火焰像具有何種光學性質？",
+            options: ["倒立實像（上下顛倒、左右相反）", "正立放大虛像", "正立等大實像", "倒立縮小虛像"],
+            correct: "倒立實像（上下顛倒、左右相反）",
+            hint: "光沿直線傳播，上方光線穿過針孔射到下方，下方光線射到上方，形成上下顛倒、左右相反的實像。",
+            misconceptions: {
+              "正立放大虛像": "【針孔成像性質】光線沿直線交叉通過小孔，在紙幕上能被實際光線會聚接收（實像），且【必定上下顛倒、左右相反（倒立實像）】！"
+            },
+            explanation: "針孔成像是光直線傳播的直接證據：來自物體頂部與底部的光線經小孔直線交叉投射於屏幕，形成倒立實像。"
+          },
+          {
+            formula: "當小美站在垂直豎立的『平面鏡』前 1.5 公尺處照鏡子，下列關於鏡中成像的敘述，何者完全正確？",
+            options: ["鏡中的像是正立等大的虛像，像與鏡面的距離恰為 1.5 公尺（物像對稱）", "鏡中的像是縮小的實像", "當小美後退 1 公尺時，鏡中的像大小會變小成一半", "像與小美本人的距離為 1.5 公尺"],
+            correct: "鏡中的像是正立等大的虛像，像與鏡面的距離恰為 1.5 公尺（物像對稱）",
+            hint: "平面鏡成像規律：物距 = 像距，正立等大虛像（與鏡面對稱，左右相反）。像與人距離 = 1.5 + 1.5 = 3 公尺。",
+            misconceptions: {
+              "當小美後退 1 公尺時，鏡中的像大小會變小成一半": "【視覺角度 vs 實際像大小】後退時雖然『視角變小』看起來變小，但【鏡中的像實際大小永遠與本人一模一樣（等大）】！物距恆等於像距。"
+            },
+            explanation: "平面鏡反射成像特性：物距等於像距、物像大小相等（等大）、正立虛像，物與像對鏡面成線對稱（左右相反）。"
+          },
+          {
+            formula: "道路轉彎處常裝設大圓鏡以利駕駛觀察盲區來車，便利商店角落天花板也常裝設凸面鏡以利防竊。裝設『凸面鏡』的最主要光學優點為何？",
+            options: ["凸面鏡能形成正立縮小的虛像，使反射視野比平面鏡更為寬廣", "凸面鏡能將光線聚集成焦點以看清車牌", "凸面鏡能將後方物體放大 10 倍", "凸面鏡能發出夜視紅外線"],
+            correct: "凸面鏡能形成正立縮小的虛像，使反射視野比平面鏡更為寬廣",
+            hint: "凸面鏡使光線發散，成正立縮小虛像，大幅擴大可觀察視角範圍。",
+            misconceptions: {
+              "凸面鏡能將光線聚集成焦點以看清車牌": "【凸面鏡 vs 凹面鏡】能聚光的是『凹面鏡（如太陽爐、手電筒反光杯）』；【凸面鏡成正立縮小虛像，優點是視野寬廣】！"
+            },
+            explanation: "凸面鏡（Convex mirror）對光線具發散作用，所成之像恆為正立縮小虛像，反射視野角遠大於同尺寸之平面鏡。"
+          },
+          {
+            formula: "手電筒的燈泡後方常安裝一個金屬反射面，或是奧運聖火引燃採用的太陽爐，利用的是下列哪一種面鏡的『聚光特性』？",
+            options: ["凹面鏡（能將平行入射光反射會聚於焦點，或將焦點發出的光反射為平行光）", "凸面鏡", "平面鏡", "雙面鏡"],
+            correct: "凹面鏡（能將平行入射光反射會聚於焦點，或將焦點發出的光反射為平行光）",
+            hint: "凹面鏡能聚光（凹聚凸散）。",
+            misconceptions: {
+              "凸面鏡": "【面鏡聚光規律】凹面鏡具有【會聚光線】的功能；將光源置於焦點處反射可產生強烈平行光束（手電筒/探照燈）。"
+            },
+            explanation: "凹面鏡（Concave mirror）具會聚光線特性，平行主軸入射光反射後會聚於焦點；置於焦點之光源反射後成為平行光束。"
+          },
+          {
+            formula: "一束雷射光線照射到光滑平面鏡上，若入射光線與『鏡面』的夾角為 30°，則此時的『反射角』應為多少度？",
+            options: ["60°", "30°", "90°", "120°"],
+            correct: "60°",
+            hint: "注意！法線垂直鏡面（90°）。入射角 = 90° - 30° = 60°。根據反射定律：反射角 = 入射角 = 60°！",
+            misconceptions: {
+              "30°": "【入射角定義陷阱】入射角是『入射光與法線的夾角』，不是與鏡面的夾角！入射角 $= 90^\\circ - 30^\\circ = 60^\\circ$，故反射角 $= 60^\\circ$！"
+            },
+            explanation: "反射定律：入射角（$\\theta_i$）與反射角（$\\theta_r$）皆定義為光線與「法線」之夾角。$\\theta_i = 90^\\circ - 30^\\circ = 60^\\circ \\Rightarrow \\theta_r = 60^\\circ$。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 光的折射與透鏡成像規律",
+        monsterName: "焦距虛實領主",
+        monsterEmoji: "🔍",
+        questions: [
+          {
+            formula: "當一束光線由『空氣（光速快）』斜射進入『水（光速慢）』中時，光線在水中的折射路徑會產生何種偏折？",
+            options: ["折射光線偏向法線（折射角小於入射角，即 $\\angle r < \\angle i$）", "折射光線偏離法線（折射角大於入射角）", "光線完全直線前進不產生偏折", "光線沿原路反向射回"],
+            correct: "折射光線偏向法線（折射角小於入射角，即 $\\angle r < \\angle i$）",
+            hint: "口訣：快入慢 ➔ 偏向法線（角度變小）；慢入快 ➔ 偏離法線（角度變大）。",
+            misconceptions: {
+              "折射光線偏離法線（折射角大於入射角）": "【折射偏折口訣】光由快介質（空氣）進入慢介質（水/玻璃）時，速度變慢，【折射光線偏向法線（折射角變小）】！"
+            },
+            explanation: "折射定律（司乃耳定律）：光自光速較快介質斜射入光速較慢介質時，折射光線向法線偏折，折射角小於入射角。"
+          },
+          {
+            formula: "將蠟燭置於焦距為 10 公分的『凸透鏡』前 25 公分處（即物距 $p > 2f$）。在透鏡另一側移動紙屏，可在紙屏上觀察到何種性質的清晰燭火像？（照相機原理）",
+            options: ["倒立、縮小的實像（像落在 $f$ 與 $2f$ 之間）", "正立、放大的虛像", "倒立、放大的實像", "倒立、等大的實像"],
+            correct: "倒立、縮小的實像（像落在 $f$ 與 $2f$ 之間）",
+            hint: "物距 p > 2f（兩倍焦距外） ➔ 倒立縮小實像（照相機成像原理）。",
+            misconceptions: {
+              "倒立、放大的實像": "【凸透鏡成像五大位置】物在 2f 外（$p>2f$）時，像落在 f~2f 間，為【倒立縮小實像】；物在 f~2f 間時才是【倒立放大實像（投影機）】！"
+            },
+            explanation: "凸透鏡成像規律：當物距 $p > 2f$ 時，於透鏡另一側 $f < q < 2f$ 處生成倒立、縮小之實像，為傳統照相機成像原理。"
+          },
+          {
+            formula: "我們使用『放大鏡（凸透鏡）』觀察郵票細節時，為了看到『正立、放大的像』，郵票與放大鏡之間的距離（物距 p）必須滿足何種條件？此像為實像還是虛像？",
+            options: ["物距必須小於一倍焦距（$p < f$）；所成的像是正立放大的『虛像』", "物距必須大於兩倍焦距（$p > 2f$）；實像", "物距必須剛好等於一倍焦距（$p = f$）；實像", "物距必須等於兩倍焦距（$p = 2f$）；虛像"],
+            correct: "物距必須小於一倍焦距（$p < f$）；所成的像是正立放大的『虛像』",
+            hint: "放大鏡原理：物在焦點內（p < f） ➔ 正立放大虛像（眼睛直接透過鏡片看，無法在紙屏上成像）。",
+            misconceptions: {
+              "物距必須小於一倍焦距（$p < f$）；所成的像是正立放大的『實像』": "【虛像無法在紙屏承接】放大鏡所成的像是眼睛透過鏡片看到的【虛像（無法投射在紙屏上）】！條件為【$p < f$ 正立放大虛像】。"
+            },
+            explanation: "當物距 $p < f$ 時，折射光線為發散光，反向延長線在物體同側交會形成「正立、放大之虛像」，即放大鏡應用。"
+          },
+          {
+            formula: "近視眼鏡所使用的透鏡為『凹透鏡』。無論將物體放在凹透鏡前的任何距離，透過凹透鏡所看到的像『恆為』何種性質？",
+            options: ["正立、縮小的虛像", "倒立、縮小的實像", "正立、放大的虛像", "倒立、放大的實像"],
+            correct: "正立、縮小的虛像",
+            hint: "凹透鏡使光線發散，永遠只能形成正立縮小虛像（凹透鏡近視眼鏡讓視野縮小推遠）。",
+            misconceptions: {
+              "倒立、縮小的實像": "【凹透鏡成像唯一性】凹透鏡對光線發散，無論物距多遠，【恆成正立、縮小、虛像】（無倒立實像）！"
+            },
+            explanation: "凹透鏡（Concave lens）對平行光具發散效應，實物經凹透鏡折射後，折射光線反向延長線恆於物側焦點內交會成「正立縮小虛像」。"
+          },
+          {
+            formula: "在白光（由紅、綠、藍三原色光混合）照射下，一件看起來呈現『紅色』的 T 恤，若改在只有『純綠色光』照射的暗室中，該 T 恤看起來會呈現什麼顏色？",
+            options: ["黑色（因為紅色衣服會吸收綠光且無紅光可反射）", "紅色", "綠色", "白色"],
+            correct: "黑色（因為紅色衣服會吸收綠光且無紅光可反射）",
+            hint: "不透明物體的顏色取決於它『反射的光』。紅色衣服只反射紅光、吸收綠光與藍光。無紅光可反射時呈現黑色。",
+            misconceptions: {
+              "紅色": "【物體顏色反射原理】紅色衣服只能反射『紅光』！在純綠光照射下，綠光被完全吸收且沒有紅光反射，眼睛接收不到光線故呈現【黑色】！"
+            },
+            explanation: "不透明物體之顏色由其反射之色光決定。紅色物體僅反射紅光並吸收綠、藍光；在單色綠光照射下吸收所有入射光，呈現黑色。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('synth-canvas');
+        this.visualizer = new SynthVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.synth-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'synth-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-neon-cyan);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-neon-pink);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.synth-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "🔬 光波成像診斷：觀念拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的波速公式v=fλ、回聲測距、凸透鏡物距像距或顏色反射，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-neon-green); font-size:15px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「入射角對平面鏡反射角的影響」。本實驗的操作變因為何？","options":["反射角","同一平面鏡、同一光源與測量基準線","入射角","每組實驗重複次數"],"correct":"入射角","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「入射角」。"},{"formula":"【實驗探究】進行「入射角對平面鏡反射角的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["同一平面鏡、同一光源與測量基準線","實驗器材品牌","反射角","入射角"],"correct":"反射角","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「反射角」。"},{"formula":"【實驗設計】為公平比較「入射角對平面鏡反射角的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","同一平面鏡、同一光源與測量基準線","各組可使用不同測量方法"],"correct":"同一平面鏡、同一光源與測量基準線","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：同一平面鏡、同一光源與測量基準線。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","反射角會等於入射角","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"反射角會等於入射角","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：反射角會等於入射角。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「入射角 對 反射角 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：反射角等於入射角。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「入射角」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「入射角」與「反射角」的關係，何者最合理？","options":["反射角等於入射角","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"反射角等於入射角","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：反射角等於入射角；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+</body>
+</html>
