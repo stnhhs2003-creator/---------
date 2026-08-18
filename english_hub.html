@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國中會考英語特訓總部</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --bg-base: #091526;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #facc15;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+        body {
+            background: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px 20px 60px;
+            background-image: radial-gradient(circle at 50% 0%, #38bdf822 0%, transparent 60%);
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .nav-back {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid var(--card-border);
+            padding: 8px 16px; border-radius: 999px; color: #cbd5e1; text-decoration: none;
+            font-size: 14px; margin-bottom: 20px; transition: all 0.2s;
+        }
+        .nav-back:hover { background: rgba(255, 255, 255, 0.15); color: #fff; transform: translateX(-3px); }
+        .hub-badge {
+            display: inline-block; background: #38bdf822; border: 1px solid #38bdf888;
+            color: #38bdf8; font-size: 13px; font-weight: 700; padding: 4px 14px;
+            border-radius: 999px; margin-bottom: 12px;
+        }
+        .hub-title { font-size: 32px; font-weight: 900; margin-bottom: 10px; }
+        .hub-subtitle { font-size: 16px; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.6; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px #38bdf825;
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-badge {
+            font-size: 12px; font-weight: 700; color: var(--primary);
+            background: #38bdf818; padding: 4px 10px; border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .card-icon { font-size: 26px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #fff; line-height: 1.4; }
+        .card-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px; flex-grow: 1; }
+        
+        .trap-box {
+            background: rgba(245, 158, 11, 0.1); border: 1px dashed rgba(245, 158, 11, 0.4);
+            border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #fde047;
+            display: flex; align-items: center; gap: 6px; margin-bottom: 16px; line-height: 1.4;
+        }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+        .grade-tag { font-size: 12px; color: #94a3b8; font-weight: 600; }
+        .launch-btn {
+            font-size: 13px; font-weight: 700; color: var(--primary);
+            transition: all 0.2s;
+        }
+        .card:hover .launch-btn { transform: translateX(4px); }
+    </style>
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="nav-back">⬅️ 返回 國中會考六大學科總門戶</a><br>
+            <span class="hub-badge">🔤 國中會考英語特訓總部</span>
+            <h1 class="hub-title">國中會考英語特訓總部</h1>
+            <p class="hub-subtitle">六大會考必考關鍵核心（文法時態、三大子句、特殊動詞、1200核心單字片語、克漏字轉折詞、閱讀素養）（收錄 6 大高頻必考特訓模組）</p>
+        </div>
+
+        <div class="grid">
+            
+        <div class="card" onclick="window.location.href='english_grammar_tenses.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">ENGLISH G7-G9</span>
+                <span class="card-icon">🔤</span>
+            </div>
+            <h3 class="card-title">英語會考核心 1：文法時態與被動語態</h3>
+            <p class="card-desc">現在完成式 have/has+p.p. (since/for/already/yet)、被動語態 be+p.p.、條件子句現在代未來、情態助動詞</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：since 接過去時間點主句必用現在完成式；happen 為不及物無被動</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國中全</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='english_clauses_relatives.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">ENGLISH G7-G9</span>
+                <span class="card-icon">🔗</span>
+            </div>
+            <h3 class="card-title">英語會考核心 2：關係代名詞與三大子句</h3>
+            <p class="card-desc">關代 who/which/that/whose、that 兩大禁忌（禁介系詞與逗號後）、名詞子句間接問句 S+V 語序、Although 禁與 but 共存</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：that 前面絕不能有介系詞或逗號；間接問句一律用直述句語序</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國中全</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='english_verbs_gerunds.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">ENGLISH G7-G9</span>
+                <span class="card-icon">⚡</span>
+            </div>
+            <h3 class="card-title">英語會考核心 3：特殊動詞與動名詞不定詞</h3>
+            <p class="card-desc">使役動詞 make/let/have+原形、感官動詞 see/hear+原形/Ving、四大花費 spend(人)/cost(物)/take(時間)/pay(人)、介系詞後必接 Ving</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：人當主詞花時間用 spend+Ving，事情當主詞用 It takes+to V</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國中全</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='english_vocab_idioms.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">ENGLISH G7-G9</span>
+                <span class="card-icon">📚</span>
+            </div>
+            <h3 class="card-title">英語會考核心 4：核心單字辨析與片語搭配</h3>
+            <p class="card-desc">1200 高頻單字、易混淆字詞 borrow(借入)/lend(借出)、rise(自己升起)/raise(舉起)、lie(躺)/lay(放)、動詞片語 look it up</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：lie (躺下) 過去式為 lay，lay (放置) 過去式為 laid</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國中全</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='english_cloze_prepositions.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">ENGLISH G7-G9</span>
+                <span class="card-icon">🧩</span>
+            </div>
+            <h3 class="card-title">英語會考核心 5：克漏字技巧與介系詞邏輯</h3>
+            <p class="card-desc">時間介系詞 at(點)/on(日)/in(月年)、空間介系詞、篇章轉折詞 However/Therefore/In addition、分詞構句前後文線索</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：星期配早晨用 on Monday morning，不可用 in</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國中全</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='english_reading_literacy.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">ENGLISH G7-G9</span>
+                <span class="card-icon">🔍</span>
+            </div>
+            <h3 class="card-title">英語會考核心 6：生活情境圖表與長篇閱讀素養</h3>
+            <p class="card-desc">菜單折扣計算（half price 半價）、時刻表計算、海報廣告條件篩選、長篇主旨推論 (Main Idea) 與代名詞指涉</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：圖表題半價或買一送一數量要核算清楚；主旨題抓轉折詞 However</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國中全</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        </div>
+    </div>
+</body>
+</html>
