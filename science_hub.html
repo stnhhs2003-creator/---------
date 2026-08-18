@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中會考自然科特訓總部 | 生物一二冊 ＆ 理化三四冊全領域</title>
+  <meta name="description" content="國中會考自然科互動教學遊戲總部：整合生物第一、二冊全單元與理化第三、四冊六大核心模組，100% 離線可用，支援大字體與即時動態診斷。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Cinzel:wght@800;900&family=JetBrains+Mono:wght@700;800&family=Orbitron:wght@800;900&display=swap">
+  <style>
+    :root {
+      --bg-dark: #070e17;
+      --bg-card: #0d1a2d;
+      --bg-surface: #132640;
+      --color-emerald: #10b981;
+      --color-cyan: #00f2fe;
+      --color-amber: #f59e0b;
+      --color-violet: #8b5cf6;
+      --color-rose: #f43f5e;
+      --color-text: #f0fdf4;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-orbitron: 'Orbitron', monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at 50% 10%, #0d2836 0%, #030810 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+    header {
+      background: rgba(7, 14, 23, 0.95); border-bottom: 2px solid var(--color-emerald);
+      padding: 16px 28px; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px);
+    }
+    .header-brand { display: flex; align-items: center; gap: 14px; }
+    .brand-logo { font-size: 36px; }
+    .brand-title { font-size: 22px; font-weight: 900; color: #fff; }
+    .brand-subtitle { font-size: 13px; color: var(--color-emerald); font-weight: 700; }
+    .header-nav { display: flex; align-items: center; gap: 12px; }
+    .nav-btn-link {
+      background: var(--bg-surface); border: 1.5px solid var(--color-amber);
+      color: var(--color-amber); border-radius: 8px; padding: 8px 16px;
+      font-size: 13px; font-weight: 800; text-decoration: none; display: flex;
+      align-items: center; gap: 6px; transition: all 0.2s ease;
+    }
+    .nav-btn-link:hover { background: var(--color-amber); color: #070e17; transform: translateY(-2px); }
+    .hero-banner {
+      padding: 30px 24px 20px; text-align: center; max-width: 1000px; margin: 0 auto;
+    }
+    .hero-tag {
+      display: inline-block; background: rgba(16, 185, 129, 0.15); color: var(--color-emerald);
+      border: 1px solid var(--color-emerald); border-radius: 20px; padding: 4px 16px;
+      font-size: 13px; font-weight: 800; margin-bottom: 12px;
+    }
+    .hero-headline { font-size: 32px; font-weight: 900; line-height: 1.4; color: #fff; margin-bottom: 10px; }
+    .hero-desc { font-size: 15px; color: #cbd5e1; line-height: 1.6; max-width: 800px; margin: 0 auto 20px; }
+    
+    .filter-bar {
+      display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--bg-card); border: 1.5px solid #1e3a5f; color: #cbd5e1;
+      border-radius: 30px; padding: 12px 16px; font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      background: var(--color-emerald); color: #070e17; border-color: var(--color-emerald); font-weight: 900;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px 60px; flex: 1; }
+    .section-title-wrap {
+      display: flex; align-items: center; gap: 12px; margin: 32px 0 18px; border-bottom: 1px dashed #1e3a5f;
+      padding-bottom: 8px;
+    }
+    .section-icon { font-size: 26px; }
+    .section-title { font-size: 20px; font-weight: 900; color: #fff; }
+    .section-badge { background: rgba(0, 242, 254, 0.15); color: var(--color-cyan); border: 1px solid var(--color-cyan); border-radius: 6px; padding: 2px 10px; font-size: 12px; font-weight: 700; }
+
+    .grid-deck {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px;
+    }
+    .game-card {
+      background: var(--bg-card); border: 1.5px solid #1e3a5f; border-radius: 16px;
+      overflow: hidden; display: flex; flex-direction: column; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative; text-decoration: none; color: inherit;
+    }
+    .game-card:hover {
+      transform: translateY(-5px); border-color: var(--color-emerald);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.2);
+    }
+    .card-banner {
+      height: 110px; position: relative; display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; overflow: hidden;
+    }
+    .card-banner-icon { font-size: 48px; z-index: 2; }
+    .card-banner-tag {
+      background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 800; z-index: 2;
+    }
+    .card-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .card-ch-title { font-size: 18px; font-weight: 900; color: #fff; line-height: 1.4; }
+    .card-ch-desc { font-size: 13px; color: #94a3b8; line-height: 1.6; flex: 1; }
+    .card-topics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .topic-pill { background: var(--bg-surface); border: 1px solid #1e3a5f; border-radius: 4px; padding: 2px 8px; font-size: 11px; color: #cbd5e1; }
+    .card-footer {
+      padding: 12px 20px 16px; border-top: 1px solid #142640; display: flex;
+      align-items: center; justify-content: space-between;
+    }
+    .btn-play {
+      background: var(--color-emerald); color: #070e17; border: none; border-radius: 8px;
+      padding: 8px 18px; font-size: 13px; font-weight: 900; cursor: pointer; display: flex;
+      align-items: center; gap: 6px; transition: all 0.15s ease;
+    }
+    .game-card:hover .btn-play { background: #34d399; box-shadow: 0 0 15px rgba(52, 211, 153, 0.5); }
+    .card-meta { font-size: 11px; color: #64748b; font-family: var(--font-mono); }
+
+    footer {
+      background: #030810; border-top: 1px solid #142640; padding: 24px; text-align: center;
+      font-size: 13px; color: #64748b;
+    }
+  </style>
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+</head>
+<body>
+  <header>
+    <div class="header-brand">
+      <div class="brand-logo">🌿🧪</div>
+      <div>
+        <div class="brand-title">國中會考自然科特訓總部</div>
+        <div class="brand-subtitle">生物第一・二冊 ＆ 理化第三・四冊 14 大核心模組</div>
+      </div>
+    </div>
+    <div class="header-nav">
+      <a href="math_hub.html" class="nav-btn-link">📐 切換至【數學科總部】 ➔</a>
+      <a href="index.html" class="nav-btn-link" style="border-color:var(--color-cyan); color:var(--color-cyan);">🏠 返回全科大首頁</a>
+    </div>
+  </header>
+
+  <section class="hero-banner">
+    <div class="hero-tag">★ 國中會考自然科 100% 離線自學與投屏教學特訓矩陣 ★</div>
+    <h1 class="hero-headline">生物全冊 8 大單元 ＋ 理化 6 大核心模組</h1>
+    <p class="hero-desc">專為國中會考量身打造：包含細胞胞器、光合作用、循環調節、遺傳演化、生態保育、密度物質、波動光學、熱學週期表、化學計量、酸鹼滴定與浮力大氣壓力！全數配備 20px+ 大字體與防呆解析。</p>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterCategory('all')">🌟 顯示全領域 (14 模組)</button>
+      <button class="filter-btn" onclick="filterCategory('bio-vol1')">🧬 生物第一冊 (1~6章)</button>
+      <button class="filter-btn" onclick="filterCategory('bio-vol2')">🌿 生物第二冊 (演化生態)</button>
+      <button class="filter-btn" onclick="filterCategory('phy-vol3')">🧪 理化第三冊 (八上物質光學)</button>
+      <button class="filter-btn" onclick="filterCategory('phy-vol4')">⚗️ 理化第四冊 (八下反應酸鹼力學)</button>
+    </div>
+  </section>
+
+  <main class="container">
+    <!-- 生物第一冊 -->
+    <div class="section-wrapper cat-group" data-cat="bio-vol1">
+      <div class="section-title-wrap">
+        <span class="section-icon">🧬</span>
+        <h2 class="section-title">國中生物 第一冊（七上 1 ~ 6 章全冊）</h2>
+        <span class="section-badge">6 大主題闖關</span>
+      </div>
+      <div class="grid-deck">
+        <a href="bio_origin.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #064e3b 0%, #022c22 100%);">
+            <span class="card-banner-icon">🔬</span>
+            <span class="card-banner-tag" style="color:#6ee7b7;">第 1 章</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">生命的起源與生命的組成</h3>
+            <p class="card-ch-desc">科學探究步驟（控制/操縱/應變變因）、顯微鏡操作視野亮度、動植物細胞壁與葉綠體胞器辨識。</p>
+            <div class="card-topics"><span class="topic-pill">實驗變因</span><span class="topic-pill">細胞胞器</span><span class="topic-pill">顯微鏡倍率</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">5 關卡 / 20 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="bio_transport_readable.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #14532d 0%, #052e16 100%);">
+            <span class="card-banner-icon">🌿</span>
+            <span class="card-banner-tag" style="color:#86efac;">第 2 章</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">養分、光合作用與酵素活性</h3>
+            <p class="card-ch-desc">本氏液/碘液檢驗、酵素最適溫度酸鹼度活性曲線、光合作用光反應（水分解產生氧）與碳反應。</p>
+            <div class="card-topics"><span class="topic-pill">酵素專一性</span><span class="topic-pill">光反應與碳反應</span><span class="topic-pill">本氏液檢驗</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">5 關卡 / 20 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="bio_coordination.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #065f46 0%, #022c22 100%);">
+            <span class="card-banner-icon">🩸</span>
+            <span class="card-banner-tag" style="color:#a7f3d0;">第 3 章</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">植物與人體體內物質運輸</h3>
+            <p class="card-ch-desc">木質部（水分蒸散拉力向上）與韌皮部（養分雙向運輸）、人體心臟房室厚度、體循環與肺循環、血球功能。</p>
+            <div class="card-topics"><span class="topic-pill">蒸散作用</span><span class="topic-pill">維管束排列</span><span class="topic-pill">心臟血液循環</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">5 關卡 / 20 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="bio_homeostasis.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+            <span class="card-banner-icon">⚡</span>
+            <span class="card-banner-tag" style="color:#93c5fd;">第 4 章</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">神經系統與內分泌調節</h3>
+            <p class="card-ch-desc">受器 ➔ 感覺神經元 ➔ 中樞 ➔ 運動神經元 ➔ 動器、膝反射（脊髓中樞）、甲狀腺/胰島素/腎上腺素激素作用。</p>
+            <div class="card-topics"><span class="topic-pill">反射弧</span><span class="topic-pill">大腦小腦腦幹</span><span class="topic-pill">激素負回饋</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">5 關卡 / 20 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="bio_genetics.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #115e59 0%, #042f2e 100%);">
+            <span class="card-banner-icon">🌡️</span>
+            <span class="card-banner-tag" style="color:#5eead4;">第 5 章</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">生物體內的恆定性與調節</h3>
+            <p class="card-ch-desc">恆溫與外溫動物體溫調節、血液中二氧化碳刺激腦幹呼吸中樞、胰島素與升糖素拮抗作用、泌尿系統排泄含氮廢物。</p>
+            <div class="card-topics"><span class="topic-pill">呼吸中樞</span><span class="topic-pill">血糖恆定</span><span class="topic-pill">尿素腎臟排泄</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">5 關卡 / 20 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="bio_quest.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%);">
+            <span class="card-banner-icon">🧬</span>
+            <span class="card-banner-tag" style="color:#c4b5fd;">第 6 章</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">生物的生殖、減數分裂與遺傳</h3>
+            <p class="card-ch-desc">有絲分裂 vs 減數分裂染色體套數變化、孟德爾棋盤方格遺傳法則（分離律/獨立分配律）、ABO血型與性聯遺傳機率。</p>
+            <div class="card-topics"><span class="topic-pill">減數分裂 2N➔1N</span><span class="topic-pill">棋盤方格法</span><span class="topic-pill">ABO 血型推算</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">5 關卡 / 20 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 生物第二冊 -->
+    <div class="section-wrapper cat-group" data-cat="bio-vol2">
+      <div class="section-title-wrap">
+        <span class="section-icon">🌿</span>
+        <h2 class="section-title">國中生物 第二冊（七下 演化、分類與生態環境全冊）</h2>
+        <span class="section-badge">2 大旗艦專題</span>
+      </div>
+      <div class="grid-deck">
+        <a href="bio_vol2_evolution_taxonomy.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #065f46 0%, #047857 100%);">
+            <span class="card-banner-icon">🦖</span>
+            <span class="card-banner-tag" style="color:#6ee7b7;">第二冊 模組 1</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">演化論與生物分類五界</h3>
+            <p class="card-ch-desc">達爾文天擇說核心四部曲（過度繁殖、個體差異、生存競爭、適者生存）、林奈雙名法（屬名+種小名）、原核/原生/真菌/植物/動物界。</p>
+            <div class="card-topics"><span class="topic-pill">天擇說機制</span><span class="topic-pill">雙名法學名</span><span class="topic-pill">生物五界特徵</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">3 關卡 / 15 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="bio_vol2_ecosystem_conservation.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);">
+            <span class="card-banner-icon">🌳</span>
+            <span class="card-banner-tag" style="color:#5eead4;">第二冊 模組 2</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">生態系、能量流轉與環境保育</h3>
+            <p class="card-ch-desc">個體 ➔ 族群 ➔ 群集 ➔ 生態系、能量流轉 10% 定律（能量金字塔單向遞減）、碳循環與氮循環、生物放大作用、優養化與外來種入侵。</p>
+            <div class="card-topics"><span class="topic-pill">能量金字塔 10%</span><span class="topic-pill">碳循環光合呼吸</span><span class="topic-pill">生物多樣性</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">3 關卡 / 15 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 理化第三冊 -->
+    <div class="section-wrapper cat-group" data-cat="phy-vol3">
+      <div class="section-title-wrap">
+        <span class="section-icon">🧪</span>
+        <h2 class="section-title">國中理化 第三冊（八上 1 ~ 6 章全冊 3 大模組）</h2>
+        <span class="section-badge">3 大核心模組</span>
+      </div>
+      <div class="grid-deck">
+        <a href="phychem_vol3_matter.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #0e7490 0%, #155e75 100%);">
+            <span class="card-banner-icon">⚖️</span>
+            <span class="card-banner-tag" style="color:#67e8f9;">八上 模組 1</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">基本測量、密度與物質的組成</h3>
+            <p class="card-ch-desc">精密度與準確度估計值、密度公式 $D = M/V$、純物質（固定熔沸點）vs 混合物、固液氣三態變化吸放熱與溶解度曲線。</p>
+            <div class="card-topics"><span class="topic-pill">密度質量體積</span><span class="topic-pill">溶解度重量百分率</span><span class="topic-pill">三態相變</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">3 關卡 / 15 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="phychem_vol3_waves_optics.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);">
+            <span class="card-banner-icon">🌊</span>
+            <span class="card-banner-tag" style="color:#93c5fd;">八上 模組 2</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">波動聲音與光學透鏡成像</h3>
+            <p class="card-ch-desc">波速公式 $v = f \times \lambda$、聲音三要素（響度/音調/音色）、反射定律、折射偏向（慢向快離）、凸透鏡/凹透鏡六大成像作圖與視力矯正。</p>
+            <div class="card-topics"><span class="topic-pill">波長頻率公式</span><span class="topic-pill">凸透鏡實像虛像</span><span class="topic-pill">近視凹透鏡矯正</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">3 關卡 / 15 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="phychem_vol3_heat_elements.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);">
+            <span class="card-banner-icon">🔥</span>
+            <span class="card-banner-tag" style="color:#fca5a5;">八上 模組 3</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">溫度熱量、元素週期表與原子結構</h3>
+            <p class="card-ch-desc">熱量公式 $H = m \times s \times \Delta T$、傳導對流輻射熱傳播、元素週期表（同族化學性質相似）、拉塞福原子模型（原子序＝質子數＝核外電子數）。</p>
+            <div class="card-topics"><span class="topic-pill">比熱計算</span><span class="topic-pill">鹼金屬與鹵素</span><span class="topic-pill">質子中子質量數</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">3 關卡 / 15 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+      </div>
+    </div>
+
+    <!-- 理化第四冊 -->
+    <div class="section-wrapper cat-group" data-cat="phy-vol4">
+      <div class="section-title-wrap">
+        <span class="section-icon">⚗️</span>
+        <h2 class="section-title">國中理化 第四冊（八下 1 ~ 6 章全冊 3 大模組）</h2>
+        <span class="section-badge">3 大核心模組</span>
+      </div>
+      <div class="grid-deck">
+        <a href="phychem_vol4_reactions.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #9a3412 0%, #7c2d12 100%);">
+            <span class="card-banner-icon">⚙️</span>
+            <span class="card-banner-tag" style="color:#fdba74;">八下 模組 1</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">化學計量、莫耳數與氧化還原</h3>
+            <p class="card-ch-desc">莫耳數換算 $n = M/\text{Mw} = N/(6\times 10^{23})$、質量守恆與反應式平衡、金屬活性順序表、氧化還原反應（得氧為氧化/失去電子）與高爐煉鐵。</p>
+            <div class="card-topics"><span class="topic-pill">莫耳數換算</span><span class="topic-pill">金屬活性順序</span><span class="topic-pill">氧化還原劑</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">3 關卡 / 15 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="phychem_vol4_acids_bases.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #047857 0%, #064e3b 100%);">
+            <span class="card-banner-icon">🧪</span>
+            <span class="card-banner-tag" style="color:#6ee7b7;">八下 模組 2</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">電解質、酸鹼鹽與化學反應平衡</h3>
+            <p class="card-ch-desc">阿瑞尼斯電離說、強弱酸鹼解離、石蕊/酚酞/廣用指示劑顏色與 pH 值換算、酸鹼中和必放熱 $H^+ + OH^- \rightarrow H_2O$、反應速率四因子與勒沙特列平衡移動。</p>
+            <div class="card-topics"><span class="topic-pill">電解質解離</span><span class="topic-pill">酸鹼滴定中和</span><span class="topic-pill">反應平衡移動</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">3 關卡 / 15 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+
+        <a href="phychem_vol4_organic_forces.html?v=20260818-dark-start-v16" class="game-card">
+          <div class="card-banner" style="background: linear-gradient(135deg, #1e3a8a 0%, #172554 100%);">
+            <span class="card-banner-icon">⚓</span>
+            <span class="card-banner-tag" style="color:#93c5fd;">八下 模組 3</span>
+          </div>
+          <div class="card-body">
+            <h3 class="card-ch-title">有機化合物、力學、大氣壓力與浮力</h3>
+            <p class="card-ch-desc">烷烯炔烴類、醇酸酯化反應與肥皂化皂化、虎克定律 $F = k\Delta x$、帕斯卡原理與液壓 $P = hD$、托里切利實驗、阿基米德浮力 $B = V_{排} \times D_{液}$。</p>
+            <div class="card-topics"><span class="topic-pill">有機官能基</span><span class="topic-pill">液體與大氣壓力</span><span class="topic-pill">阿基米德浮力</span></div>
+          </div>
+          <div class="card-footer"><span class="card-meta">3 關卡 / 15 題</span><button class="btn-play">開始特訓 ➔</button></div>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>國中會考自然科特訓總部 | 包含生物第一、二冊 ＆ 理化第三、四冊 14 大核心模組 | 100% 離線可用</p>
+  </footer>
+
+  <script>
+    function filterCategory(cat) {
+      const btns = document.querySelectorAll('.filter-btn');
+      btns.forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const groups = document.querySelectorAll('.cat-group');
+      groups.forEach(g => {
+        if (cat === 'all' || g.getAttribute('data-cat') === cat) {
+          g.style.display = 'block';
+        } else {
+          g.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
