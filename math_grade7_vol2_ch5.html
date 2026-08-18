@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中數學七下：統計圖表與資料分析 | 全息數據雷達</title>
+  <meta name="description" content="國中數學翰林版七下第五章（5-1~5-2）：次數分配表、長條圖與直方圖折線圖判讀、算術平均數、中位數與眾數計算。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Orbitron:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap">
+  <style>
+    :root {
+      --bg-hologram: #041214;
+      --bg-card: #082328;
+      --bg-surface: #0e3b43;
+      --color-radar-cyan: #00f2fe;
+      --color-radar-teal: #4facfe;
+      --color-radar-green: #00ff88;
+      --color-radar-rose: #ff007f;
+      --color-radar-gold: #fbbf24;
+      --color-text: #e6fffa;
+      --font-orbitron: 'Orbitron', monospace;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #0c353d 0%, #020b0d 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-radar-cyan);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(0, 242, 254, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(4, 18, 20, 0.95);
+      border-bottom: 2px solid var(--color-radar-cyan); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-radar-cyan); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .radar-bar { flex: 1; height: 12px; background: #020a0c; border: 1px solid var(--color-radar-cyan); border-radius: 3px; position: relative; overflow: hidden; }
+    .radar-bar-fill { height: 100%; background: linear-gradient(90deg, #00f2fe, #00ff88); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-radar-cyan); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-radar-cyan); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-radar-cyan); box-shadow: 0 0 8px var(--color-radar-cyan); }
+    .progress-dot.cleared { background: var(--color-radar-green); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-radar-cyan); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #a7f3d0; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-radar-gold); }
+    .btn-radar-icon { background: var(--bg-surface); border: 1px solid var(--color-radar-cyan); color: var(--color-radar-cyan); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .radar-arena {
+      flex: 1.1; background: linear-gradient(180deg, #020b0d 0%, #082328 100%);
+      border: 1.5px solid #165b68; border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-radar-cyan);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(0, 242, 254, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(4, 18, 20, 0.9); border: 1px solid var(--color-radar-cyan); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatRadar 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .radar-board-container { height: 75px; background: var(--bg-surface); border: 1px solid #165b68; border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .radar-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-radar-cyan); margin-bottom: 2px; }
+    .radar-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #radar-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid #165b68; border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(0, 242, 254, 0.15); color: var(--color-radar-cyan); border: 1px solid var(--color-radar-cyan); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #041214; border: 1px solid #165b68; border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .radar-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid #165b68; border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left; font-family: var(--font-mono), var(--font-chinese);
+    }
+    .radar-btn:hover { background: #134e5b; border-color: var(--color-radar-cyan); transform: translateY(-1px); }
+    .radar-btn .btn-key { width: 26px; height: 26px; background: #041214; color: var(--color-radar-cyan); border: 1px solid var(--color-radar-cyan); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .radar-btn.btn-correct { background: rgba(0, 255, 136, 0.25) !important; border-color: var(--color-radar-green) !important; color: #86efac !important; }
+    .radar-btn.btn-wrong { background: rgba(255, 0, 127, 0.25) !important; border-color: var(--color-radar-rose) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(2, 11, 13, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .radar-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-radar-cyan); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-radar-cyan); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-radar-cyan); }
+    .misconception-box { background: rgba(255, 0, 127, 0.15); border-left: 4px solid var(--color-radar-rose); border-radius: 4px; padding: 10px 14px; font-size: 15px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #041214; border: 1px solid #165b68; border-radius: 6px; padding: 12px 14px; font-size: 15px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-radar-cyan); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-radar-green); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-radar-cyan); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-radar { background: var(--color-radar-cyan); color: #041214; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-orbitron); cursor: pointer; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); }
+    @keyframes floatRadar { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:MATH_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let timer;const renderMath=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(renderMath).observe(document.body,{subtree:true,childList:true,characterData:true});renderMath()});
+</script>
+<!-- END:MATH_FORMULA_RENDER_V1 -->
+<!-- BEGIN:MATH_QUESTION_BOX_V2 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box{background:#ffffff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important;overflow-y:visible!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;font-weight:650!important;line-height:1.75!important;letter-spacing:.01em!important;text-align:left!important;color:#111827!important;-webkit-text-fill-color:#111827!important;white-space:normal!important;overflow-wrap:anywhere!important}
+mjx-container{color:#111827!important;font-size:108%!important;max-width:100%!important}
+mjx-container[display="true"]{margin:.55em 0!important;overflow-x:auto!important;overflow-y:hidden!important;padding:.15em 0!important}
+#options-grid button mjx-container,.options-grid button mjx-container{font-size:105%!important;margin:0 .08em!important}
+#modal-content mjx-container,.dialog-content mjx-container{color:#111827!important}
+@media(max-width:700px){#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box{padding:14px 14px!important}#formula-text,.formula-text,#question-text,.question-text{font-size:18px!important;line-height:1.65!important}}
+</style>
+<!-- END:MATH_QUESTION_BOX_V2 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>📊</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-radar-cyan); font-size:10px;">STATISTICS</span>
+            <div class="radar-bar"><div id="player-hp-bar" class="radar-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-radar-cyan);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-radar-green); font-size:10px;">MATH G7 VOL.2</span>
+            <span style="font-size:10px; color:#a7f3d0;">CH5: DATA & CHARTS</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 統計圖表與次數分配 (5-1)</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-radar-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="radar-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>📈</span></div>
+          <div class="char-nametag">全息數據分析官</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">📊</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-radar-cyan);">統計偏差數據魔</div>
+          <div class="monster-hp-wrap">
+            <div class="radar-bar" style="height:8px;"><div id="monster-hp-bar" class="radar-bar-fill" style="width: 100%; background:var(--color-radar-rose);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="radar-board-container">
+        <div class="radar-board-header">
+          <span>📊 直方圖 (連續) vs 長條圖 (類別) ｜ 算術平均數 (加權組中點) ｜ 中位數 (排序第 (n+1)/2) ｜ 眾數圖解</span>
+          <span style="color:var(--color-radar-cyan); font-size:10px;">★ 全息數據雷達儀表</span>
+        </div>
+        <div class="radar-canvas-wrap"><canvas id="radar-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#a7f3d0;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入統計資料分析核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="radar-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">📊</span>
+          <div id="modal-title" class="dialog-title">統計分析診斷：觀念拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-radar" style="font-size:13px; padding:6px 20px;">數據解碼，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">📊📈</div>
+      <h1 class="game-title-main">國中數學七下：統計圖表與資料分析</h1>
+      <h2 class="game-subtitle">★ 翰林版七下第五章（5-1 至 5-2）全息雷達特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-radar-cyan);">【三大統計核心領域】：</strong>
+        <ul>
+          <li>📊 <strong>Level 1 統計圖表與次數分配 (5-1)</strong>：次數分配表、直方圖（連續資料長條相連）vs 長條圖（類別獨立）、折線圖。</li>
+          <li>🎯 <strong>Level 2 算術平均數、中位數與眾數 (5-2)</strong>：平均數 $\bar{x} = \frac{\sum x}{n}$、中位數（排序正中間值）、眾數（出現次數最多者）。</li>
+          <li>💡 <strong>Level 3 分組資料與統計應用</strong>：組中點加權平均、累積次數折線圖判讀。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-radar">啟動數據雷達 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆👑</div>
+      <h1 class="game-title-main" style="color:var(--color-radar-green);">DATA ANALYSIS COMPLETED!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通七下統計圖表、平均數與中位數全考點！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-radar-cyan);">【七下統計數據特級分析師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-radar-green); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-radar">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥📊</div>
+      <h1 class="game-title-main" style="color:var(--color-radar-rose);">數據偏差！</h1>
+      <h2 class="game-subtitle">中位數或平均數計算出現差錯，校正後重新再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-radar" style="background:var(--color-radar-rose); color:#fff;">重新聚能 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 3 };
+
+    class RadarAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(587.33, 'sine', 0.08, 0); this.playTone(880.00, 'sine', 0.1, 0.06); this.playTone(1174.66, 'sine', 0.2, 0.12); }
+      playWrong() { this.playTone(220, 'sawtooth', 0.15, 0); this.playTone(146.83, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(400, 'square', 0.08, 0); this.playTone(800, 'triangle', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new RadarAudioEngine();
+
+    class RadarVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawCharts(ctx, w, h);
+        else if (level === 2) this.drawMeasures(ctx, w, h);
+        else this.drawGrouped(ctx, w, h);
+      }
+      drawCharts(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00f2fe"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("📊 【直方圖 (Histogram)】： 連續數據 (如身高/體重)，各長條緊密相連無間隔", midX, h / 2 - 4);
+        ctx.fillStyle = "#00ff88";
+        ctx.fillText("【長條圖 (Bar Chart)】： 類別資料 (如血型/喜好水果)，各長條互相獨立有間隔", midX, h / 2 + 12);
+      }
+      drawMeasures(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#fbbf24"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🎯 數據三大中心量數： 【算術平均數】(總和 ÷ 總個數) ｜ 【中位數】(由小到大排序正中間值)", midX, h / 2 - 4);
+        ctx.fillStyle = "#00f2fe";
+        ctx.fillText("【眾數】： 資料中出現次數最多（頻率最高）的數值，可有一個、多個或沒有", midX, h / 2 + 12);
+      }
+      drawGrouped(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00ff88"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("💡 分組平均數計算： 各組組中點 ＝ (下限 ＋ 上限) ÷ 2 ➔ 加權平均數 ＝ Σ(組中點 × 次數) ÷ 總人數", midX, h / 2 - 4);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText("中位數位置： n 為奇數取第 (n+1)/2 項 ｜ n 為偶數取第 n/2 項與第 (n/2 + 1) 項的平均值", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 統計圖表與次數分配 (5-1)",
+        monsterName: "圖表失真怪",
+        monsterEmoji: "📊",
+        questions: [
+          {
+            formula: "下列關於『直方圖（Histogram）』與『長條圖（Bar Chart）』的差異比較，何者完全正確？",
+            options: ["直方圖用來表示『連續性數值資料（如身高、成績分組）』，各長條之間『緊密相連無間隙』；長條圖用來表示『類別資料（如血型、喜好）』，長條間有間隙", "直方圖各長條必須分開獨立", "長條圖只能橫著畫不能直著畫", "兩者完全沒有任何差別"],
+            correct: "直方圖用來表示『連續性數值資料（如身高、成績分組）』，各長條之間『緊密相連無間隙』；長條圖用來表示『類別資料（如血型、喜好）』，長條間有間隙",
+            hint: "直方圖：連續分組（50~60, 60~70分）➔ 柱子緊連無縫。長條圖：獨立類別（A型, B型）➔ 柱子分開有間隔。",
+            misconceptions: {
+              "直方圖各長條必須分開獨立": "【直方圖 vs 長條圖圖形特徵】直方圖是連續區間，【柱與柱之間相連無縫】！長條圖是獨立分類，柱與柱之間有空隙。"
+            },
+            explanation: "直方圖橫軸為連續組距，長條相連；長條圖橫軸為離散分類，長條間隔分開。"
+          },
+          {
+            formula: "某班 30 名學生數學成績分組次數分配表中：60~70 分有 6 人，70~80 分有 12 人，80~90 分有 8 人，90~100 分有 4 人。試問成績在『80 分以上（含 80 分）』的學生佔全班的百分比為何？",
+            options: ["$40\\%$", "$30\\%$", "$20\\%$", "$50\\%$"],
+            correct: "$40\\%$",
+            hint: "80 分以上人數 = 8 + 4 = 12 人。百分比 = (12 ÷ 30) × 100% = 40%。",
+            misconceptions: {
+              "$30\\%$": "【80 分以上人數加總】80 分以上包含 80~90 分 (8人) 與 90~100 分 (4人)，共 $8+4=12$ 人！$\\frac{12}{30} = 40\\%$！"
+            },
+            explanation: "80 分以上人數 $= 8 + 4 = 12$ 人。相對次數百分比 $= \\frac{12}{30} \\times 100\\% = 40\\%$。"
+          },
+          {
+            formula: "在『累積次數折線圖』中，折線圖上的點在坐標上的標示方式為何？",
+            options: ["橫坐標取各組的『上限』，縱坐標取該組的『累積次數』", "橫坐標取組中點", "橫坐標取下限", "縱坐標取該組的單獨次數"],
+            correct: "橫坐標取各組的『上限』，縱坐標取該組的『累積次數』",
+            hint: "累積次數代表『小於等於該組上限』的總人數，因此點標在『各組的上限』上！",
+            misconceptions: {
+              "橫坐標取組中點": "【累積折線圖 vs 次數折線圖】一般次數折線圖取『組中點』；但【累積次數折線圖代表小於上限的所有總和，必須點在各組的「上限」上】！"
+            },
+            explanation: "累積次數折線圖（以下）表示小於各組上限之累積人數，故點標示於各組之「組上限」。"
+          },
+          {
+            formula: "將資料分成『50 ~ 60 分』這一組（包含 50 分，不包含 60 分）。該組的『組中點』數值為何？",
+            options: ["$55$", "$50$", "$60$", "$10$"],
+            correct: "$55$",
+            hint: "組中點 = (下限 + 上限) ÷ 2 = (50 + 60) ÷ 2 = 55。",
+            misconceptions: {
+              "$10$": "【組距 vs 組中點】10 是『組距（60 - 50 = 10）』！【組中點是中間平均值 $\\frac{50 + 60}{2} = 55$】。"
+            },
+            explanation: "組中點公式：$\\frac{\\text{組下限} + \\text{組上限}}{2} = \\frac{50 + 60}{2} = 55$。"
+          },
+          {
+            formula: "在圓形百分圖（圓形圖）中，若某項目佔全部的 $25\\%$，則該項目在圓形圖中所對應的『圓心角度數』為何？",
+            options: ["$90^\\circ$", "$45^\\circ$", "$25^\\circ$", "$180^\\circ$"],
+            correct: "$90^\\circ$",
+            hint: "整個圓周角為 360°。圓心角 = 360° × 25% = 360° × 1/4 = 90°。",
+            misconceptions: {
+              "$25^\\circ$": "【圓心角依 360° 比例換算】圓周角是 360°！$25\\% = \\frac{1}{4}$，圓心角為 $360^\\circ \\times 25\\% = 90^\\circ$！"
+            },
+            explanation: "圓心角度數 $= 360^\\circ \\times 25\\% = 90^\\circ$。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 算術平均數、中位數與眾數 (5-2)",
+        monsterName: "統計中心量數魔",
+        monsterEmoji: "🎯",
+        questions: [
+          {
+            formula: "有一組數值資料：$3, 7, 8, 5, 12, 7, 7$。試求這組資料的『算術平均數、中位數與眾數』分別為何？",
+            options: ["平均數 = 7，中位數 = 7，眾數 = 7", "平均數 = 7，中位數 = 5，眾數 = 7", "平均數 = 8，中位數 = 7，眾數 = 7", "平均數 = 7，中位數 = 8，眾數 = 12"],
+            correct: "平均數 = 7，中位數 = 7，眾數 = 7",
+            hint: "總和 = 3+7+8+5+12+7+7 = 49 ➔ 平均 = 49/7 = 7。排序：3, 5, 7, 7, 7, 8, 12 ➔ 正中間第 4 項中位數 = 7。出現最多次的眾數 = 7。",
+            misconceptions: {
+              "平均數 = 7，中位數 = 5，眾數 = 7": "【中位數必須先排序】由小到大排序：$3, 5, 7, \\mathbf{7}, 7, 8, 12$。正中間第 4 個數是【7】！"
+            },
+            explanation: "平均數 $\\bar{x} = 49/7 = 7$；排序後中間值 $Me = 7$；出現 3 次最多之眾數 $Mo = 7$。"
+          },
+          {
+            formula: "有 8 位同學的體重（單位：公斤）分別為：$45, 52, 48, 60, 55, 50, 58, 62$。試求這 8 位同學體重的『中位數』為多少公斤？",
+            options: ["$51\\text{ 公斤}$", "$50\\text{ 公斤}$", "$52\\text{ 公斤}$", "$53.75\\text{ 公斤}$"],
+            correct: "$51\\text{ 公斤}$",
+            hint: "由小到大排序：45, 48, 50, (50, 52 中間第 4 與第 5 項) ➔ 45, 48, 50, 52, 55, 58, 60, 62。第 4 項是 50，第 5 項是 52。中位數 = (50 + 52) / 2 = 51 公斤。",
+            misconceptions: {
+              "$50\\text{ 公斤}$": "【偶數筆資料取中間兩數平均】共有 8 筆（偶數），取第 4 項 (50) 與第 5 項 (52) 的【平均值 $\\frac{50+52}{2} = 51$ 公斤】！"
+            },
+            explanation: "排序：$45, 48, 50, 52, 55, 58, 60, 62$。偶數個取中間兩項平均：$Me = \\frac{50 + 52}{2} = 51$ kg。"
+          },
+          {
+            formula: "某班 5 位學生身高的平均數為 160 公分。若後來轉入一位身高 172 公分的新同學，則現在全班 6 位同學的身高平均數變為多少公分？",
+            options: ["$162\\text{ 公分}$", "$166\\text{ 公分}$", "$164\\text{ 公分}$", "$161\\text{ 公分}$"],
+            correct: "$162\\text{ 公分}$",
+            hint: "原本 5 人總身高 = 5 × 160 = 800 公分。加上新同學總身高 = 800 + 172 = 972 公分。新平均 = 972 ÷ 6 = 162 公分。",
+            misconceptions: {
+              "$166\\text{ 公分}$": "【不可直接平均數相加除以 2】新總身高 $= 5 \\times 160 + 172 = 972$ 公分！除以總人數 6 得【$162$ 公分】！"
+            },
+            explanation: "新平均 $= \\frac{5 \\times 160 + 172}{6} = \\frac{800 + 172}{6} = \\frac{972}{6} = 162$ cm。"
+          },
+          {
+            formula: "某次考試成績中出現了一個極端異常的超高分（或超低分離群值）。下列哪一個統計量數『最容易受到極端值（離群值）的強烈影響』？哪一個『最不受極端值影響』？",
+            options: ["『算術平均數』最易受極端值影響；『中位數』最不易受極端值影響", "中位數最易受影響", "眾數最易受影響", "平均數與中位數受影響程度相同"],
+            correct: "『算術平均數』最易受極端值影響；『中位數』最不易受極端值影響",
+            hint: "平均數包含所有數值總和，極端值會大幅拉高或拉低平均數。中位數只看排序位置，不受邊界極端大小影響。",
+            misconceptions: {
+              "中位數最易受影響": "【極端值耐受性觀念】平均數所有數字都要加總，【最容易被極端值扭曲】！中位數只看中間位置，具備【高度抗干擾抗極端值特性】。"
+            },
+            explanation: "算術平均數對極端值敏感；中位數與眾數不受極端值大小影響（穩健統計量數）。"
+          },
+          {
+            formula: "一組數據：$2, 3, 5, 5, 8, 8, 9$。下列關於這組數據的『眾數』敘述，何者正確？",
+            options: ["有兩個眾數，分別為 $5$ 與 $8$（出現次數相同且最多，皆出現 2 次）", "眾數只有 5", "眾數只有 8", "這組數據沒有眾數"],
+            correct: "有兩個眾數，分別為 $5$ 與 $8$（出現次數相同且最多，皆出現 2 次）",
+            hint: "5 出現 2 次，8 也出現 2 次，且都是最高次數 ➔ 可以同時有兩個眾數（5 與 8）。",
+            misconceptions: {
+              "這組數據沒有眾數": "【眾數可有多個】當多個數值出現次數並列最多時，【皆可稱為眾數】！此題眾數為 5 與 8。"
+            },
+            explanation: "5 與 8 皆出現 2 次並列最高頻率，故此組資料具有雙眾數（$Mo = 5, 8$）。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 分組資料加權平均與綜合分析",
+        monsterName: "加權統計巨神",
+        monsterEmoji: "💡",
+        questions: [
+          {
+            formula: "某公司員工月薪分組次數分配如下：3 萬元有 10 人，4 萬元有 20 人，5 萬元有 15 人，10 萬元（高階主管）有 5 人。試問全體 50 名員工月薪的『算術平均數』與『中位數』分別為何？",
+            options: ["平均數 = 4.7 萬元，中位數 = 4 萬元", "平均數 = 4.0 萬元，中位數 = 4 萬元", "平均數 = 5.0 萬元，中位數 = 4.5 萬元", "平均數 = 4.7 萬元，中位數 = 5 萬元"],
+            correct: "平均數 = 4.7 萬元，中位數 = 4 萬元",
+            hint: "薪水總額 = 3×10 + 4×20 + 5×15 + 10×5 = 30 + 80 + 75 + 50 = 235 萬。平均 = 235 ÷ 50 = 4.7 萬元。中位數看第 25, 26 位員工：前 10 人 3 萬，第 11~30 人 4 萬 ➔ 中位數 = 4 萬元。",
+            misconceptions: {
+              "平均數 = 4.7 萬元，中位數 = 5 萬元": "【中位數累積人數判斷】共 50 人，第 25 與 26 人的月薪皆落在 4 萬元這組（累積 10+20=30人），故中位數為【4 萬元】！"
+            },
+            explanation: "總薪資 $= 30+80+75+50=235$ 萬元，平均 $= 235/50 = 4.7$ 萬元。累積人數第 25、26 位皆為 4 萬元，故中位數為 4 萬元。"
+          },
+          {
+            formula: "小華這學期的數學三次段考成績分別為：第一次 80 分（佔 20%）、第二次 85 分（佔 30%）、第三次 90 分（佔 50%）。試問小華這學期數學的『加權平均成績』為多少分？",
+            options: ["$86.5\\text{ 分}$", "$85.0\\text{ 分}$", "$88.0\\text{ 分}$", "$87.5\\text{ 分}$"],
+            correct: "$86.5\\text{ 分}$",
+            hint: "加權平均 = 80×0.2 + 85×0.3 + 90×0.5 = 16 + 25.5 + 45 = 86.5 分。",
+            misconceptions: {
+              "$85.0\\text{ 分}$": "【不能直接三科算術平均】各次段考所佔權重不同！$80 \\times 0.2 + 85 \\times 0.3 + 90 \\times 0.5 = 16 + 25.5 + 45 = 86.5$ 分！"
+            },
+            explanation: "加權平均數 $= 80 \\times 0.20 + 85 \\times 0.30 + 90 \\times 0.50 = 16 + 25.5 + 45 = 86.5$ 分。"
+          },
+          {
+            formula: "已知 10 個數的平均數為 60。若將其中一個數『40』改為『70』，其餘 9 個數不變，則修正後的新平均數為何？",
+            options: ["$63$", "$65$", "$61$", "$62$"],
+            correct: "$63$",
+            hint: "總分增加了 70 - 40 = 30 分。平均增加了 30 ÷ 10 = 3 分。新平均 = 60 + 3 = 63 分。",
+            misconceptions: {
+              "$65$": "【增加總分除以 10 人】總分增加 30 分，平均增加 $30 / 10 = 3$ 分！新平均為 $60 + 3 = 63$ 分！"
+            },
+            explanation: "原總和 $= 600$。新總和 $= 600 - 40 + 70 = 630$。新平均 $= 630 / 10 = 63$。"
+          },
+          {
+            formula: "投擲一枚公正骰子 50 次，記錄出現點數。下列關於點數『中位數』的求法，何者正確？",
+            options: ["將 50 次投擲點數由小到大排序，取第 25 次與第 26 次出現點數的平均值", "取 1 到 6 的平均值 3.5", "直接看出現次數最多的點數", "取第 50 次的點數"],
+            correct: "將 50 次投擲點數由小到大排序，取第 25 次與第 26 次出現點數的平均值",
+            hint: "中位數定義：偶數 n = 50 筆資料，排序後取第 n/2 = 25 項與第 (n/2 + 1) = 26 項之平均值。",
+            misconceptions: {
+              "取 1 到 6 的平均值 3.5": "【中位數取決於實際觀察數據】中位數必須根據 50 次實驗出現的數據【排序後取第 25 與 26 項平均】！"
+            },
+            explanation: "偶數樣本量 $n=50$，中位數位置為第 $\\frac{50}{2}=25$ 位與第 $26$ 位觀測值之算術平均數。"
+          },
+          {
+            formula: "【會考圖表分析題】在某班成績次數分配折線圖中，圖形呈現『右偏（少數超高分把圖形向右拉長）』。則該班成績的『平均數與中位數』大小關係通常為：",
+            options: ["平均數 $>$ 中位數（極端高分把平均數往右拉高）", "平均數 $<$ 中位數", "平均數 $=$ 中位數", "兩者無法比較"],
+            correct: "平均數 $>$ 中位數（極端高分把平均數往右拉高）",
+            hint: "極端高分拉高平均數，使平均數 > 中位數；極端低分（左偏）會拉低平均數使平均數 < 中位數。",
+            misconceptions: {
+              "平均數 $<$ 中位數": "【右偏分配特徵】右側有極端高分拉抬總分，使【平均數大於中位數】（$\\text{平均數} > \\text{中位數} > \\text{眾數}$）！"
+            },
+            explanation: "正偏態（右偏）分佈中，右側長尾極端大值強烈拉抬平均數，故 $\\text{平均數} > \\text{中位數}$。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('radar-canvas');
+        this.visualizer = new RadarVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.radar-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.textContent = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'radar-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-radar-cyan);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-radar-rose);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.radar-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "📊 統計分析診斷：觀念拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的直方圖長條圖區別、算術平均數、中位數位置或加權平均計算，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-radar-green); font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+</body>
+</html>
