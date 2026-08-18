@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中社會：經濟生活與全球化 | 經濟市場天秤</title>
+  <meta name="description" content="機會成本與比較利益、市場供給需求彈性與均衡價格、外部效果內部化、貨幣通膨與全球化國際組織">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Orbitron:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap">
+  <style>
+    :root {
+      --bg-theme: #1c1408;
+      --bg-card: #2e210d;
+      --bg-surface: #473315;
+      --color-primary: #eab308;
+      --color-accent: #f59e0b;
+      --color-gold: #fef08a;
+      --color-danger: #f43f5e;
+      --color-success: #10b981;
+      --color-text: #f8fafc;
+      --color-border: #b45309;
+      --btn-hover: #78350f;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-orbitron: 'Orbitron', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #b45309 0%, #0f0b04 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-primary);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(10, 14, 23, 0.95);
+      border-bottom: 2px solid var(--color-primary); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-primary); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .theme-bar { flex: 1; height: 12px; background: #030712; border: 1px solid var(--color-primary); border-radius: 3px; position: relative; overflow: hidden; }
+    .theme-bar-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-accent)); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-gold); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-primary); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-gold); box-shadow: 0 0 8px var(--color-gold); }
+    .progress-dot.cleared { background: var(--color-success); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-primary); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #bae6fd; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-gold); }
+    .btn-theme-icon { background: var(--bg-surface); border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .theme-arena {
+      flex: 1.1; background: linear-gradient(180deg, #020617 0%, var(--bg-card) 100%);
+      border: 1.5px solid var(--color-border); border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-primary);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(10, 14, 23, 0.9); border: 1px solid var(--color-primary); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatTheme 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .theme-board-container { height: 75px; background: var(--bg-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .theme-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-primary); margin-bottom: 2px; }
+    .theme-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #theme-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid var(--color-border); border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(56, 189, 248, 0.2); color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #0a0e17; border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 21px; font-weight: 900; line-height: 1.5; color: #fff; font-family: var(--font-mono), var(--font-chinese); }
+    .question-hint-text { margin-top: 4px; font-size: 15px; color: var(--color-primary); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .theme-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid var(--color-border); border-radius: 10px;
+      padding: 13px 18px; font-size: 17px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left; font-family: var(--font-mono), var(--font-chinese);
+    }
+    .theme-btn:hover { background: var(--btn-hover); border-color: var(--color-gold); transform: translateY(-1px); }
+    .theme-btn .btn-key { width: 26px; height: 26px; background: #0a0e17; color: var(--color-gold); border: 1px solid var(--color-primary); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .theme-btn.btn-correct { background: rgba(16, 185, 129, 0.25) !important; border-color: var(--color-success) !important; color: #86efac !important; }
+    .theme-btn.btn-wrong { background: rgba(244, 63, 94, 0.25) !important; border-color: var(--color-danger) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .theme-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-primary); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-primary); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-gold); }
+    .misconception-box { background: rgba(244, 63, 94, 0.15); border-left: 4px solid var(--color-danger); border-radius: 4px; padding: 10px 14px; font-size: 16px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #0a0e17; border: 1px solid var(--color-border); border-radius: 6px; padding: 12px 14px; font-size: 16px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-gold); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-primary); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-primary); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-theme { background: var(--color-gold); color: #0a0e17; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-orbitron); cursor: pointer; box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
+    @keyframes floatTheme { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>💰</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-gold); font-size:10px;">QUEST</span>
+            <div class="theme-bar"><div id="player-hp-bar" class="theme-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-gold);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-primary); font-size:10px;">SOCIAL G9 (VOL.5-6)</span>
+            <span style="font-size:10px; color:#bae6fd;">ECONOMICS & GLOBALIZATION</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">關卡載入中...</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-theme-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="theme-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🛡️</span></div>
+          <div class="char-nametag">會考特訓官</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">👾</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-accent);">考點守護獸</div>
+          <div class="monster-hp-wrap">
+            <div class="theme-bar" style="height:8px;"><div id="monster-hp-bar" class="theme-bar-fill" style="width: 100%; background:var(--color-danger);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="theme-board-container">
+        <div class="theme-board-header">
+          <span>💰 機會成本(放棄代價中最高者) ｜ 比較利益(機會成本低者出口) ｜ 供需均衡價格 ｜ 外部效果(外部成本課稅/外部效益補貼) ｜ 國際組織 UN/WTO</span>
+          <span style="color:var(--color-gold); font-size:10px;">★ 會考核心指標</span>
+        </div>
+        <div class="theme-canvas-wrap"><canvas id="theme-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">關卡載入中...</span>
+        <span style="font-size:11px; color:#bae6fd;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入會考核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="theme-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">💡</span>
+          <div id="modal-title" class="dialog-title">會考觀念診斷：盲點剖析</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-theme" style="font-size:13px; padding:6px 20px;">掌握觀念，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">💰✨</div>
+      <h1 class="game-title-main">國中社會：經濟生活與全球化 | 經濟市場天秤</h1>
+      <h2 class="game-subtitle">★ 機會成本與比較利益、市場供給需求彈性與均衡價格、外部效果內部化、貨幣通膨與全球化國際組織 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-gold);">【三大核心領域重點關卡】：</strong>
+        <ul>
+          <li>🔹 <strong>Level 1</strong>：Level 1: 選擇、機會成本與比較利益原理 (3-1)</li>
+          <li>🔹 <strong>Level 2</strong>：Level 2: 市場供需法則、均衡價格與外部效果 (3-2)</li>
+          <li>🔹 <strong>Level 3</strong>：Level 3: 貨幣功能、通貨膨脹與全球化國際組織 (3-3)</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-theme">開始會考挑戰 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆👑</div>
+      <h1 class="game-title-main" style="color:var(--color-success);">CHALLENGE COMPLETED!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通本單元所有會考必考關鍵概念！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-gold);">【會考精通首席大師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-success); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-theme">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥⚠️</div>
+      <h1 class="game-title-main" style="color:var(--color-danger);">挑戰中斷！</h1>
+      <h2 class="game-subtitle">考點混淆或觀念理解有誤，重新複習後再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-theme" style="background:var(--color-danger); color:#fff;">重新聚能 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 3 };
+
+    class ThemeAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'triangle', 0.08, 0); this.playTone(659.25, 'triangle', 0.1, 0.06); this.playTone(1046.50, 'triangle', 0.2, 0.12); }
+      playWrong() { this.playTone(220, 'sawtooth', 0.15, 0); this.playTone(146.83, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(440, 'square', 0.08, 0); this.playTone(880, 'sine', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new ThemeAudioEngine();
+
+    class ThemeVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        const midX = w / 2;
+        ctx.fillStyle = "#eab308"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("⚡ 會考核心觀念突破 ｜ 第 " + level + " 階段特訓", midX, h / 2 - 4);
+        ctx.fillStyle = "#fef08a";
+        ctx.fillText("掌握題幹關鍵字 ｜ 排除干擾選項 ｜ 提升答題準確率", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+            "level": 1,
+            "title": "Level 1: 選擇、機會成本與比較利益原理 (3-1)",
+            "monsterName": "機會成本金幣獸",
+            "monsterEmoji": "💰",
+            "questions": [
+                  {
+                        "formula": "【會考必考機會成本】小明高中畢業後有四個選擇：甲公司月薪 4 萬元、乙公司月薪 3.5 萬元、丙公司月薪 5 萬元、去讀大學。若小明最後決定『去讀大學』，則他選擇讀大學的『機會成本』為何？",
+                        "options": [
+                              "『5 萬元（放棄的選擇中價值最高者）』",
+                              "4 萬元",
+                              "12.5 萬元（將三家公司薪資相加）",
+                              "0 元"
+                        ],
+                        "correct": "『5 萬元（放棄的選擇中價值最高者）』",
+                        "hint": "機會成本定義：做出一項選擇時，所放棄的其他所有選擇中，『價值最高者（The best alternative forgone）』！千萬不可將所有放棄的選項全部相加！",
+                        "explanation": "機會成本為放棄之諸多方案中價值最高的一項，即丙公司之 5 萬元。"
+                  },
+                  {
+                        "formula": "甲國生產 1 台電腦需花費 2 小時，生產 1 雙鞋需 1 小時；乙國生產 1 台電腦需 6 小時，生產 1 雙鞋需 2 小時。根據『比較利益法則（Law of Comparative Advantage）』，兩國應如何進行國際專業化分工？",
+                        "options": [
+                              "『甲國專業生產電腦（機會成本 2 雙鞋＜乙國 3 雙鞋）』，『乙國專業生產鞋子（機會成本 1/3 台電腦＜甲國 1/2 台電腦）』",
+                              "甲國兩者皆具絕對利益故兩者都自己生產不貿易",
+                              "乙國專業生產電腦",
+                              "兩國無法分工互利"
+                        ],
+                        "correct": "『甲國專業生產電腦（機會成本 2 雙鞋＜乙國 3 雙鞋）』，『乙國專業生產鞋子（機會成本 1/3 台電腦＜甲國 1/2 台電腦）』",
+                        "hint": "機會成本比較：甲做1電腦棄2鞋，乙做1電腦棄3鞋 ➔ 甲做電腦成本低具比較利益；甲做1鞋棄1/2電腦，乙做1鞋棄1/3電腦 ➔ 乙做鞋成本低具比較利益。",
+                        "explanation": "依比較利益原理，各國應專業化生產並出口機會成本較低之商品進行貿易互利。"
+                  },
+                  {
+                        "formula": "經濟學上所謂的『生產可能曲線（PPC / PPF）』，在曲線『內部』的點代表何種經濟狀態？在曲線『外部』的點代表何者？",
+                        "options": [
+                              "曲線內部代表『資源未充分利用（有閒置失業或效率不彰）』；曲線外部代表『現有資源技術下無法達成（不可行）』",
+                              "曲線內部代表最佳生產",
+                              "曲線外部代表資源閒置",
+                              "兩者皆代表完全效率"
+                        ],
+                        "correct": "曲線內部代表『資源未充分利用（有閒置失業或效率不彰）』；曲線外部代表『現有資源技術下無法達成（不可行）』",
+                        "hint": "生產可能曲線線上為『生產有效率』；線內為『資源浪費或未充分利用』；線外為『現有條件下無法達到的目標』。",
+                        "explanation": "PPC 線上為資源完全有效利用，線內為無效率，線外為不可行點。"
+                  },
+                  {
+                        "formula": "下列哪一種財貨在經濟學上屬於『自由財（非經濟財）』？",
+                        "options": [
+                              "陽光、空氣、不受污染的天然雨水",
+                              "自來水",
+                              "瓶裝礦泉水",
+                              "醫院的氧氣筒"
+                        ],
+                        "correct": "陽光、空氣、不受污染的天然雨水",
+                        "hint": "自由財：數量取之不盡、無稀少性、不需付出代價即可取得。自來水與氧氣筒經過加工具稀少性，屬於『經濟財』。",
+                        "explanation": "自然界取之不盡且不需付出代價之物品為自由財。"
+                  },
+                  {
+                        "formula": "小華花 300 元買了一張電影票進場，看了 20 分鐘發現電影極其難看。此時那 300 元票價在經濟學決策上屬於何者？",
+                        "options": [
+                              "『沉沒成本（Sunk Cost，已經發生且無法收回的支出，不應影響未來的決策）』",
+                              "機會成本",
+                              "邊際成本",
+                              "外部成本"
+                        ],
+                        "correct": "『沉沒成本（Sunk Cost，已經發生且無法收回的支出，不應影響未來的決策）』",
+                        "hint": "沉沒成本已無法挽回，理性決策應評估『繼續忍受爛片浪費時間』與『提早離場做其他更有價值的事』之未來機會成本。",
+                        "explanation": "沉沒成本為已付出且無法回收之成本，理性決策時應予忽略。"
+                  }
+            ]
+      },
+      {
+            "level": 2,
+            "title": "Level 2: 市場供需法則、均衡價格與外部效果 (3-2)",
+            "monsterName": "市場供需神像",
+            "monsterEmoji": "📈",
+            "questions": [
+                  {
+                        "formula": "根據『需求法則（Law of Demand）』，在其他條件不變的情況下，商品的價格與需求量之間呈現何種變動關係？（需求曲線為負斜率）",
+                        "options": [
+                              "『反向變動關係（價格上漲，需求量減少；價格下跌，需求量增加）』",
+                              "同向變動關係",
+                              "完全無關",
+                              "需求量保持不變"
+                        ],
+                        "correct": "『反向變動關係（價格上漲，需求量減少；價格下跌，需求量增加）』",
+                        "hint": "需求法則（買方視角）：東西越貴買越少、越便宜買越多（反比，線向右下傾斜）。供給法則（賣方視角）：價格越高供給越多（正比，線向右上傾斜）。",
+                        "explanation": "需求法則指出價格與消費者需求量呈反比關係。"
+                  },
+                  {
+                        "formula": "當市場上的『供給量大於需求量（超額供給）』時，市場會出現供過於求的現象，此時市場價格將會如何自發調整？",
+                        "options": [
+                              "價格會『下跌』，促使需求量增加、供給量減少，最終回到『均衡價格』",
+                              "價格會持續上漲",
+                              "政府必須強行徵收",
+                              "商品會永久滯銷"
+                        ],
+                        "correct": "價格會『下跌』，促使需求量增加、供給量減少，最終回到『均衡價格』",
+                        "hint": "亞當斯密『看不見的手（價格機能）』：供過於求 ➔ 降價促銷 ➔ 恢復供需平衡；供不應求 ➔ 漲價 ➔ 恢復平衡。",
+                        "explanation": "市場供過於求時價格機制自發推動價格下跌以出清存貨達成均衡。"
+                  },
+                  {
+                        "formula": "【會考核心外部效果】某鋼鐵工廠在生產過程中排放未經處理的廢水與黑煙，污染周遭農田與居民健康，但工廠本身卻未承擔這筆污染防制費用。此現象在經濟學上稱為：",
+                        "options": [
+                              "『外部成本（負的外部效果）』",
+                              "外部效益（正的外部效果）",
+                              "公地悲劇",
+                              "比較利益"
+                        ],
+                        "correct": "『外部成本（負的外部效果）』",
+                        "hint": "外部效果：經濟行為對未參與交易的第三人造成影響。產生損害且未補償 ➔ 外部成本（如空氣污染、二手菸）；產生利益且無法收費 ➔ 外部效益（如打疫苗、花園造景）。",
+                        "explanation": "生產者將環境污染成本轉嫁予社會大眾承擔，屬於外部成本。"
+                  },
+                  {
+                        "formula": "政府為了將『外部成本內部化（使用者付費）』，通常會採取下列哪一種政策工具？",
+                        "options": [
+                              "對污染排放者『課徵碳稅、排污費或開立環保罰鍰』",
+                              "發放生產補助金",
+                              "限制商品最低售價",
+                              "提供免費排污許可"
+                        ],
+                        "correct": "對污染排放者『課徵碳稅、排污費或開立環保罰鍰』",
+                        "hint": "外部成本內部化：課稅、收費、罰款（讓污染者自己承擔代價減少排放）。外部效益內部化：政府發放補貼、獎勵金（如電動車補助、綠能補助）。",
+                        "explanation": "透過課徵碳稅或污染費將外部社會成本轉化為企業內部生產成本。"
+                  },
+                  {
+                        "formula": "颱風過後菜園受損嚴重新鮮蔬菜產量大減，在需求不變下，市場上的蔬菜『供給曲線向左移動』。此時市場均衡價格與均衡交易量將會如何變化？",
+                        "options": [
+                              "均衡價格『上漲』，均衡交易量『減少』",
+                              "均衡價格下跌，交易量增加",
+                              "價格上漲，交易量增加",
+                              "價格與交易量皆下跌"
+                        ],
+                        "correct": "均衡價格『上漲』，均衡交易量『減少』",
+                        "hint": "供給減少（S左移）➔ 物以稀為貴 ➔ 價格 P 升高，交易量 Q 減少。",
+                        "explanation": "供給減少導致供給曲線左移，均衡價格攀升而交易量萎縮。"
+                  }
+            ]
+      },
+      {
+            "level": 3,
+            "title": "Level 3: 貨幣功能、通貨膨脹與全球化國際組織 (3-3)",
+            "monsterName": "全球經濟主宰",
+            "monsterEmoji": "🌐",
+            "questions": [
+                  {
+                        "formula": "【會考必考貨幣四大功能】便利商店商品架上標示『一瓶鮮乳售價 85 元』。此時貨幣主要發揮了下列哪一種功能？",
+                        "options": [
+                              "『計價標準（價值衡量單位）』",
+                              "交易媒介（流通手段）",
+                              "價值儲存",
+                              "延期支付（清償債務標準）"
+                        ],
+                        "correct": "『計價標準（價值衡量單位）』",
+                        "hint": "貨幣四大功能：1. 交易媒介（一手交錢一手交貨）；2. 價值衡量/計價標準（標價多少元）；3. 價值儲存（存銀行存錢防老）；4. 延期支付（借貸分期付款刷卡）。",
+                        "explanation": "標示價格反映商品價值大小，屬於計價標準（價值衡量）功能。"
+                  },
+                  {
+                        "formula": "當市場上流通的貨幣發行量過多，導致『物價持續且普遍性劇烈上漲、貨幣購買力大幅貶值』的經濟現象稱為：",
+                        "options": [
+                              "『通貨膨脹（Inflation）』",
+                              "通貨緊縮（Deflation）",
+                              "經濟衰退",
+                              "貿易順差"
+                        ],
+                        "correct": "『通貨膨脹（Inflation）』",
+                        "hint": "通貨膨脹：錢變薄、物價飆漲。中央銀行通常會採取『升息（調高利率）』或緊縮貨幣政策以抑制通膨。",
+                        "explanation": "貨幣供應過剩引發物價持續上揚與幣值下跌即為通貨膨脹。"
+                  },
+                  {
+                        "formula": "負責制定全球貿易規範、推動降低各國關稅與貿易壁壘、解決國際貿易爭端、被譽為『經濟聯合國』的國際組織為：",
+                        "options": [
+                              "『世界貿易組織（WTO）』",
+                              "世界衛生組織（WHO）",
+                              "聯合國教科文組織（UNESCO）",
+                              "國際刑警組織（INTERPOL）"
+                        ],
+                        "correct": "『世界貿易組織（WTO）』",
+                        "hint": "WTO（總部日內瓦）：促進自由貿易、推動關稅減讓、仲裁貿易爭端。台灣於 2002 年以『臺澎金馬個別關稅領域』名稱正式加入 WTO。",
+                        "explanation": "世界貿易組織（WTO）為全球多邊貿易體系與經貿仲裁之核心機構。"
+                  },
+                  {
+                        "formula": "下列哪一個國際組織屬於『非政府組織（NGO，由民間私人自發組成、不代表國家官方立場）』？",
+                        "options": [
+                              "『無國界醫生（MSF）』、『綠色和平（Greenpeace）』與『國際紅十字會（ICRC）』",
+                              "聯合國（UN）",
+                              "世界衛生組織（WHO）",
+                              "亞太經濟合作會議（APEC）"
+                        ],
+                        "correct": "『無國界醫生（MSF）』、『綠色和平（Greenpeace）』與『國際紅十字會（ICRC）』",
+                        "hint": "政府間國際組織（IGO）：聯合國UN、世界銀行、APEC、WHO、WTO（由主權國家政府代表組成）。非政府組織（NGO）：民間志願發起，如慈濟、世望會、無國界醫生。",
+                        "explanation": "無國界醫生與綠色和平由民間公民自主發起，屬於非政府國際組織。"
+                  },
+                  {
+                        "formula": "【會考全球化素養題】跨國企業在全球進行『全球供應鏈（全球分工佈局）』，例如：美國設計研發、台灣製造高階晶片、東南亞組裝測試、全球行銷販售。企業採取此種策略的最主要目的為何？",
+                        "options": [
+                              "『發揮各國比較利益優勢，降低生產成本、提升全球競爭力與經營效益』",
+                              "純粹避免繳納關稅",
+                              "各國法律強制要求",
+                              "增加國際運輸碳排放"
+                        ],
+                        "correct": "『發揮各國比較利益優勢，降低生產成本、提升全球競爭力與經營效益』",
+                        "hint": "全球化分工：依據研發、資本、勞動力、技術之比較利益分配全球產能，以達到利潤最大化。",
+                        "explanation": "跨國分工利用各國要素稟賦差異與比較利益，實現資源配置最適化。"
+                  }
+            ]
+      }
+];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('theme-canvas');
+        this.visualizer = new ThemeVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.theme-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.textContent = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'theme-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-gold);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-danger);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.theme-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "💡 會考觀念診斷：盲點剖析";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題目核心觀念與會考常見關鍵字陷阱，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-success); font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+</body>
+</html>
