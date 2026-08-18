@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中理化第四冊：有機物、力與壓力浮力 | 深海重力星艦</title>
+  <meta name="description" content="國中理化會考第四冊（八下第五、六章）：有機物酯化聚合物、虎克定律彈力、固體液體大氣壓力帕斯卡、阿基米德浮力定律。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Exo+2:wght@800;900&family=JetBrains+Mono:wght@700&display=swap">
+  <style>
+    :root {
+      --bg-deep: #030b14;
+      --bg-card: #081a2e;
+      --bg-surface: #0e2b4d;
+      --color-hydro: #00f0ff;
+      --color-thrust: #ffaa00;
+      --color-force-pink: #ff3366;
+      --color-buoyancy-green: #00ffaa;
+      --color-text: #e0f2fe;
+      --font-exo: 'Exo 2', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #0d2847 0%, #02060c 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-hydro);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(0, 240, 255, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(3, 11, 20, 0.95);
+      border-bottom: 2px solid var(--color-hydro); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-hydro); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .star-bar { flex: 1; height: 12px; background: #02060c; border: 1px solid var(--color-hydro); border-radius: 3px; position: relative; overflow: hidden; }
+    .star-bar-fill { height: 100%; background: linear-gradient(90deg, #00f0ff, #00ffaa); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-hydro); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-hydro); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-hydro); box-shadow: 0 0 8px var(--color-hydro); }
+    .progress-dot.cleared { background: var(--color-buoyancy-green); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-hydro); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #bae6fd; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-thrust); }
+    .btn-ship-icon { background: var(--bg-surface); border: 1px solid var(--color-hydro); color: var(--color-hydro); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .ship-arena {
+      flex: 1.1; background: linear-gradient(180deg, #02060c 0%, #081a2e 100%);
+      border: 1.5px solid #144272; border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-hydro);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(3, 11, 20, 0.9); border: 1px solid var(--color-hydro); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatShip 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .ship-board-container { height: 75px; background: var(--bg-surface); border: 1px solid #144272; border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .ship-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-hydro); margin-bottom: 2px; }
+    .ship-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #ship-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid #144272; border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(0, 240, 255, 0.15); color: var(--color-hydro); border: 1px solid var(--color-hydro); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #030b14; border: 1px solid #144272; border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .ship-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid #144272; border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left;
+    }
+    .ship-btn:hover { background: #133b66; border-color: var(--color-hydro); transform: translateY(-1px); }
+    .ship-btn .btn-key { width: 26px; height: 26px; background: #030b14; color: var(--color-hydro); border: 1px solid var(--color-hydro); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ship-btn.btn-correct { background: rgba(0, 255, 170, 0.25) !important; border-color: var(--color-buoyancy-green) !important; color: #86efac !important; }
+    .ship-btn.btn-wrong { background: rgba(255, 51, 102, 0.25) !important; border-color: var(--color-force-pink) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(2, 6, 12, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .ship-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-hydro); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-hydro); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-hydro); }
+    .misconception-box { background: rgba(255, 51, 102, 0.15); border-left: 4px solid var(--color-force-pink); border-radius: 4px; padding: 10px 14px; font-size: 15px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #030b14; border: 1px solid #144272; border-radius: 6px; padding: 12px 14px; font-size: 15px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-hydro); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-thrust); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-hydro); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-ship { background: var(--color-hydro); color: #030b14; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-exo); cursor: pointer; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+    @keyframes floatShip { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>🚀</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-hydro); font-size:10px;">THRUST</span>
+            <div class="star-bar"><div id="player-hp-bar" class="star-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-hydro);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-thrust); font-size:10px;">PHYCHEM VOL.4</span>
+            <span style="font-size:10px; color:#bae6fd;">ORGANIC & FORCES</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 有機物、酯化與聚合物</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-ship-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="ship-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🛸</span></div>
+          <div class="char-nametag">深海重力艦長</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">⚓</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-thrust);">萬有水壓巨錨魔</div>
+          <div class="monster-hp-wrap">
+            <div class="star-bar" style="height:8px;"><div id="monster-hp-bar" class="star-bar-fill" style="width: 100%; background:var(--color-force-pink);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="ship-board-container">
+        <div class="ship-board-header">
+          <span>🚀 虎克彈力 F=kΔx・壓力 P=F/A・液壓 P=hD・阿基米德浮力 B=V排×D液圖解</span>
+          <span style="color:var(--color-hydro); font-size:10px;">★ 星艦流體重力儀表</span>
+        </div>
+        <div class="ship-canvas-wrap"><canvas id="ship-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#bae6fd;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入有機力學與浮力核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="ship-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">🚀</span>
+          <div id="modal-title" class="dialog-title">重力流體診斷：觀念拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-ship" style="font-size:13px; padding:6px 20px;">力學突破，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">🚀⚓</div>
+      <h1 class="game-title-main">國中理化第四冊：有機物、力與壓力浮力</h1>
+      <h2 class="game-subtitle">★ 國中會考理化第四冊（八下第五、六章）深海星艦特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-hydro);">【四大力學流體核心領域】：</strong>
+        <ul>
+          <li>🧪 <strong>Level 1 有機物、酯化與聚合物</strong>：烴類(天然氣甲烷 vs 瓦斯丙烷)、醇酸酯化濃硫酸催化、熱塑性(鏈狀) vs 熱固性(網狀)。</li>
+          <li>🎯 <strong>Level 2 力的平衡與虎克定律</strong>：彈性限度內伸長量成正比 $F=k\Delta x$、兩力平衡(等大/反向/同直線)。</li>
+          <li>🌊 <strong>Level 3 固體、液體與大氣壓力</strong>：$P = F/A$、液壓 $P = h \times D$、連通管、帕斯卡原理、托里切利 76cm-Hg。</li>
+          <li>⚓ <strong>Level 4 阿基米德浮力定律</strong>：浮力 $B = V_{排} \times D_{液}$、浮體 $B = W_{物}$、沉體 $B = W_{空} - W_{液}$。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-ship">啟動星艦重力核 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆👑</div>
+      <h1 class="game-title-main" style="color:var(--color-buoyancy-green);">STARSHIP GRAVITY STABLE!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通八下有機化學、壓力與阿基米德浮力全考點！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-hydro);">【八下有機流體重力最高統帥】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-buoyancy-green); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-ship">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥🌊</div>
+      <h1 class="game-title-main" style="color:var(--color-force-pink);">艙壓破裂！</h1>
+      <h2 class="game-subtitle">浮力或液體壓力計算有誤，加壓後重新再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-ship" style="background:var(--color-force-pink); color:#fff;">重新聚能 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class ShipAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'triangle', 0.08, 0); this.playTone(659.25, 'triangle', 0.1, 0.06); this.playTone(1046.50, 'triangle', 0.2, 0.12); }
+      playWrong() { this.playTone(200, 'sawtooth', 0.15, 0); this.playTone(130, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(300, 'sine', 0.08, 0); this.playTone(600, 'triangle', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new ShipAudioEngine();
+
+    class ShipVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawOrganic(ctx, w, h);
+        else if (level === 2) this.drawHooke(ctx, w, h);
+        else if (level === 3) this.drawPressure(ctx, w, h);
+        else this.drawBuoyancy(ctx, w, h);
+      }
+      drawOrganic(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00f0ff"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🧪 酯化反應： 有機酸 ＋ 醇 ⇄ (濃硫酸催化脫水) ⇄ 酯 (芳香味/密度比水小浮於水面) ＋ 水", midX, h / 2 - 4);
+        ctx.fillStyle = "#ffaa00";
+        ctx.fillText("聚合物分類： 熱塑性 (鏈狀結構，受熱熔化可回收) ｜ 熱固性 (網狀交聯結構，受熱不熔化)", midX, h / 2 + 12);
+      }
+      drawHooke(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00ffaa"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🎯 虎克定律： 在彈性限度內，彈簧【伸長量 Δx】與所受外力 F 成正比 (F = k·Δx，非全長成正比！)", midX, h / 2 - 4);
+        ctx.fillStyle = "#ff3366";
+        ctx.fillText("兩力平衡三條件： 大小相等 (F₁=F₂)、方向相反、作用在同一條直線與同一物體上 (合力為零)", midX, h / 2 + 12);
+      }
+      drawPressure(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00f0ff"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🌊 壓力核心公式： 固體 P = F/A ｜ 靜止液體壓力 P = h × D (只與垂直深度 h 及液體密度 D 有關)", midX, h / 2 - 4);
+        ctx.fillStyle = "#ffaa00";
+        ctx.fillText("大氣壓力標準： 1 atm = 76 cm-Hg = 1033.6 gw/cm² ≒ 1013 hPa (百帕) ｜ 帕斯卡原理 F₁/A₁ = F₂/A₂", midX, h / 2 + 12);
+      }
+      drawBuoyancy(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00ffaa"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("⚓ 阿基米德浮力定律： 浮力 B = 排開液體重 = V_排開 × D_液體 (方向恆垂直向上)", midX, h / 2 - 4);
+        ctx.fillStyle = "#00f0ff";
+        ctx.fillText("浮體 (D_物 < D_液)： 浮力 B = 物體總重量 W ｜ 沉體 (D_物 > D_液)： 浮力 B = V_物 × D_液 = W_空氣 - W_液中", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 有機化合物、酯化與聚合物",
+        monsterName: "有機高分子怪",
+        monsterEmoji: "🧪",
+        questions: [
+          {
+            formula: "日常生活中使用的『天然氣（LNG，管線瓦斯）』與『液化石油氣（LPG，桶裝瓦斯）』，其主要成分分別為下列何種烷類烴類化合物？",
+            options: ["天然氣主要為甲烷（CH₄）；桶裝瓦斯主要為丙烷（C₃H₈）與丁烷（C₄H₁₀）", "天然氣主要為丙烷；桶裝瓦斯為甲烷", "兩者主要成分皆為純乙醇", "兩者皆為無機化合物"],
+            correct: "天然氣主要為甲烷（CH₄）；桶裝瓦斯主要為丙烷（C₃H₈）與丁烷（C₄H₁₀）",
+            hint: "天然氣 = 甲烷（CH4，碳數少常溫為氣體）；桶裝瓦斯 = 丙烷（C3H8）與丁烷（C4H10，加壓液化裝桶）。",
+            misconceptions: {
+              "天然氣主要為丙烷；桶裝瓦斯為甲烷": "【甲烷 vs 丙烷對應】管線天然氣是最輕的【甲烷（$CH_4$）】；高壓灌裝桶裝瓦斯是【丙烷（$C_3H_8$）與丁烷】！"
+            },
+            explanation: "天然氣（LNG）主成分為甲烷（$CH_4$），密度比空氣小；液化石油氣（LPG）主成分為丙烷（$C_3H_8$）與丁烷，加壓液化，洩漏時沉積於低處。"
+          },
+          {
+            formula: "將乙酸（醋酸）與乙醇（酒精）混合，並加入數滴『濃硫酸』隔水加熱進行『酯化反應』。下列關於該實驗的敘述，何者『錯誤』？",
+            options: ["生成的乙酸乙酯易溶於水且密度比水大，沉在試管最底部", "加入濃硫酸主要扮演『催化劑與脫水劑』的角色", "反應生成具有水果芳香氣味的『乙酸乙酯』與水", "酯化反應為可逆反應且反應速率較慢，故需隔水加熱"],
+            correct: "生成的乙酸乙酯易溶於水且密度比水大，沉在試管最底部",
+            hint: "錯誤的是第一項：酯類『難溶於水』，且『密度比水小』，會浮在水溶液的最上層！",
+            misconceptions: {
+              "加入濃硫酸主要扮演『催化劑與脫水劑』的角色": "【濃硫酸角色是正確的】濃硫酸確實是催化劑兼脫水劑！錯誤選項是第一項：酯類【難溶於水且密度小於水】，必定【浮於液面】。"
+            },
+            explanation: "酯化反應：$\\text{CH}_3\\text{COOH} + \\text{C}_2\\text{H}_5\\text{OH} \\xrightarrow{\\text{濃H}_2\\text{SO}_4} \\text{CH}_3\\text{COOC}_2\\text{H}_5 + \\text{H}_2\\text{O}$。乙酸乙酯難溶於水、密度小於水，浮於上層。"
+          },
+          {
+            formula: "高分子聚合物依其分子構造與受熱性質分為『熱塑性聚合物』與『熱固性聚合物』。下列關於兩者的比較，何者正確？",
+            options: ["寶特瓶與保鮮膜為『鏈狀結構』的熱塑性聚合物，受熱易軟化熔化可回收再利用；輪胎與電木為『網狀結構』的熱固性聚合物，受熱不熔化", "熱固性聚合物是鏈狀結構", "熱塑性聚合物受熱永遠不變形", "所有塑膠都可以無限次加熱熔化重塑"],
+            correct: "寶特瓶與保鮮膜為『鏈狀結構』的熱塑性聚合物，受熱易軟化熔化可回收再利用；輪胎與電木為『網狀結構』的熱固性聚合物，受熱不熔化",
+            hint: "鏈狀 ➔ 熱塑性（熱熔可回收，如 PET/PE/PVC）；網狀交聯 ➔ 熱固性（耐高溫不熔化，如電木/輪胎硫化橡膠）。",
+            misconceptions: {
+              "熱固性聚合物是鏈狀結構": "【結構與熱性質對應】鏈狀分子間靠凡得瓦力結合，受熱滑動熔化（【熱塑性】）；網狀結構共價鍵交聯，受熱不熔（【熱固性】）！"
+            },
+            explanation: "熱塑性聚合物（鏈狀）：加熱軟化冷卻硬化，可反覆加工回收；熱固性聚合物（網狀結構）：具三維交聯鍵，受熱不軟化變形，耐高溫。"
+          },
+          {
+            formula: "肥皂的去污原理是利用肥皂分子結構的特殊性。下列關於肥皂分子構造的敘述，何者正確？",
+            options: ["長碳氫鏈端為『親油端（疏水端）』結合油污；帶負電的離子端（-COO⁻）為『親水端』結合水分子，將油污包覆形成微胞被水沖走", "肥皂分子兩端都是親水端", "肥皂分子是靠強酸腐蝕油污", "肥皂是由油脂與強酸共熱製得"],
+            correct: "長碳氫鏈端為『親油端（疏水端）』結合油污；帶負電的離子端（-COO⁻）為『親水端』結合水分子，將油污包覆形成微胞被水沖走",
+            hint: "肥皂（界面活性劑）：長碳氫尾巴親油（深入油滴）、極性離子頭部親水（朝向水），形成乳化微胞隨水流沖走。",
+            misconceptions: {
+              "肥皂是由油脂與強酸共熱製得": "【皂化反應是用強鹼】皂化反應是【油脂 ＋ 強鹼（NaOH） $\\rightarrow$ 脂肪酸鈉（肥皂） ＋ 甘油】！肥皂分子具親油端與親水端。"
+            },
+            explanation: "皂化與去污：油脂與強鹼反應生成高級脂肪酸鈉。其非極性烴基親油結合油污，極性羧酸根親水與水形成水合，達成乳化去污效果。"
+          },
+          {
+            formula: "下列常見物質中，何者『屬於無機化合物（非有機化合物）』？",
+            options: ["二氧化碳（CO₂）、一氧化碳（CO）、碳酸鈣（CaCO₃）、氰化鈉（NaCN）", "甲烷（CH₄）與乙醇（C₂H₅OH）", "葡萄糖（C₆H₁₂O₆）與澱粉", "聚乙烯塑膠（PE）"],
+            correct: "二氧化碳（CO₂）、一氧化碳（CO）、碳酸鈣（CaCO₃）、氰化鈉（NaCN）",
+            hint: "含碳但不屬於有機物的四大例外：碳的氧化物（CO, CO2）、碳酸鹽（CaCO3）、碳酸（H2CO3）、氰化物（NaCN）及碳單質（金剛石/石墨）。",
+            misconceptions: {
+              "甲烷（CH₄）與乙醇（C₂H₅OH）": "【有機物例外判定】甲烷與酒精是最標準的有機物！【CO、CO₂、碳酸根鹽類（$CaCO_3$）及氰化物（NaCN）】雖含碳，但因性質與無機物相似，歸為『無機化合物』。"
+            },
+            explanation: "有機物通常為含碳化合物，但一氧化碳、二氧化碳、碳酸、碳酸鹽、氰化物及碳單質（石墨、金剛石）習慣上歸為無機物。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 力的平衡與虎克定律 ($F = k\\Delta x$)",
+        monsterName: "虎克彈力巨魔",
+        monsterEmoji: "🎯",
+        questions: [
+          {
+            formula: "有一彈簧原長 15 cm，在彈性限度內掛上 20 gw 的砝碼時，彈簧全長變為 19 cm。若改掛 50 gw 的砝碼時，該彈簧的全長應變為多少 cm？",
+            options: ["25 cm", "10 cm", "29 cm", "20 cm"],
+            correct: "25 cm",
+            hint: "掛 20 gw 伸長量 = 19 - 15 = 4 cm（每 10 gw 伸長 2 cm）。掛 50 gw 伸長量 = 5 × 2 = 10 cm。全長 = 原長 15 + 伸長 10 = 25 cm。",
+            misconceptions: {
+              "10 cm": "【全長 vs 伸長量陷阱】10 cm 只是『伸長量』！題目問的是【彈簧全長】＝原長 15 cm ＋ 伸長量 10 cm ＝【25 cm】！"
+            },
+            explanation: "虎克定律：$\\frac{\\Delta x_1}{F_1} = \\frac{\\Delta x_2}{F_2} \\Rightarrow \\frac{19-15}{20} = \\frac{\\Delta x_2}{50} \\Rightarrow \\Delta x_2 = 10$ cm。全長 $L = 15 + 10 = 25$ cm。"
+          },
+          {
+            formula: "一個靜止置於水平桌面上的木塊，同時受到兩個水平方向的作用力 $F_1 = 12\\text{ kgw}$（向右）與 $F_2 = 5\\text{ kgw}$（向左）。若木塊依然保持『靜止不動』，則此時桌面作用於木塊的『靜摩擦力』大小與方向為何？",
+            options: ["7 kgw，方向向左", "17 kgw，方向向右", "7 kgw，方向向右", "0 kgw"],
+            correct: "7 kgw，方向向左",
+            hint: "物體靜止 ➔ 合力為零！向右 12 kgw，向左 5 kgw ➔ 尚缺向左 7 kgw 的靜摩擦力才能達成平衡。",
+            misconceptions: {
+              "7 kgw，方向向右": "【平衡合力方向】向右推力 (12) 大於向左推力 (5)，合力向右 7 kgw；為了靜止平衡，摩擦力必須【向左 7 kgw】以抵消淨外力！"
+            },
+            explanation: "合力平衡：$\\Sigma F_x = 0 \\Rightarrow F_1 - F_2 - f_s = 0 \\Rightarrow 12 - 5 - f_s = 0 \\Rightarrow f_s = 7\\text{ kgw}$，方向向左。"
+          },
+          {
+            formula: "一個物體同時受到兩個力 $F_1$ 與 $F_2$ 的作用而處於『靜止平衡狀態（兩力平衡）』。這兩個力必須滿足下列哪三項條件？",
+            options: ["大小相等、方向相反、且作用在同一條直線上（作用於同一物體）", "大小相等、方向相同、作用在不同物體上", "大小不相等、方向垂直", "只要方向相反即可"],
+            correct: "大小相等、方向相反、且作用在同一條直線上（作用於同一物體）",
+            hint: "兩力平衡三要素：等大、反向、共線（作用於同一剛體）。",
+            misconceptions: {
+              "只要方向相反即可": "【兩力平衡三要素】缺少大小相等與共線都不行！必須同時滿足【大小相等、方向相反、作用在同一直線上】。"
+            },
+            explanation: "兩力平衡條件：合力為零（大小相等且方向相反）及合力矩為零（作用線重合於同一直線）。"
+          },
+          {
+            formula: "將質量 500 公克的木塊置於粗糙水平桌面上，施加 150 gw 的水平拉力時，木塊恰好開始滑動（最大靜摩擦力 $f_{s\\max} = 150\\text{ gw}$）。若改施加 80 gw 的水平拉力拉木塊，木塊保持靜止，此時木塊受到的靜摩擦力大小為何？",
+            options: ["80 gw（靜摩擦力大小恆等於外力大小，隨外力增減）", "150 gw", "500 gw", "0 gw"],
+            correct: "80 gw（靜摩擦力大小恆等於外力大小，隨外力增減）",
+            hint: "靜止時：靜摩擦力 = 水平施力！拉 80 gw 就產生 80 gw 的靜摩擦力抵抗，物體不動。",
+            misconceptions: {
+              "150 gw": "【靜摩擦力 vs 最大靜摩擦力】150 gw 是『最大靜摩擦力門檻』！當施力 80 gw 時，物體不動，此時【靜摩擦力恰好等於施力 80 gw】！"
+            },
+            explanation: "靜摩擦力特性：物體靜止時，靜摩擦力 $f_s$ 為被動力，大小與所施外力 $F$ 相等（$f_s = F = 80\\text{ gw}$），直至達到最大靜摩擦力。"
+          },
+          {
+            formula: "下列哪一種力屬於『非接觸力（超距力，不需物體直接接觸即可產生作用）』？",
+            options: ["萬有引力（重力）、靜電力（庫侖力）、磁力", "推力與拉力", "接觸面的摩擦力", "彈簧的彈力"],
+            correct: "萬有引力（重力）、靜電力（庫侖力）、磁力",
+            hint: "國中三大超距力：重力、磁力、靜電力。摩擦力、彈力、浮力、壓力皆為接觸力。",
+            misconceptions: {
+              "接觸面的摩擦力": "【接觸力 vs 超距力】摩擦力必須物體表面互相接觸才產生！【超距力（非接觸力）只有重力、靜電力、磁力三大類】。"
+            },
+            explanation: "超距力（非接觸力）透過場（重力場、電場、磁場）傳遞作用，毋需直接接觸。摩擦力、彈力等需物質接觸面相互作用。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 固體、液體與大氣壓力 ($P = F/A$)",
+        monsterName: "深海壓力泰坦",
+        monsterEmoji: "🌊",
+        questions: [
+          {
+            formula: "一塊長 20 cm、寬 10 cm、高 5 cm、重 3000 gw 的長方體磚塊，將其哪一個面平放在海綿上時，海綿的『下陷深度最深（產生的壓力最大）』？",
+            options: ["長 10 cm × 寬 5 cm 的面（受力面積最小 $50\\text{ cm}^2$，壓力 $P = 3000 / 50 = 60\\text{ gw/cm}^2$ 最大）", "長 20 cm × 寬 10 cm 的面（面積 $200\\text{ cm}^2$）", "長 20 cm × 寬 5 cm 的面（面積 $100\\text{ cm}^2$）", "三個面平放時下陷深度完全相同"],
+            correct: "長 10 cm × 寬 5 cm 的面（受力面積最小 $50\\text{ cm}^2$，壓力 $P = 3000 / 50 = 60\\text{ gw/cm}^2$ 最大）",
+            hint: "由 P = F / A 知：重量 F 相同時，接觸面積 A 越小，壓力 P 越大（如圖釘尖銳端）。",
+            misconceptions: {
+              "長 20 cm × 寬 10 cm 的面（面積 $200\\text{ cm}^2$）": "【面積越小壓力越大】面積最大時壓力最小；【接觸面積最小的面（10×5=50 cm²）產生的壓力最大】，海綿凹陷最深！"
+            },
+            explanation: "固體壓力公式：$P = \\frac{F}{A}$。總力相同時，壓力與受力面積成反比，最小面積 $50\\text{ cm}^2$ 產生最大壓力 $60\\text{ gw/cm}^2$。"
+          },
+          {
+            formula: "在一個裝滿水（密度 $D = 1.0\\text{ g/cm}^3$）的水族箱中，有甲（水深 20 cm）、乙（水深 50 cm）、丙（水深 80 cm）三個位置。下列關於此三處『液體內部壓力』大小的比較，何者正確？",
+            options: ["丙 > 乙 > 甲（液體壓力 $P = h \\times D$，垂直深度越深壓力越大）", "甲 > 乙 > 丙", "甲 = 乙 = 丙", "無法比較"],
+            correct: "丙 > 乙 > 甲（液體壓力 $P = h \\times D$，垂直深度越深壓力越大）",
+            hint: "靜止液體壓力 P = h × D（只與垂直深度 h 成正比）。水深 80cm 的丙處壓力最大。",
+            misconceptions: {
+              "甲 > 乙 > 丙": "【深度與液體壓力正比】液體壓力公式 $P = h \\times D$！深度 $h$ 越深，承受上方液體重量越多，【深度最深的丙（80cm）壓力最大】！"
+            },
+            explanation: "靜液壓公式：$P = h \\times D$。同種液體中密度固定，靜液壓僅決定於垂直深度 $h$，故 $P_\\text{丙} > P_\\text{乙} > P_\\text{甲}$。"
+          },
+          {
+            formula: "托里切利（Torricelli）在海平面進行大氣壓力實驗，將裝滿水銀的水銀管倒立於水銀槽中。測得管內外水銀面的『垂直高度差』約為多少？下列哪一項改變『不會影響』水銀柱垂直高度差？",
+            options: ["垂直高度差為 76 cm；將水銀管向旁邊傾斜放置時，垂直高度差依然維持 76 cm 不變", "垂直高度差為 100 cm；傾斜時高度變大", "垂直高度差為 10 cm", "水銀管管徑粗細會劇烈改變垂直高度"],
+            correct: "垂直高度差為 76 cm；將水銀管向旁邊傾斜放置時，垂直高度差依然維持 76 cm 不變",
+            hint: "1 大氣壓 = 76 cm-Hg（垂直高度）。傾斜水銀管時，水銀柱長度變長，但『垂直高度差恆為 76 cm』！管徑粗細不影響。",
+            misconceptions: {
+              "水銀管管徑粗細會劇烈改變垂直高度": "【托里切利實驗不變量】管徑粗細、傾斜角度（傾斜時管長增加但垂直高度不變）、插入槽中深度皆【不影響 76 cm 垂直高度差】！"
+            },
+            explanation: "海平面大氣壓支撐 $76\\text{ cm-Hg}$。大氣壓力僅平衡垂直水銀柱重，$P = h \\cdot D_\\text{Hg}$，傾斜時沿管長度變長，但垂直高度差 $h$ 恆為 $76\\text{ cm}$。"
+          },
+          {
+            formula: "修車廠利用『油壓千斤頂（液壓起重機）』可以用很小的力量舉起沉重汽車。其主要應用的物理原理為何？",
+            options: ["帕斯卡原理（加在密閉液體上的壓力，會大小不變地傳遞到液體的各個部分：$F_1/A_1 = F_2/A_2$）", "虎克定律", "槓桿原理", "能量守恆定律"],
+            correct: "帕斯卡原理（加在密閉液體上的壓力，會大小不變地傳遞到液體的各個部分：$F_1/A_1 = F_2/A_2$）",
+            hint: "密閉液體各處壓力相等：P1 = P2 ➔ F1/A1 = F2/A2。大活塞面積是大活塞的 100 倍就能省力 100 倍！",
+            misconceptions: {
+              "槓桿原理": "【液體壓力傳遞＝帕斯卡原理】液壓機利用密閉液體壓力等值傳遞，即【帕斯卡原理（Pascal's Principle）】！"
+            },
+            explanation: "帕斯卡定律：密閉流體中施加之壓強無衰減地傳至流體各部，$\\frac{F_1}{A_1} = \\frac{F_2}{A_2} \\Rightarrow F_2 = F_1 \\cdot \\frac{A_2}{A_1}$，實現省力起重。"
+          },
+          {
+            formula: "將三個形狀完全不同、底部面積相同但上方開口形狀不同的容器（如圖：直筒杯、梯形上寬下窄杯、錐形上窄下寬杯），裝入『相同高度（h）』的水。下列關於三個容器『底面所受的水壓力』比較，何者正確？",
+            options: ["三容器底面水壓力完全相等（液體壓力 $P = h \\times D$ 只與水深垂直高度有關，與容器形狀及水量無關）", "上寬下窄杯底面壓力最大", "直筒杯底面壓力最大", "錐形杯底面壓力最大"],
+            correct: "三容器底面水壓力完全相等（液體壓力 $P = h \\times D$ 只與水深垂直高度有關，與容器形狀及水量無關）",
+            hint: "液壓只看深度 h 和密度 D！深度相同、都是水 ➔ 底部壓力必完全相等（帕斯卡帕斯卡水壓悖論）。",
+            misconceptions: {
+              "上寬下窄杯底面壓力最大": "【帕斯卡液壓悖論】底面所受的『液體壓力』只看 $P = h \\times D$！因深度 $h$ 相同、液體相同，【三容器底部水壓力完全相等】！"
+            },
+            explanation: "液體壓強公式 $P = h \\cdot D$ 與容器幾何形狀及液體總體積無關。水深相同時，容器底部承受之壓強必等值。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 阿基米德浮力定律 ($B = V_{排} \\times D_{液}$)",
+        monsterName: "阿基米德浮力泰坦",
+        monsterEmoji: "⚓",
+        questions: [
+          {
+            formula: "將一個體積 $100\\text{ cm}^3$、質量 $80\\text{ g}$ 的木塊放入水中（水的密度 $1.0\\text{ g/cm}^3$）。當木塊達靜止平衡浮在水面上時，木塊所受到的『浮力大小』以及『沒入水中的體積』分別為何？（浮體平衡）",
+            options: ["浮力 = 80 gw，沒入水中的體積 = $80\\text{ cm}^3$", "浮力 = 100 gw，沒入水中體積 = $100\\text{ cm}^3$", "浮力 = 80 gw，沒入水中的體積 = $100\\text{ cm}^3$", "浮力 = 20 gw，沒入水中體積 = $20\\text{ cm}^3$"],
+            correct: "浮力 = 80 gw，沒入水中的體積 = $80\\text{ cm}^3$",
+            hint: "木塊密度 80/100 = 0.8 < 1.0 ➔ 為『浮體』！浮體的浮力 = 物重 = 80 gw。排開水重 = 80g ➔ 沒入水積 = 80 cm³。",
+            misconceptions: {
+              "浮力 = 100 gw，沒入水中體積 = $100\\text{ cm}^3$": "【浮體浮力等於物重】木塊是浮在水面上的浮體！浮體合力為零，【浮力必等於物體總重（80 gw）】，排開水體積為 80 cm³，並非全部沒入！"
+            },
+            explanation: "浮體力平衡：$\\Sigma F_y = 0 \\Rightarrow B = W_\\text{物} = 80\\text{ gw}$。由阿基米德原理 $B = V_\\text{沒} \\times D_\\text{液} \\Rightarrow 80 = V_\\text{沒} \\times 1.0 \\Rightarrow V_\\text{沒} = 80\\text{ cm}^3$。"
+          },
+          {
+            formula: "將一個體積 $100\\text{ cm}^3$、質量 $300\\text{ g}$ 的鐵塊完全沒入水中（水的密度 $1.0\\text{ g/cm}^3$）。試問鐵塊完全沒入水中時，所受到的『浮力大小』為何？在水中用彈簧秤測量鐵塊的『視重』為多少 gw？（沉體計算）",
+            options: ["浮力 = 100 gw，水中視重 = 200 gw", "浮力 = 300 gw，水中視重 = 0 gw", "浮力 = 100 gw，水中視重 = 300 gw", "浮力 = 200 gw，水中視重 = 100 gw"],
+            correct: "浮力 = 100 gw，水中視重 = 200 gw",
+            hint: "鐵塊是沉體：完全沒入 ➔ V排 = 100 cm³ ➔ 浮力 B = 100 × 1.0 = 100 gw。水中重量 = 空氣重 300 - 浮力 100 = 200 gw。",
+            misconceptions: {
+              "浮力 = 300 gw，水中視重 = 0 gw": "【沉體浮力計算】沉體浮力只等於排開液體重 $V_\\text{物} \\times D_\\text{液} = 100 \\times 1 = 100\\text{ gw}$；水中視重為 $300 - 100 = 200\\text{ gw}$！"
+            },
+            explanation: "沉體阿基米德定律：$B = V_\\text{排} \\times D_\\text{液} = 100\\text{ cm}^3 \\times 1.0\\text{ g/cm}^3 = 100\\text{ gw}$。彈簧秤讀數 $W_\\text{視} = W_\\text{空} - B = 300 - 100 = 200\\text{ gw}$。"
+          },
+          {
+            formula: "一艘載滿貨物的輪船由『淡水河口』航行進入『大西洋海水（海水密度大於淡水）』中。下列關於輪船所受『浮力大小』與『吃水深度（船身沒入液體體積）』的變化，何者正確？",
+            options: ["浮力保持不變（輪船皆為浮體，浮力恆等於船隻總重）；吃水深度變淺（海水密度大，排開較少體積即可支撐船重）", "浮力變大；吃水深度變深", "浮力變小；吃水深度不變", "浮力與吃水深度皆完全不變"],
+            correct: "浮力保持不變（輪船皆為浮體，浮力恆等於船隻總重）；吃水深度變淺（海水密度大，排開較少體積即可支撐船重）",
+            hint: "輪船在河水與海水中都是浮體 ➔ 浮力 = 總船重（浮力不變）。海水密度大 ➔ 排開體積小 ➔ 船身上浮（吃水變淺）。",
+            misconceptions: {
+              "浮力變大；吃水深度變深": "【會考最熱門浮體陷阱】輪船只要浮著，【浮力永遠等於船總重（不變）】！海水密度大，由 $B = V_\\text{排} \\times D_\\text{液}$ 可知 $V_\\text{排}$ 變小，故【吃水變淺、船身上浮】！"
+            },
+            explanation: "浮體條件：$B = W_\\text{總}$（恆定）。由 $W_\\text{總} = V_\\text{排} \\times D_\\text{液}$，當 $D_\\text{液}$ 由河水升至海水時，$V_\\text{排}$ 必減小，船身浮起吃水變淺。"
+          },
+          {
+            formula: "新鮮雞蛋放入清水中會沉入杯底。若向水中『不斷加入食鹽並攪拌』，觀察到雞蛋逐漸上浮直至浮出水面。造成雞蛋浮起的主要原因為何？",
+            options: ["食鹽溶於水使鹽水密度大幅增加，當鹽水密度大於雞蛋密度時，雞蛋即變為浮體浮起", "食鹽把雞蛋的質量減輕了", "食鹽在杯底產生了向上的爆炸力", "雞蛋吸收鹽分後體積膨脹了 10 倍"],
+            correct: "食鹽溶於水使鹽水密度大幅增加，當鹽水密度大於雞蛋密度時，雞蛋即變為浮體浮起",
+            hint: "加鹽提高液體密度 D液 ➔ 浮力 B = V排 × D液 增大，當 D液 > D蛋 時，雞蛋浮起。",
+            misconceptions: {
+              "食鹽把雞蛋的質量減輕了": "【加鹽改變液體密度】雞蛋質量不變！加鹽使【液體密度 $D_\\text{液}$ 顯著提升】，提供足夠向上浮力使雞蛋轉化為浮體！"
+            },
+            explanation: "沉浮條件取決於密度比：純水 $D_\\text{水} < D_\\text{蛋}$ 故下沉；加鹽後 $D_\\text{鹽水} > D_\\text{蛋}$，雞蛋受浮力大於重力而上浮至液面。"
+          },
+          {
+            formula: "【會考綜合題】將一個實心金屬塊懸掛於彈簧秤下，在空氣中秤得 400 gw，完全浸沒於水中秤得 300 gw，完全浸沒於某未知液體中秤得 320 gw。試問該金屬塊的體積以及該未知液體的密度分別為何？",
+            options: ["金屬塊體積 = $100\\text{ cm}^3$；未知液體密度 = $0.8\\text{ g/cm}^3$", "金屬塊體積 = $300\\text{ cm}^3$；未知液體密度 = $1.2\\text{ g/cm}^3$", "金屬塊體積 = $80\\text{ cm}^3$；未知液體密度 = $0.8\\text{ g/cm}^3$", "金屬塊體積 = $100\\text{ cm}^3$；未知液體密度 = $1.0\\text{ g/cm}^3$"],
+            correct: "金屬塊體積 = $100\\text{ cm}^3$；未知液體密度 = $0.8\\text{ g/cm}^3$",
+            hint: "在水中浮力 B水 = 400 - 300 = 100 gw ➔ V物 = 100 cm³。在液中浮力 B液 = 400 - 320 = 80 gw ➔ D液 = 80 / 100 = 0.8 g/cm³。",
+            misconceptions: {
+              "金屬塊體積 = $80\\text{ cm}^3$；未知液體密度 = $0.8\\text{ g/cm}^3$": "【雙重浮力計算】水中浮力為 $400 - 300 = 100$ gw，故體積為 $100\\text{ cm}^3$！在未知液中浮力為 $400 - 320 = 80$ gw，密度為 $80 / 100 = 0.8\\text{ g/cm}^3$。"
+            },
+            explanation: "水中浮力 $B_\\text{水} = 400 - 300 = 100\\text{ gw} = V \\times 1.0 \\Rightarrow V = 100\\text{ cm}^3$。未知液中浮力 $B_\\text{液} = 400 - 320 = 80\\text{ gw} = 100 \\times D_\\text{液} \\Rightarrow D_\\text{液} = 0.8\\text{ g/cm}^3$。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('ship-canvas');
+        this.visualizer = new ShipVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.ship-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'ship-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-buoyancy-green);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-force-pink);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.ship-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "🚀 重力流體診斷：觀念拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的有機物性質、虎克定律伸長量、液壓公式P=hD或阿基米德浮力B=V排D液，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-buoyancy-green); font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「排開液體體積對浮力大小的影響」。本實驗的操作變因為何？","options":["彈簧秤示數減少量","同一物體、同一液體與液體溫度","物體浸入液體的體積","每組實驗重複次數"],"correct":"物體浸入液體的體積","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「物體浸入液體的體積」。"},{"formula":"【實驗探究】進行「排開液體體積對浮力大小的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["同一物體、同一液體與液體溫度","實驗器材品牌","彈簧秤示數減少量","物體浸入液體的體積"],"correct":"彈簧秤示數減少量","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「彈簧秤示數減少量」。"},{"formula":"【實驗設計】為公平比較「排開液體體積對浮力大小的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","同一物體、同一液體與液體溫度","各組可使用不同測量方法"],"correct":"同一物體、同一液體與液體溫度","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：同一物體、同一液體與液體溫度。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","排開液體體積越大，所受浮力越大","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"排開液體體積越大，所受浮力越大","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：排開液體體積越大，所受浮力越大。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「浸入體積 對 浮力 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：排開液體體積越大，浮力越大。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「浸入體積」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「浸入體積」與「浮力」的關係，何者最合理？","options":["排開液體體積越大，浮力越大","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"排開液體體積越大，浮力越大","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：排開液體體積越大，浮力越大；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+</body>
+</html>
