@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國中數學科特訓總部</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg-base: #0c1024;
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #facc15;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+        body {
+            background: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px 20px 60px;
+            background-image: radial-gradient(circle at 50% 0%, #6366f122 0%, transparent 60%);
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .nav-back {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid var(--card-border);
+            padding: 8px 16px; border-radius: 999px; color: #cbd5e1; text-decoration: none;
+            font-size: 14px; margin-bottom: 20px; transition: all 0.2s;
+        }
+        .nav-back:hover { background: rgba(255, 255, 255, 0.15); color: #fff; transform: translateX(-3px); }
+        .hub-badge {
+            display: inline-block; background: #6366f122; border: 1px solid #6366f188;
+            color: #6366f1; font-size: 13px; font-weight: 700; padding: 4px 14px;
+            border-radius: 999px; margin-bottom: 12px;
+        }
+        .hub-title { font-size: 32px; font-weight: 900; margin-bottom: 10px; }
+        .hub-subtitle { font-size: 16px; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.6; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px #6366f125;
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-badge {
+            font-size: 12px; font-weight: 700; color: var(--primary);
+            background: #6366f118; padding: 4px 10px; border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .card-icon { font-size: 26px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: #fff; line-height: 1.4; }
+        .card-desc { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px; flex-grow: 1; }
+        
+        .trap-box {
+            background: rgba(245, 158, 11, 0.1); border: 1px dashed rgba(245, 158, 11, 0.4);
+            border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #fde047;
+            display: flex; align-items: center; gap: 6px; margin-bottom: 16px; line-height: 1.4;
+        }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06); }
+        .grade-tag { font-size: 12px; color: #94a3b8; font-weight: 600; }
+        .launch-btn {
+            font-size: 13px; font-weight: 700; color: var(--primary);
+            transition: all 0.2s;
+        }
+        .card:hover .launch-btn { transform: translateX(4px); }
+    </style>
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="index.html" class="nav-back">⬅️ 返回 國中會考六大學科總門戶</a><br>
+            <span class="hub-badge">📐 國中數學科特訓總部</span>
+            <h1 class="hub-title">國中數學科特訓總部</h1>
+            <p class="hub-subtitle">國一到國三一到六冊全單元（代數、方程式、函數、幾何證明、三角形三心、圓形、統計機率）（收錄 22 大高頻必考特訓模組）</p>
+        </div>
+
+        <div class="grid">
+            
+        <div class="card" onclick="window.location.href='math_grade7_ch1.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G7 VOL.1</span>
+                <span class="card-icon">📏</span>
+            </div>
+            <h3 class="card-title">數學七上第一章：整數的運算與數線</h3>
+            <p class="card-desc">正負數加減乘除、絕對值幾何意義 |a-b|、數線距離、指數律法則 aᵐ·aⁿ=aᵐ⁺ⁿ 與科學記號</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：(-3)² = 9 vs -3² = -9 負號與括號順序</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國一</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade7_ch2.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G7 VOL.1</span>
+                <span class="card-icon">🔢</span>
+            </div>
+            <h3 class="card-title">數學七上第二章：分數的運算與因數倍數</h3>
+            <p class="card-desc">質數質因數分解、短除法、最大公因數 GCD、最小公倍數 LCM、分數四則混合運算與倒數</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：兩數互質最大公因數為 1、除以分數等於乘以倒數</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國一</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade7_ch3.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G7 VOL.1</span>
+                <span class="card-icon">🔣</span>
+            </div>
+            <h3 class="card-title">數學七上第三章：一元一次方程式</h3>
+            <p class="card-desc">以文字符號列式代數化簡、等量公理、移項法則變號、未知數解題應用與年齡折扣問題</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：移項跨等號要變號、去括號負號分配律</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國一</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade7_vol2_ch1.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G7 VOL.2</span>
+                <span class="card-icon">✖️</span>
+            </div>
+            <h3 class="card-title">數學七下第一章：二元一次聯立方程式</h3>
+            <p class="card-desc">代入消去法、加減消去法、二元一次聯立方程式幾何意義（恰有一解/無解/無限多組解）</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：平行線對應聯立方程式無解、重合線無限多解</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國一</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade7_vol2_ch2.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G7 VOL.2</span>
+                <span class="card-icon">📈</span>
+            </div>
+            <h3 class="card-title">數學七下第二章：直角坐標平面與二元一次方程式圖形</h3>
+            <p class="card-desc">四個象限符號、坐標軸點特徵、直線方程式 y=ax+b、斜率截距、兩直線交點坐標求法</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：x 軸上點坐標為 (x, 0)、鉛直線方程式為 x = c</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國一</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade7_vol2_ch3.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G7 VOL.2</span>
+                <span class="card-icon">⚖️</span>
+            </div>
+            <h3 class="card-title">數學七下第三章：比例式與正比反比</h3>
+            <p class="card-desc">比與比值、比例式內項積等於外項積 ad=bc、連比例式、正比 (y=kx) 與反比 (xy=k) 判別應用</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：反比乘積固定 xy=k，非 y/x=k</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國一</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade7_vol2_ch4.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G7 VOL.2</span>
+                <span class="card-icon">⚡</span>
+            </div>
+            <h3 class="card-title">數學七下第四章：一元一次不等式</h3>
+            <p class="card-desc">不等號符號意涵、不等式基本性質『同乘或同除以負數時不等號必須反轉方向』、數線上圖示</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：同乘負數不等號忘記轉向</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國一</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade7_vol2_ch5.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G7 VOL.2</span>
+                <span class="card-icon">📊</span>
+            </div>
+            <h3 class="card-title">數學七下第五章：統計圖表與資料分析</h3>
+            <p class="card-desc">次數分配表、直方圖、折線圖、圓形圖比例換算、算術平均數、中位數與眾數判讀</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：中位數求法偶數個取中間兩項平均</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國一</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade8_vol1_ch1.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G8 VOL.1</span>
+                <span class="card-icon">✖️</span>
+            </div>
+            <h3 class="card-title">數學八上第一章：乘法公式與多項式</h3>
+            <p class="card-desc">和平方 (a+b)²、差平方 (a-b)²、平方差 (a+b)(a-b)=a²-b²、多項式四則加減乘除長除法</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：(a+b)² = a² + 2ab + b² 漏掉中間 2ab</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國二</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade8_vol1_ch2.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G8 VOL.1</span>
+                <span class="card-icon">📐</span>
+            </div>
+            <h3 class="card-title">數學八上第二章：平方根與畢氏定理</h3>
+            <p class="card-desc">正負平方根、根號化簡根式四則運算、有理化分母、畢氏定理 a²+b²=c²、空間兩點距離公式</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：√a² = |a| 必為非負數、常用畢氏三邊 3-4-5, 5-12-13</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國二</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade8_vol1_ch3.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G8 VOL.1</span>
+                <span class="card-icon">🧩</span>
+            </div>
+            <h3 class="card-title">數學八上第三章：因式分解</h3>
+            <p class="card-desc">提公因式、分組提公因式、利用乘法公式逆運算因式分解、十字交乘法 ax²+bx+c 快速拆解</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：提公因式漏提負號或常數、十字交乘正負號檢驗</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國二</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade8_vol1_ch4.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G8 VOL.1</span>
+                <span class="card-icon">🎯</span>
+            </div>
+            <h3 class="card-title">數學八上第四章：一元二次方程式</h3>
+            <p class="card-desc">十字交乘因式分解求解、配方法步驟化為 (x-h)²=k、二次公式解 x=(-b±√(b²-4ac))/2a、判別式 D 根的性質</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：公式解分母為 2a 常常忘記乘以 a</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國二</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade8_vol2_ch1.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G8 VOL.2</span>
+                <span class="card-icon">🔢</span>
+            </div>
+            <h3 class="card-title">數學八下第一章：等差數列與等差級數</h3>
+            <p class="card-desc">等差第 n 項公式 an=a1+(n-1)d、等差中項 2b=a+c、等差級數求和公式 Sn=n(a1+an)/2=n(2a1+(n-1)d)/2</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：項數 n 算錯少加 1、公差 d 可為負數</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國二</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade8_vol2_ch2.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G8 VOL.2</span>
+                <span class="card-icon">📐</span>
+            </div>
+            <h3 class="card-title">數學八下第二章：平面幾何圖形與尺規作圖</h3>
+            <p class="card-desc">線段垂直平分線（中垂線）性質、角平分線性質、多邊形內角和 (n-2)×180° 與外角和恆為 360°、尺規作圖四大基本作法</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：任意凸多邊形外角和永遠等於 360°，與邊數無關</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國二</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade8_vol2_ch3.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G8 VOL.2</span>
+                <span class="card-icon">🔺</span>
+            </div>
+            <h3 class="card-title">數學八下第三章：三角形全等性質與邊角關係</h3>
+            <p class="card-desc">五大合法全等 SSS/SAS/ASA/AAS/RHS（無 SSA/AAA）、外角定理、三角形兩邊和大於第三邊、大邊對大角</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：SSA 不能證明全等、兩邊之差 < 第三邊 < 兩邊之和</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國二</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade8_vol2_ch4.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G8 VOL.2</span>
+                <span class="card-icon">▱</span>
+            </div>
+            <h3 class="card-title">數學八下第四章：平行線與四邊形</h3>
+            <p class="card-desc">平行線截角（同位角相等/內錯角相等/同側內角互補）、平行四邊形性質與判定、菱形矩形梯形中位線</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：一組對邊平行另一組對邊等長可能為等腰梯形</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國二</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade9_vol1_ch1.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G9 VOL.1</span>
+                <span class="card-icon">📐</span>
+            </div>
+            <h3 class="card-title">數學九上第一章：相似形與比例線段</h3>
+            <p class="card-desc">平行線截比例線段、相似三角形判定 AA/SAS/SSS、相似形面積比等於邊長平方比、體積比等於邊長立方比</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：相似邊長比 1:2 ➔ 面積比 1:4、體積比 1:8</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國三</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade9_vol1_ch2.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G9 VOL.1</span>
+                <span class="card-icon">⭕</span>
+            </div>
+            <h3 class="card-title">數學九上第二章：圓形幾何與圓周角</h3>
+            <p class="card-desc">點線圓位置、弦心距垂直平分弦、切線等長、圓周角等於圓心角一半、弦切角、直徑所對圓周角必為 90°</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：半圓直徑所對圓周角必為 90°、圓外切四邊形對邊和相等</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國三</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade9_vol1_ch3.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G9 VOL.1</span>
+                <span class="card-icon">⭐</span>
+            </div>
+            <h3 class="card-title">數學九上第三章：幾何證明與三角形三心</h3>
+            <p class="card-desc">外心（中垂線交點/到三頂點等距/直角在斜邊中點）、內心（角平分線交點/到三邊等距）、重心（三中線交點 2:1 平分六等分面積）</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：直角三角形外接圓半徑 R = 斜邊/2，內心 r = (股+股-斜)/2</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國三</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade9_vol2_ch1.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G9 VOL.2</span>
+                <span class="card-icon">📈</span>
+            </div>
+            <h3 class="card-title">數學九下第一章：二次函數圖形與極值</h3>
+            <p class="card-desc">頂點式 y=a(x-h)²+k 平移左加右減上加下減、對稱軸 x=h、判別式與 x 軸交點數、限制區間求最大最小值</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：限制區間極值先檢查頂點是否在範圍內</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國三</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade9_vol2_ch2.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G9 VOL.2</span>
+                <span class="card-icon">🎲</span>
+            </div>
+            <h3 class="card-title">數學九下第二章：空間與立體幾何圖形</h3>
+            <p class="card-desc">空間點線面、歪斜線（空間不相交不平行）、柱體體積與表面積、錐體體積 V=1/3 Sh、圓錐展開圖扇形角 θ=360°(r/R)</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：圓錐展開扇形圓心角 θ = 360° × (r/R)</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國三</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        <div class="card" onclick="window.location.href='math_grade9_vol2_ch3.html?v=20260818-dark-start-v16'">
+            <div class="card-header">
+                <span class="card-badge">MATH G9 VOL.2</span>
+                <span class="card-icon">📦</span>
+            </div>
+            <h3 class="card-title">數學九下第三章：統計盒狀圖與機率</h3>
+            <p class="card-desc">百分位數、第 1/2/3 四分位數、四分位距 IQR=Q3-Q1、盒狀圖判讀（無法看總人數與平均數）、古典機率與樹狀圖</p>
+            <div class="trap-box">
+                <span class="trap-icon">⚠️</span>
+                <span>高錯率：盒狀圖只能看百分比分佈，無法看出全班總人數或平均分數</span>
+            </div>
+            <div class="card-footer">
+                <span class="grade-tag">國三</span>
+                <span class="launch-btn">進入特訓 ➔</span>
+            </div>
+        </div>
+        
+        </div>
+    </div>
+</body>
+</html>
