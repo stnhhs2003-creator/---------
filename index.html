@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國中會考七大學科全單元終極特訓基地 | MEGA PORTAL</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #090d16;
+            --card-bg: rgba(255, 255, 255, 0.035);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #facc15;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif; }
+        body {
+            background: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 30px 20px 80px;
+            background-image: 
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 10%, rgba(16, 185, 129, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 90%, rgba(245, 158, 11, 0.12) 0%, transparent 50%);
+        }
+        .container { max-width: 1350px; margin: 0 auto; }
+
+        /* HERO HEADER */
+        .hero {
+            text-align: center;
+            padding: 30px 10px 40px;
+        }
+        .badge-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 6px 18px; border-radius: 999px; font-size: 13.5px; font-weight: 700;
+            color: var(--gold); margin-bottom: 18px; letter-spacing: 0.5px;
+        }
+        .hero-title {
+            font-size: 38px; font-weight: 900; line-height: 1.25; margin-bottom: 14px;
+            background: linear-gradient(135deg, #ffffff 30%, #cbd5e1 70%, #94a3b8 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle {
+            font-size: 16px; color: var(--text-muted); max-width: 850px; margin: 0 auto 30px; line-height: 1.6;
+        }
+
+        /* SIX SUBJECT HEADQUARTERS BANNERS */
+        .hq-section-title {
+            font-size: 20px; font-weight: 800; color: #e2e8f0; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .hq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 45px;
+        }
+        .hq-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 16px 18px;
+            text-decoration: none;
+            color: #fff;
+            display: flex; flex-direction: column; justify-content: space-between;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
+        }
+        .hq-card:hover {
+            transform: translateY(-4px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .hq-card.bio:hover { border-color: #10b981; box-shadow: 0 8px 24px rgba(16, 185, 129, 0.25); }
+        .hq-card.phychem:hover { border-color: #06b6d4; box-shadow: 0 8px 24px rgba(6, 182, 212, 0.25); }
+        .hq-card.math:hover { border-color: #6366f1; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25); }
+        .hq-card.social:hover { border-color: #f59e0b; box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25); }
+        .hq-card.chinese:hover { border-color: #fb923c; box-shadow: 0 8px 24px rgba(251, 146, 60, 0.25); }
+        .hq-card.english:hover { border-color: #38bdf8; box-shadow: 0 8px 24px rgba(56, 189, 248, 0.25); }
+
+        .hq-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .hq-icon { font-size: 26px; }
+        .hq-count { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.1); }
+        .hq-name { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+        .hq-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
+
+        /* CONTROLS (TABS & SEARCH) */
+        .controls-bar {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 30px;
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px;
+            position: sticky; top: 15px; z-index: 50;
+        }
+        .tab-group {
+            display: flex; flex-wrap: wrap; gap: 8px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            padding: 7px 15px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+        .tab-btn.active {
+            background: var(--gold);
+            color: #0f172a;
+            border-color: var(--gold);
+            box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3);
+        }
+        .search-box {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 6px 14px;
+            min-width: 260px;
+        }
+        .search-box input {
+            background: transparent; border: none; outline: none;
+            color: #fff; font-size: 13.5px; width: 100%;
+        }
+        .search-box input::placeholder { color: #64748b; }
+
+        /* MODULES GRID */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 20px;
+        }
+        .m-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 22px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; flex-direction: column;
+            text-decoration: none; color: inherit;
+        }
+        .m-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.065);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+        }
+        .m-card-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+        }
+        .m-badge {
+            font-size: 11.5px; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .m-icon { font-size: 26px; }
+        .m-title {
+            font-size: 17.5px; font-weight: 800; color: #fff; margin-bottom: 8px; line-height: 1.4;
+        }
+        .m-desc {
+            font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px; flex-grow: 1;
+        }
+        .m-trap {
+            background: rgba(245, 158, 11, 0.1); border: 1px dashed rgba(245, 158, 11, 0.35);
+            border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #fde047;
+            display: flex; align-items: flex-start; gap: 6px; margin-bottom: 16px; line-height: 1.4;
+        }
+        .m-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .m-grade { font-size: 12px; color: #94a3b8; font-weight: 600; }
+        .m-btn { font-size: 13px; font-weight: 700; color: var(--gold); transition: all 0.2s; }
+        .m-card:hover .m-btn { transform: translateX(4px); }
+
+        .no-result {
+            grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #64748b; font-size: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title { font-size: 28px; }
+            .modules-grid { grid-template-columns: 1fr; }
+            .controls-bar { position: static; }
+        }
+    </style>
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_SEVEN_SUBJECT_PORTAL_V1 -->
+<style>
+html,body{background:#071a12!important;background-image:radial-gradient(circle at 20% 0%,#173f2b 0%,#0b2418 38%,#06140e 100%)!important;color:#f8fafc!important}
+.container{color:#f8fafc!important}.hero{background:linear-gradient(145deg,#123822,#0b2418)!important;border:1px solid #3f7554!important;box-shadow:0 18px 50px rgba(0,0,0,.35)!important}.hero-title,.hero-subtitle,.hero-subtitle b,.badge-pill,.hq-section-title{color:#f8fafc!important;-webkit-text-fill-color:#f8fafc!important}.hero-subtitle{color:#d9e9de!important}.badge-pill{background:#234f36!important;border-color:#7eb18c!important}
+.hq-grid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))!important}.hq-card{background:#10291c!important;border:1px solid #47765a!important;color:#f8fafc!important;box-shadow:0 8px 24px rgba(0,0,0,.24)!important}.hq-card:hover{background:#173a27!important;border-color:#9bd0a8!important}.hq-desc{color:#d5e7da!important}.hq-card.earth{border-color:#3d9770!important}
+.controls-bar{background:#10291c!important;border-color:#47765a!important}.tab-btn{background:#173a27!important;color:#e7f4ea!important;border-color:#5d8e6b!important}.tab-btn.active,.tab-btn:hover{background:#f4c542!important;color:#302600!important;border-color:#ffe58a!important}.search-box input{background:#fff!important;color:#111827!important;border-color:#8fbaa0!important}
+.module-card{background:#10291c!important;color:#f8fafc!important;border-color:#47765a!important}.module-title,.module-subtitle,.m-grade,.trap-tag{color:#f8fafc!important}.module-subtitle{color:#d5e7da!important}
+</style>
+<!-- END:DARK_SEVEN_SUBJECT_PORTAL_V1 -->
+<!-- BEGIN:USER_PALETTE_HOME_V18 -->
+<style>
+:root{--p-blue:#9ac1f0;--p-mint:#72fa93;--p-lime:#a0e548;--p-orange:#e45f2b;--p-gold:#f6c445;--ink:#172033}
+html,body{background:#9ac1f0!important;background-image:linear-gradient(145deg,#9ac1f0 0%,#dcecff 52%,#9ac1f0 100%)!important;color:#172033!important}
+.container{color:#172033!important}.hero{background:linear-gradient(135deg,#e45f2b 0%,#c9471d 100%)!important;border:3px solid #f6c445!important;box-shadow:0 16px 42px rgba(82,37,14,.28)!important}.hero-title,.hero-subtitle,.hero-subtitle b,.badge-pill{color:#fff!important;-webkit-text-fill-color:#fff!important}.hero-subtitle{color:#fff7e8!important}.badge-pill{background:rgba(23,32,51,.28)!important;border:2px solid #f6c445!important}
+.hq-section-title{color:#172033!important;-webkit-text-fill-color:#172033!important}.hq-grid{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))!important}.hq-card{background:#fff!important;color:#172033!important;border:3px solid #72fa93!important;box-shadow:0 9px 24px rgba(23,32,51,.16)!important}.hq-card:nth-child(even){border-color:#a0e548!important}.hq-card.earth{background:#effff3!important;border-color:#e45f2b!important}.hq-card:hover{background:#f8fff3!important;border-color:#e45f2b!important;transform:translateY(-4px)!important}.hq-name,.hq-desc,.hq-count{color:#172033!important;-webkit-text-fill-color:#172033!important}.hq-icon{background:#9ac1f0!important;border-radius:14px!important;padding:8px!important}
+.controls-bar{background:#fff!important;border:3px solid #72fa93!important;box-shadow:0 8px 22px rgba(23,32,51,.14)!important}.tab-btn{background:#e9f3ff!important;color:#172033!important;border:2px solid #9ac1f0!important}.tab-btn.active,.tab-btn:hover{background:#f6c445!important;color:#392b00!important;border-color:#e45f2b!important}.search-box input{background:#fff!important;color:#172033!important;border:2px solid #9ac1f0!important}
+.module-card{background:#fff!important;color:#172033!important;border:2px solid #9ac1f0!important;box-shadow:0 7px 20px rgba(23,32,51,.13)!important}.module-card:hover{border-color:#e45f2b!important}.module-title,.module-subtitle,.m-grade,.trap-tag{color:#172033!important;-webkit-text-fill-color:#172033!important}.m-btn{background:#e45f2b!important;color:#fff!important}.trap-tag{background:#f6c445!important}.subject-badge{background:#72fa93!important;color:#172033!important}
+</style>
+<!-- END:USER_PALETTE_HOME_V18 -->
+</head>
+<body>
+    <div class="container">
+        <!-- HERO -->
+        <div class="hero">
+            <div class="badge-pill">🌏 七大學科新版 V17 · 已加入地球科學總部</div>
+            <h1 class="hero-title">國中七大學科全單元互動特訓系統</h1>
+            <p class="hero-subtitle">
+                涵蓋 <b>生物 (8篇)</b>、<b>理化 (12模組)</b>、<b>數學 (22單元)</b>、<b>社會 (9模組)</b>、<b>國文 (6模組)</b>、<b>英文 (6模組)</b>、<b>地球科學 (2冊)</b> 共 <b>65 款</b> 高難度易錯觀念特訓遊戲！內含題目字體放大、關鍵提示、完整詳解與易錯盲點深度剖析。
+            </p>
+        </div>
+
+        <!-- 7 SUBJECT HEADQUARTERS DIRECT CARDS -->
+        <h2 class="hq-section-title">🏛️ 七大學科專屬特訓總部直達</h2>
+        <div class="hq-grid">
+            <a href="bio_hub.html" class="hq-card bio">
+                <div class="hq-top">
+                    <span class="hq-icon">🌿</span>
+                    <span class="hq-count" style="color: #10b981;">8 篇</span>
+                </div>
+                <div>
+                    <div class="hq-name" style="color: #34d399;">生物科總部</div>
+                    <div class="hq-desc">七年級一到二冊全單元</div>
+                </div>
+            </a>
+            <a href="phychem_hub.html" class="hq-card phychem">
+                <div class="hq-top">
+                    <span class="hq-icon">⚡</span>
+                    <span class="hq-count" style="color: #06b6d4;">12 模組</span>
+                </div>
+                <div>
+                    <div class="hq-name" style="color: #22d3ee;">理化科總部</div>
+                    <div class="hq-desc">八九年級三到六冊全單元</div>
+                </div>
+            </a>
+            <a href="math_hub.html" class="hq-card math">
+                <div class="hq-top">
+                    <span class="hq-icon">📐</span>
+                    <span class="hq-count" style="color: #818cf8;">22 單元</span>
+                </div>
+                <div>
+                    <div class="hq-name" style="color: #a5b4fc;">數學科總部</div>
+                    <div class="hq-desc">國一到國三全 22 章節</div>
+                </div>
+            </a>
+            <a href="social_hub.html" class="hq-card social">
+                <div class="hq-top">
+                    <span class="hq-icon">🌏</span>
+                    <span class="hq-count" style="color: #f59e0b;">9 模組</span>
+                </div>
+                <div>
+                    <div class="hq-name" style="color: #fbbf24;">社會科總部</div>
+                    <div class="hq-desc">台灣篇 + 東亞篇 + 世界篇</div>
+                </div>
+            </a>
+            <a href="chinese_hub.html" class="hq-card chinese">
+                <div class="hq-top">
+                    <span class="hq-icon">📖</span>
+                    <span class="hq-count" style="color: #fb923c;">6 模組</span>
+                </div>
+                <div>
+                    <div class="hq-name" style="color: #fdba74;">國文科總部</div>
+                    <div class="hq-desc">字音字形/修辭/詩詞/應用文/素養</div>
+                </div>
+            </a>
+            <a href="english_hub.html" class="hq-card english">
+                <div class="hq-top">
+                    <span class="hq-icon">🔤</span>
+                    <span class="hq-count" style="color: #38bdf8;">6 模組</span>
+                </div>
+                <div>
+                    <div class="hq-name" style="color: #7dd3fc;">英文科總部</div>
+                    <div class="hq-desc">時態/子句/動詞/字彙/克漏/素養</div>
+                </div>
+            </a>
+            <a href="earth_science_hub.html?v=20260818-palette-v18" class="hq-card earth">
+                <div class="hq-top"><span class="hq-icon">🌋</span><span class="hq-count" style="color:#86efac;">2 冊</span></div>
+                <div><div class="hq-name" style="color:#bbf7d0;">地球科學總部</div><div class="hq-desc">地質板塊 + 天文天氣與氣候</div></div>
+            </a>        </div>
+
+        <!-- CONTROLS FILTER & SEARCH -->
+        <div class="controls-bar">
+            <div class="tab-group" id="tabGroup">
+                <button class="tab-btn active" onclick="filterSubject('all', this)">全部單元 (65)</button>
+                <button class="tab-btn" onclick="filterSubject('bio', this)">🌿 生物科 (8)</button>
+                <button class="tab-btn" onclick="filterSubject('phychem', this)">⚡ 理化科 (12)</button>
+                <button class="tab-btn" onclick="filterSubject('earth', this)">🌏 地球科學 (2)</button>
+                <button class="tab-btn" onclick="filterSubject('math', this)">📐 數學科 (22)</button>
+                <button class="tab-btn" onclick="filterSubject('social', this)">🌏 社會科 (9)</button>
+                <button class="tab-btn" onclick="filterSubject('chinese', this)">📖 國文科 (6)</button>
+                <button class="tab-btn" onclick="filterSubject('english', this)">🔤 英文科 (6)</button>
+            </div>
+            <div class="search-box">
+                <span>🔍</span>
+                <input type="text" id="searchInput" placeholder="搜尋單元標題、公式或考點..." oninput="handleSearch()">
+            </div>
+        </div>
+
+        <!-- MODULES LIST -->
+        <div class="modules-grid" id="modulesGrid"></div>
+    </div>
+
+    <script>
+        const allModules = [{"id": "bio_1", "subject": "bio", "subject_name": "生物科", "badge": "BIO G7 VOL.1", "grade": "國一", "title": "生物七上第 1 章：生命的起源與細胞構造", "subtitle": "原始大氣演變、細胞學說、動植物細胞構造差異、顯微鏡高倍低倍操作與視線調整", "filename": "bio_origin.html?v=20260818-palette-v18", "icon": "🔬", "color": "#10b981", "trap_tag": "高錯率：顯微鏡成像方向與動植物細胞構造差異"}, {"id": "bio_2", "subject": "bio", "subject_name": "生物科", "badge": "BIO G7 VOL.1", "grade": "國一", "title": "生物七上第 2 章：生物體的養分與物質運輸", "subtitle": "光合作用光反應與碳反應、本氏液與碘液測定、木質部韌皮部水分養分運輸方向", "filename": "bio_transport_readable.html?v=20260818-palette-v18", "icon": "🌿", "color": "#10b981", "trap_tag": "高錯率：蒸散作用拉力、韌皮部雙向運輸"}, {"id": "bio_3", "subject": "bio", "subject_name": "生物科", "badge": "BIO G7 VOL.1", "grade": "國一", "title": "生物七上第 3 章：神經系統與內分泌調節", "subtitle": "大腦小腦腦幹脊髓反射中樞路徑、感覺神經運動神經、胰島素昇糖素血糖雙重負回饋", "filename": "bio_coordination.html?v=20260818-palette-v18", "icon": "⚡", "color": "#10b981", "trap_tag": "高錯率：膝跳反射不經大腦、受器傳導途徑"}, {"id": "bio_4", "subject": "bio", "subject_name": "生物科", "badge": "BIO G7 VOL.1", "grade": "國一", "title": "生物七上第 4 章：生物體的恆定性與排泄", "subtitle": "體溫調節機制、呼吸運動肋骨橫膈脹縮、泌尿系統腎臟過濾再吸收、氨尿素轉換", "filename": "bio_homeostasis.html?v=20260818-palette-v18", "icon": "🌡️", "color": "#10b981", "trap_tag": "高錯率：吸氣時肋骨上舉橫膈下降胸腔變大"}, {"id": "bio_5", "subject": "bio", "subject_name": "生物科", "badge": "BIO G7 VOL.1", "grade": "國一", "title": "生物七上第 5 章：生殖與孟德爾遺傳法則", "subtitle": "有絲分裂 vs 減數分裂染色體套數減半、棋盤方格法、顯隱性遺傳基因型表現型機率", "filename": "bio_genetics.html?v=20260818-palette-v18", "icon": "🧬", "color": "#10b981", "trap_tag": "高錯率：減數分裂複製一次分裂兩次成單套"}, {"id": "bio_6", "subject": "bio", "subject_name": "生物科", "badge": "BIO G7 VOL.1", "grade": "國一", "title": "生物七上總結：七上生物大冒險 (綜合總複習)", "subtitle": "生命維持六大系統跨單元連鎖題、實驗檢驗試劑、酵素活性溫度與 pH 值變化綜合挑戰", "filename": "bio_quest.html?v=20260818-palette-v18", "icon": "🏆", "color": "#10b981", "trap_tag": "高錯率：唾液澱粉酶最適 pH 呈中性"}, {"id": "bio_7", "subject": "bio", "subject_name": "生物科", "badge": "BIO G7 VOL.2", "grade": "國一", "title": "生物七下第 1 章：演化理論、化石與六界分類", "subtitle": "達爾文天擇說（個體差異+生存競爭+天擇適應）、同源器官、化石相對地質年代、六界分類系統", "filename": "bio_vol2_evolution_taxonomy.html?v=20260818-palette-v18", "icon": "🦖", "color": "#10b981", "trap_tag": "高錯率：長頸鹿不是因為想吃樹葉變長(用進廢退錯)"}, {"id": "bio_8", "subject": "bio", "subject_name": "生物科", "badge": "BIO G7 VOL.2", "grade": "國一", "title": "生物七下第 2 章：生態系結構、能量流動與環境保育", "subtitle": "個體群落群集生態系、10% 能量金字塔定律逐級遞減、生物放大作用重金屬累積、碳循環平衡", "filename": "bio_vol2_ecosystem_conservation.html?v=20260818-palette-v18", "icon": "🌍", "color": "#10b981", "trap_tag": "高錯率：能量流動單向不循環、高級消費者重金屬最高"}, {"id": "phy_1", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G8 VOL.3", "grade": "國二", "title": "理化八上第 1 章：物質的組成與水溶液性質", "subtitle": "純物質 vs 混合物、溶解度曲線圖、重量百分濃度與體積百分濃度換算、空氣中氣體製備", "filename": "phychem_vol3_matter.html?v=20260818-palette-v18", "icon": "🧪", "color": "#06b6d4", "trap_tag": "高錯率：定溫下過飽和析出結晶後濃度保持不變"}, {"id": "phy_2", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G8 VOL.3", "grade": "國二", "title": "理化八上第 2 章：波動傳播與光學反射折射", "subtitle": "橫波縱波波速頻率波長 v=fλ、聲音三要素、平面鏡成像、凸透鏡與凹透鏡折射成像規律", "filename": "phychem_vol3_waves_optics.html?v=20260818-palette-v18", "icon": "🌈", "color": "#06b6d4", "trap_tag": "高錯率：凸透鏡物置兩倍焦距外成倒立縮小實像"}, {"id": "phy_3", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G8 VOL.3", "grade": "國二", "title": "理化八上第 3 章：溫度熱量與元素週期表", "subtitle": "熱量公式 H=msΔT、熱傳導對流輻射、比熱物理意義、元素週期表同族化學性質規律", "filename": "phychem_vol3_heat_elements.html?v=20260818-palette-v18", "icon": "🔥", "color": "#06b6d4", "trap_tag": "高錯率：比熱大者吸熱多溫度上升慢、鹼金族活性"}, {"id": "phy_4", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G8 VOL.4", "grade": "國二", "title": "理化八下第 1 章：化學反應、莫耳數與反應速率平衡", "subtitle": "莫耳數計算 n=m/M=N/6x10²³、質量守恆定律係數比、勒沙特列平衡移動原理、催化劑效應", "filename": "phychem_vol4_reactions.html?v=20260818-palette-v18", "icon": "⚗️", "color": "#06b6d4", "trap_tag": "高錯率：催化劑只加快速率不改變平衡產量與常數"}, {"id": "phy_5", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G8 VOL.4", "grade": "國二", "title": "理化八下第 2 章：電解質、酸鹼鹽與 pH 值測定", "subtitle": "阿瑞尼斯電離說、常見強酸強鹼特性、pH 值對數定義、酸鹼中和放熱 H⁺+OH⁻→H₂O", "filename": "phychem_vol4_acids_bases.html?v=20260818-palette-v18", "icon": "🔋", "color": "#06b6d4", "trap_tag": "高錯率：強酸稀釋 pH 永遠接近 7 但不可大於 7"}, {"id": "phy_6", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G8 VOL.4", "grade": "國二", "title": "理化八下第 3 章：有機化合物與力學壓力浮力摩擦力", "subtitle": "烴類醇類有機酸酯化反應、皂化鹽析、靜摩擦力最大靜摩擦力動摩擦力、阿基米德浮力定律", "filename": "phychem_vol4_organic_forces.html?v=20260818-palette-v18", "icon": "⚖️", "color": "#06b6d4", "trap_tag": "高錯率：浮體浮力等於物重、沉體浮力等於排開液重"}, {"id": "phy_7", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G9 VOL.5", "grade": "國三", "title": "理化九上第 1 章：直線運動與牛頓三大運動定律", "subtitle": "位置位移速度加速度、x-t 圖 v-t 圖斜率面積物理意義、牛頓第一慣性、第二 F=ma、第三作用反作用", "filename": "phychem_vol5_motion_newton.html?v=20260818-palette-v18", "icon": "🏎️", "color": "#06b6d4", "trap_tag": "高錯率：v-t 圖面積代表位移、作用力反作用力不能抵消"}, {"id": "phy_8", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G9 VOL.5", "grade": "國三", "title": "理化九上第 2 章：功與能、力學能守恆與簡單機械", "subtitle": "作功定義 W=Fs、動能 Ek=1/2 mv²、重力位能 Ep=mgh、力矩平衡、槓桿滑輪輪軸斜面省力不省功", "filename": "phychem_vol5_work_machines.html?v=20260818-palette-v18", "icon": "⚙️", "color": "#06b6d4", "trap_tag": "高錯率：動滑輪省力一半但費距離一倍，任何機械不省功"}, {"id": "phy_9", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G9 VOL.5", "grade": "國三", "title": "理化九上第 3 章：靜電、歐姆定律與電功率", "subtitle": "摩擦起電感應起電、庫侖定律、串聯並聯電流電壓規律、歐姆定律 V=IR、電功率 P=IV=I²R", "filename": "phychem_vol5_electricity_circuits.html?v=20260818-palette-v18", "icon": "💡", "color": "#06b6d4", "trap_tag": "高錯率：並聯電壓相等電阻越並越小、家庭用電為並聯"}, {"id": "phy_10", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G9 VOL.6", "grade": "國三", "title": "理化九下第 1 章：電流磁效應與電磁感應", "subtitle": "厄斯特實驗磁針偏轉、安培右手定則、右手開掌定則磁力方向、法拉第電磁感應冷次定律", "filename": "phychem_vol6_electromagnetism.html?v=20260818-palette-v18", "icon": "🧲", "color": "#06b6d4", "trap_tag": "高錯率：冷次定律感應磁場方向永遠抵抗原磁場變化"}, {"id": "phy_11", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G9 VOL.6", "grade": "國三", "title": "理化九下第 2 章：地球內部構造、板塊運動與岩石地質", "subtitle": "地殼地函地核、聚合型張裂型轉形斷層板塊邊界、中洋脊海溝形成、沈積岩火成岩變質岩三大岩類", "filename": "phychem_vol6_earth_geology.html?v=20260818-palette-v18", "icon": "🌋", "color": "#06b6d4", "trap_tag": "高錯率：中洋脊為張裂型邊界、海溝為聚合型板塊隱沒帶"}, {"id": "phy_12", "subject": "phychem", "subject_name": "理化科", "badge": "PHYCHEM G9 VOL.6", "grade": "國三", "title": "理化九下第 3 章：日月地系統、四季天象與氣候鋒面", "subtitle": "月相盈虧週期（朔望弦月）、日食月食發生條件、地球自轉公轉四季成因、冷鋒暖鋒滯留鋒", "filename": "phychem_vol6_astronomy_climate.html?v=20260818-palette-v18", "icon": "🌙", "color": "#06b6d4", "trap_tag": "高錯率：月食必在滿月望日、日食必在初一新月朔日"}, {"id": "math_1", "subject": "math", "subject_name": "數學科", "badge": "MATH G7 VOL.1", "grade": "國一", "title": "數學七上第一章：整數的運算與數線", "subtitle": "正負數加減乘除、絕對值幾何意義 |a-b|、數線距離、指數律法則 aᵐ·aⁿ=aᵐ⁺ⁿ 與科學記號", "filename": "math_grade7_ch1.html?v=20260818-palette-v18", "icon": "📏", "color": "#6366f1", "trap_tag": "高錯率：(-3)² = 9 vs -3² = -9 負號與括號順序"}, {"id": "math_2", "subject": "math", "subject_name": "數學科", "badge": "MATH G7 VOL.1", "grade": "國一", "title": "數學七上第二章：分數的運算與因數倍數", "subtitle": "質數質因數分解、短除法、最大公因數 GCD、最小公倍數 LCM、分數四則混合運算與倒數", "filename": "math_grade7_ch2.html?v=20260818-palette-v18", "icon": "🔢", "color": "#6366f1", "trap_tag": "高錯率：兩數互質最大公因數為 1、除以分數等於乘以倒數"}, {"id": "math_3", "subject": "math", "subject_name": "數學科", "badge": "MATH G7 VOL.1", "grade": "國一", "title": "數學七上第三章：一元一次方程式", "subtitle": "以文字符號列式代數化簡、等量公理、移項法則變號、未知數解題應用與年齡折扣問題", "filename": "math_grade7_ch3.html?v=20260818-palette-v18", "icon": "🔣", "color": "#6366f1", "trap_tag": "高錯率：移項跨等號要變號、去括號負號分配律"}, {"id": "math_4", "subject": "math", "subject_name": "數學科", "badge": "MATH G7 VOL.2", "grade": "國一", "title": "數學七下第一章：二元一次聯立方程式", "subtitle": "代入消去法、加減消去法、二元一次聯立方程式幾何意義（恰有一解/無解/無限多組解）", "filename": "math_grade7_vol2_ch1.html?v=20260818-palette-v18", "icon": "✖️", "color": "#6366f1", "trap_tag": "高錯率：平行線對應聯立方程式無解、重合線無限多解"}, {"id": "math_5", "subject": "math", "subject_name": "數學科", "badge": "MATH G7 VOL.2", "grade": "國一", "title": "數學七下第二章：直角坐標平面與二元一次方程式圖形", "subtitle": "四個象限符號、坐標軸點特徵、直線方程式 y=ax+b、斜率截距、兩直線交點坐標求法", "filename": "math_grade7_vol2_ch2.html?v=20260818-palette-v18", "icon": "📈", "color": "#6366f1", "trap_tag": "高錯率：x 軸上點坐標為 (x, 0)、鉛直線方程式為 x = c"}, {"id": "math_6", "subject": "math", "subject_name": "數學科", "badge": "MATH G7 VOL.2", "grade": "國一", "title": "數學七下第三章：比例式與正比反比", "subtitle": "比與比值、比例式內項積等於外項積 ad=bc、連比例式、正比 (y=kx) 與反比 (xy=k) 判別應用", "filename": "math_grade7_vol2_ch3.html?v=20260818-palette-v18", "icon": "⚖️", "color": "#6366f1", "trap_tag": "高錯率：反比乘積固定 xy=k，非 y/x=k"}, {"id": "math_7", "subject": "math", "subject_name": "數學科", "badge": "MATH G7 VOL.2", "grade": "國一", "title": "數學七下第四章：一元一次不等式", "subtitle": "不等號符號意涵、不等式基本性質『同乘或同除以負數時不等號必須反轉方向』、數線上圖示", "filename": "math_grade7_vol2_ch4.html?v=20260818-palette-v18", "icon": "⚡", "color": "#6366f1", "trap_tag": "高錯率：同乘負數不等號忘記轉向"}, {"id": "math_8", "subject": "math", "subject_name": "數學科", "badge": "MATH G7 VOL.2", "grade": "國一", "title": "數學七下第五章：統計圖表與資料分析", "subtitle": "次數分配表、直方圖、折線圖、圓形圖比例換算、算術平均數、中位數與眾數判讀", "filename": "math_grade7_vol2_ch5.html?v=20260818-palette-v18", "icon": "📊", "color": "#6366f1", "trap_tag": "高錯率：中位數求法偶數個取中間兩項平均"}, {"id": "math_9", "subject": "math", "subject_name": "數學科", "badge": "MATH G8 VOL.1", "grade": "國二", "title": "數學八上第一章：乘法公式與多項式", "subtitle": "和平方 (a+b)²、差平方 (a-b)²、平方差 (a+b)(a-b)=a²-b²、多項式四則加減乘除長除法", "filename": "math_grade8_vol1_ch1.html?v=20260818-palette-v18", "icon": "✖️", "color": "#6366f1", "trap_tag": "高錯率：(a+b)² = a² + 2ab + b² 漏掉中間 2ab"}, {"id": "math_10", "subject": "math", "subject_name": "數學科", "badge": "MATH G8 VOL.1", "grade": "國二", "title": "數學八上第二章：平方根與畢氏定理", "subtitle": "正負平方根、根號化簡根式四則運算、有理化分母、畢氏定理 a²+b²=c²、空間兩點距離公式", "filename": "math_grade8_vol1_ch2.html?v=20260818-palette-v18", "icon": "📐", "color": "#6366f1", "trap_tag": "高錯率：√a² = |a| 必為非負數、常用畢氏三邊 3-4-5, 5-12-13"}, {"id": "math_11", "subject": "math", "subject_name": "數學科", "badge": "MATH G8 VOL.1", "grade": "國二", "title": "數學八上第三章：因式分解", "subtitle": "提公因式、分組提公因式、利用乘法公式逆運算因式分解、十字交乘法 ax²+bx+c 快速拆解", "filename": "math_grade8_vol1_ch3.html?v=20260818-palette-v18", "icon": "🧩", "color": "#6366f1", "trap_tag": "高錯率：提公因式漏提負號或常數、十字交乘正負號檢驗"}, {"id": "math_12", "subject": "math", "subject_name": "數學科", "badge": "MATH G8 VOL.1", "grade": "國二", "title": "數學八上第四章：一元二次方程式", "subtitle": "十字交乘因式分解求解、配方法步驟化為 (x-h)²=k、二次公式解 x=(-b±√(b²-4ac))/2a、判別式 D 根的性質", "filename": "math_grade8_vol1_ch4.html?v=20260818-palette-v18", "icon": "🎯", "color": "#6366f1", "trap_tag": "高錯率：公式解分母為 2a 常常忘記乘以 a"}, {"id": "math_13", "subject": "math", "subject_name": "數學科", "badge": "MATH G8 VOL.2", "grade": "國二", "title": "數學八下第一章：等差數列與等差級數", "subtitle": "等差第 n 項公式 an=a1+(n-1)d、等差中項 2b=a+c、等差級數求和公式 Sn=n(a1+an)/2=n(2a1+(n-1)d)/2", "filename": "math_grade8_vol2_ch1.html?v=20260818-palette-v18", "icon": "🔢", "color": "#6366f1", "trap_tag": "高錯率：項數 n 算錯少加 1、公差 d 可為負數"}, {"id": "math_14", "subject": "math", "subject_name": "數學科", "badge": "MATH G8 VOL.2", "grade": "國二", "title": "數學八下第二章：平面幾何圖形與尺規作圖", "subtitle": "線段垂直平分線（中垂線）性質、角平分線性質、多邊形內角和 (n-2)×180° 與外角和恆為 360°、尺規作圖四大基本作法", "filename": "math_grade8_vol2_ch2.html?v=20260818-palette-v18", "icon": "📐", "color": "#6366f1", "trap_tag": "高錯率：任意凸多邊形外角和永遠等於 360°，與邊數無關"}, {"id": "math_15", "subject": "math", "subject_name": "數學科", "badge": "MATH G8 VOL.2", "grade": "國二", "title": "數學八下第三章：三角形全等性質與邊角關係", "subtitle": "五大合法全等 SSS/SAS/ASA/AAS/RHS（無 SSA/AAA）、外角定理、三角形兩邊和大於第三邊、大邊對大角", "filename": "math_grade8_vol2_ch3.html?v=20260818-palette-v18", "icon": "🔺", "color": "#6366f1", "trap_tag": "高錯率：SSA 不能證明全等、兩邊之差 < 第三邊 < 兩邊之和"}, {"id": "math_16", "subject": "math", "subject_name": "數學科", "badge": "MATH G8 VOL.2", "grade": "國二", "title": "數學八下第四章：平行線與四邊形", "subtitle": "平行線截角（同位角相等/內錯角相等/同側內角互補）、平行四邊形性質與判定、菱形矩形梯形中位線", "filename": "math_grade8_vol2_ch4.html?v=20260818-palette-v18", "icon": "▱", "color": "#6366f1", "trap_tag": "高錯率：一組對邊平行另一組對邊等長可能為等腰梯形"}, {"id": "math_17", "subject": "math", "subject_name": "數學科", "badge": "MATH G9 VOL.1", "grade": "國三", "title": "數學九上第一章：相似形與比例線段", "subtitle": "平行線截比例線段、相似三角形判定 AA/SAS/SSS、相似形面積比等於邊長平方比、體積比等於邊長立方比", "filename": "math_grade9_vol1_ch1.html?v=20260818-palette-v18", "icon": "📐", "color": "#6366f1", "trap_tag": "高錯率：相似邊長比 1:2 ➔ 面積比 1:4、體積比 1:8"}, {"id": "math_18", "subject": "math", "subject_name": "數學科", "badge": "MATH G9 VOL.1", "grade": "國三", "title": "數學九上第二章：圓形幾何與圓周角", "subtitle": "點線圓位置、弦心距垂直平分弦、切線等長、圓周角等於圓心角一半、弦切角、直徑所對圓周角必為 90°", "filename": "math_grade9_vol1_ch2.html?v=20260818-palette-v18", "icon": "⭕", "color": "#6366f1", "trap_tag": "高錯率：半圓直徑所對圓周角必為 90°、圓外切四邊形對邊和相等"}, {"id": "math_19", "subject": "math", "subject_name": "數學科", "badge": "MATH G9 VOL.1", "grade": "國三", "title": "數學九上第三章：幾何證明與三角形三心", "subtitle": "外心（中垂線交點/到三頂點等距/直角在斜邊中點）、內心（角平分線交點/到三邊等距）、重心（三中線交點 2:1 平分六等分面積）", "filename": "math_grade9_vol1_ch3.html?v=20260818-palette-v18", "icon": "⭐", "color": "#6366f1", "trap_tag": "高錯率：直角三角形外接圓半徑 R = 斜邊/2，內心 r = (股+股-斜)/2"}, {"id": "math_20", "subject": "math", "subject_name": "數學科", "badge": "MATH G9 VOL.2", "grade": "國三", "title": "數學九下第一章：二次函數圖形與極值", "subtitle": "頂點式 y=a(x-h)²+k 平移左加右減上加下減、對稱軸 x=h、判別式與 x 軸交點數、限制區間求最大最小值", "filename": "math_grade9_vol2_ch1.html?v=20260818-palette-v18", "icon": "📈", "color": "#6366f1", "trap_tag": "高錯率：限制區間極值先檢查頂點是否在範圍內"}, {"id": "math_21", "subject": "math", "subject_name": "數學科", "badge": "MATH G9 VOL.2", "grade": "國三", "title": "數學九下第二章：空間與立體幾何圖形", "subtitle": "空間點線面、歪斜線（空間不相交不平行）、柱體體積與表面積、錐體體積 V=1/3 Sh、圓錐展開圖扇形角 θ=360°(r/R)", "filename": "math_grade9_vol2_ch2.html?v=20260818-palette-v18", "icon": "🎲", "color": "#6366f1", "trap_tag": "高錯率：圓錐展開扇形圓心角 θ = 360° × (r/R)"}, {"id": "math_22", "subject": "math", "subject_name": "數學科", "badge": "MATH G9 VOL.2", "grade": "國三", "title": "數學九下第三章：統計盒狀圖與機率", "subtitle": "百分位數、第 1/2/3 四分位數、四分位距 IQR=Q3-Q1、盒狀圖判讀（無法看總人數與平均數）、古典機率與樹狀圖", "filename": "math_grade9_vol2_ch3.html?v=20260818-palette-v18", "icon": "📦", "color": "#6366f1", "trap_tag": "高錯率：盒狀圖只能看百分比分佈，無法看出全班總人數或平均分數"}, {"id": "soc_1", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G7 (VOL.1-2)", "grade": "國一", "title": "社會七年級：台灣歷史特訓 (寶島史詩)", "subtitle": "史前十三行鐵器、大航海荷西鄭氏屯田、清領開港茶糖樟腦順差北移、日治三大時期與戰後民主化", "filename": "social_history_taiwan.html?v=20260818-palette-v18", "icon": "🏝️", "color": "#f59e0b", "trap_tag": "高錯率：清領開港後貿易出超帶動政經重心北移"}, {"id": "soc_2", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G7 (VOL.1-2)", "grade": "國一", "title": "社會七年級：台灣地理特訓 (翠綠寶島)", "subtitle": "北回歸線 23.5°N 劃分熱帶副熱帶、五大地形與四大海岸、東北西南季風地形雨對流雨、荒溪型河川與超高齡指標", "filename": "social_geography_taiwan.html?v=20260818-palette-v18", "icon": "🗺️", "color": "#f59e0b", "trap_tag": "高錯率：西海岸為淤積平直沙岸缺乏天然良港"}, {"id": "soc_3", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G7 (VOL.1-2)", "grade": "國一", "title": "社會七年級：台灣公民特訓 (公民法治)", "subtitle": "配偶血親姻親計算、家暴法民事保護令由法院核發、四大社會規範（法律具公權力）、性別平權與兒少法", "filename": "social_civics_taiwan.html?v=20260818-palette-v18", "icon": "⚖️", "color": "#f59e0b", "trap_tag": "高錯率：保護令一律由地方法院法官核發，非警察局"}, {"id": "soc_4", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G8 (VOL.3-4)", "grade": "國二", "title": "社會八年級：東亞歷史特訓 (華夏古風)", "subtitle": "西周宗法嫡長子、秦郡縣中央集權、漢武帝鹽鐵尊儒、魏晉九品門閥、唐宋打破坊市夜市、近代不平等條約", "filename": "social_history_eastasia.html?v=20260818-palette-v18", "icon": "📜", "color": "#f59e0b", "trap_tag": "高錯率：割讓台灣澎湖是甲午馬關條約，非鴉片戰爭南京條約"}, {"id": "soc_5", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G8 (VOL.3-4)", "grade": "國二", "title": "社會八年級：東亞地理特訓 (萬里江山)", "subtitle": "中國三級階梯大興安嶺太行山、秦嶺淮河五大分界（1月0°C/年雨量750mm/水田旱作）、四大地理區與三大經濟圈", "filename": "social_geography_eastasia.html?v=20260818-palette-v18", "icon": "🏞️", "color": "#f59e0b", "trap_tag": "高錯率：秦嶺淮河以南水田水稻河流不結冰"}, {"id": "soc_6", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G8 (VOL.3-4)", "grade": "國二", "title": "社會八年級：政治體制與法律制度 (憲政正義)", "subtitle": "五院職權分工、立法院不信任案與行政院覆議、憲法四大基本人權、民法18歲成年、刑法年齡、訴願行政訴訟", "filename": "social_civics_law_politics.html?v=20260818-palette-v18", "icon": "🏛️", "color": "#f59e0b", "trap_tag": "高錯率：不服行政處分必須先提訴願才能打行政訴訟"}, {"id": "soc_7", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G9 (VOL.5-6)", "grade": "國三", "title": "社會九年級：世界歷史特訓 (全球文明)", "subtitle": "兩河美索不達米亞陰曆 vs 埃及太陽曆、希臘雅典民主、羅馬十二木表法、文藝復興人文主義、大航海與啟蒙運動", "filename": "social_history_world.html?v=20260818-palette-v18", "icon": "🌍", "color": "#f59e0b", "trap_tag": "高錯率：兩河流域氾濫無常悲觀重現世、埃及相信來世復活"}, {"id": "soc_8", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G9 (VOL.5-6)", "grade": "國三", "title": "社會九年級：世界地理特訓 (環球地圖)", "subtitle": "西歐溫帶海洋性氣候全年有雨 vs 南歐地中海型氣候夏乾冬雨、美國農業專業帶、中東石油缺水、全球環境SDGs", "filename": "social_geography_world.html?v=20260818-palette-v18", "icon": "🌐", "color": "#f59e0b", "trap_tag": "高錯率：地中海型氣候夏季受副熱帶高壓籠罩乾燥少雨"}, {"id": "soc_9", "subject": "social", "subject_name": "社會科", "badge": "SOCIAL G9 (VOL.5-6)", "grade": "國三", "title": "社會九年級：經濟生活與全球化 (經濟天秤)", "subtitle": "機會成本（放棄的最高價值不可相加）、比較利益法則、供需均衡價格調整、外部成本課稅、貨幣功能與WTO", "filename": "social_civics_economics_global.html?v=20260818-palette-v18", "icon": "💰", "color": "#f59e0b", "trap_tag": "高錯率：機會成本是放棄選擇中的「最高價值一項」，絕非全部相加"}, {"id": "chi_1", "subject": "chinese", "subject_name": "國文科", "badge": "CHINESE LITERACY", "grade": "國中全", "title": "國文會考核心 1：字音字形與成語辨析", "subtitle": "多音字破音字讀音、形近字挑錯、通假字、成語褒貶情境誤用（差強人意、罪不容誅、貽笑大方）", "filename": "chinese_words_idioms.html?v=20260818-palette-v18", "icon": "📖", "color": "#fb923c", "trap_tag": "高錯率：「差強人意」指大體上還算令人滿意，絕非非常差！"}, {"id": "chi_2", "subject": "chinese", "subject_name": "國文科", "badge": "CHINESE LITERACY", "grade": "國中全", "title": "國文會考核心 2：六書造字與語法修辭", "subtitle": "象形指事會意形聲造字法則、詞性轉品、修辭手法（互文見義、倒裝句、轉化擬人、映襯對比、雙關）", "filename": "chinese_grammar_rhetoric.html?v=20260818-palette-v18", "icon": "✍️", "color": "#fb923c", "trap_tag": "高錯率：「將軍百戰死壯士十年歸」為互文修辭，語意相互補充"}, {"id": "chi_3", "subject": "chinese", "subject_name": "國文科", "badge": "CHINESE LITERACY", "grade": "國中全", "title": "國文會考核心 3：古典詩詞曲與韻文格律", "subtitle": "古體詩 vs 近體詩（絕句律詩偶數句必押韻、律詩頷聯頸聯必對仗）、詞牌曲牌長短句、唐宋八大家與季節意象", "filename": "chinese_classical_poetry.html?v=20260818-palette-v18", "icon": "📜", "color": "#fb923c", "trap_tag": "高錯率：律詩第三四句(頷聯)與第五六句(頸聯)規定必須嚴格對仗"}, {"id": "chi_4", "subject": "chinese", "subject_name": "國文科", "badge": "CHINESE LITERACY", "grade": "國中全", "title": "國文會考核心 4：應用文題辭對聯與書信", "subtitle": "書信稱謂家大舍小令他人、信封啟封詞（道啟/鈞啟，長輩禁敬啟）、題辭（弄璋男/弄瓦女/杏林醫）、對聯仄起平收", "filename": "chinese_practical_letters.html?v=20260818-palette-v18", "icon": "✉️", "color": "#fb923c", "trap_tag": "高錯率：信封給長輩絕對不可寫「敬啟」！對聯上聯末字必為仄聲"}, {"id": "chi_5", "subject": "chinese", "subject_name": "國文科", "badge": "CHINESE LITERACY", "grade": "國中全", "title": "國文會考核心 5：國學常識與古典小說名著", "subtitle": "先秦諸子（儒仁墨兼愛道無為法刑名）、四書五經、史書體裁（紀傳體史記/編年體資治通鑑）、四大奇書水滸三國西遊紅樓", "filename": "chinese_literary_classics.html?v=20260818-palette-v18", "icon": "📚", "color": "#fb923c", "trap_tag": "高錯率：司馬遷《史記》為紀傳體通史之祖，班固《漢書》為斷代史之祖"}, {"id": "chi_6", "subject": "chinese", "subject_name": "國文科", "badge": "CHINESE LITERACY", "grade": "國中全", "title": "國文會考核心 6：現代閱讀理解與跨領域素養", "subtitle": "白話文章主旨推論、現代新詩意象詮釋、跨領域圖表營養標示計算、科普短文訊息評估與素養長文拆解", "filename": "chinese_reading_comprehension.html?v=20260818-palette-v18", "icon": "🔍", "color": "#fb923c", "trap_tag": "高錯率：圖表題看清包裝總份數，小心份量倍數陷阱！"}, {"id": "eng_1", "subject": "english", "subject_name": "英文科", "badge": "ENGLISH G7-G9", "grade": "國中全", "title": "英語會考核心 1：文法時態與被動語態", "subtitle": "現在完成式 have/has+p.p. (since/for/already/yet)、被動語態 be+p.p.、條件子句現在代未來、情態助動詞", "filename": "english_grammar_tenses.html?v=20260818-palette-v18", "icon": "🔤", "color": "#38bdf8", "trap_tag": "高錯率：since 接過去時間點主句必用現在完成式；happen 為不及物無被動"}, {"id": "eng_2", "subject": "english", "subject_name": "英文科", "badge": "ENGLISH G7-G9", "grade": "國中全", "title": "英語會考核心 2：關係代名詞與三大子句", "subtitle": "關代 who/which/that/whose、that 兩大禁忌（禁介系詞與逗號後）、名詞子句間接問句 S+V 語序、Although 禁與 but 共存", "filename": "english_clauses_relatives.html?v=20260818-palette-v18", "icon": "🔗", "color": "#38bdf8", "trap_tag": "高錯率：that 前面絕不能有介系詞或逗號；間接問句一律用直述句語序"}, {"id": "eng_3", "subject": "english", "subject_name": "英文科", "badge": "ENGLISH G7-G9", "grade": "國中全", "title": "英語會考核心 3：特殊動詞與動名詞不定詞", "subtitle": "使役動詞 make/let/have+原形、感官動詞 see/hear+原形/Ving、四大花費 spend(人)/cost(物)/take(時間)/pay(人)、介系詞後必接 Ving", "filename": "english_verbs_gerunds.html?v=20260818-palette-v18", "icon": "⚡", "color": "#38bdf8", "trap_tag": "高錯率：人當主詞花時間用 spend+Ving，事情當主詞用 It takes+to V"}, {"id": "eng_4", "subject": "english", "subject_name": "英文科", "badge": "ENGLISH G7-G9", "grade": "國中全", "title": "英語會考核心 4：核心單字辨析與片語搭配", "subtitle": "1200 高頻單字、易混淆字詞 borrow(借入)/lend(借出)、rise(自己升起)/raise(舉起)、lie(躺)/lay(放)、動詞片語 look it up", "filename": "english_vocab_idioms.html?v=20260818-palette-v18", "icon": "📚", "color": "#38bdf8", "trap_tag": "高錯率：lie (躺下) 過去式為 lay，lay (放置) 過去式為 laid"}, {"id": "eng_5", "subject": "english", "subject_name": "英文科", "badge": "ENGLISH G7-G9", "grade": "國中全", "title": "英語會考核心 5：克漏字技巧與介系詞邏輯", "subtitle": "時間介系詞 at(點)/on(日)/in(月年)、空間介系詞、篇章轉折詞 However/Therefore/In addition、分詞構句前後文線索", "filename": "english_cloze_prepositions.html?v=20260818-palette-v18", "icon": "🧩", "color": "#38bdf8", "trap_tag": "高錯率：星期配早晨用 on Monday morning，不可用 in"}, {"id": "eng_6", "subject": "english", "subject_name": "英文科", "badge": "ENGLISH G7-G9", "grade": "國中全", "title": "英語會考核心 6：生活情境圖表與長篇閱讀素養", "subtitle": "菜單折扣計算（half price 半價）、時刻表計算、海報廣告條件篩選、長篇主旨推論 (Main Idea) 與代名詞指涉", "filename": "english_reading_literacy.html?v=20260818-palette-v18", "icon": "🔍", "color": "#38bdf8", "trap_tag": "高錯率：圖表題半價或買一送一數量要核算清楚；主旨題抓轉折詞 However"},{"id":"earth_1","subject":"earth","subject_name":"地球科學","badge":"EARTH SCIENCE VOL.1","grade":"國三","title":"地科第一冊：地球構造、岩石與板塊運動","subtitle":"地球內部構造、三大岩類、板塊邊界、地震、火山、沉積與地質判讀","filename":"earth_science_vol1.html?v=20260818-palette-v18","icon":"🌋","color":"#0f766e","trap_tag":"圖表實驗題：地層、板塊與沉積判讀"},{"id":"earth_2","subject":"earth","subject_name":"地球科學","badge":"EARTH SCIENCE VOL.2","grade":"國三","title":"地科第二冊：天文、天氣與氣候系統","subtitle":"日地月運動、月相與食象、四季、氣團鋒面、天氣圖及氣候變遷","filename":"earth_science_vol2.html?v=20260818-palette-v18","icon":"🌦️","color":"#0284c7","trap_tag":"圖表實驗題：天氣圖、月相與氣候資料"}];
+        let currentSubject = 'all';
+        let searchQuery = '';
+
+        function renderModules() {
+            const grid = document.getElementById('modulesGrid');
+            const filtered = allModules.filter(m => {
+                const matchSubject = (currentSubject === 'all' || m.subject === currentSubject);
+                const matchSearch = (!searchQuery || 
+                    m.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    m.subtitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    m.trap_tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    m.subject_name.includes(searchQuery) ||
+                    m.grade.includes(searchQuery)
+                );
+                return matchSubject && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div class="no-result">沒有找到符合搜尋條件的單元，請嘗試其他關鍵字。</div>';
+                return;
+            }
+
+            grid.innerHTML = filtered.map(m => `
+                <a href="${m.filename}" class="m-card">
+                    <div class="m-card-header">
+                        <span class="m-badge" style="color: ${m.color}; background: ${m.color}18;">${m.badge}</span>
+                        <span class="m-icon">${m.icon}</span>
+                    </div>
+                    <div class="m-title">${m.title}</div>
+                    <div class="m-desc">${m.subtitle}</div>
+                    <div class="m-trap">
+                        <span>⚠️</span>
+                        <span>${m.trap_tag}</span>
+                    </div>
+                    <div class="m-footer">
+                        <span class="m-grade">${m.grade} · ${m.subject_name}</span>
+                        <span class="m-btn">進入特訓 ➔</span>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function filterSubject(subject, btn) {
+            currentSubject = subject;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderModules();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.trim();
+            renderModules();
+        }
+
+        // Initial render
+        renderModules();
+    </script></body>
+</html>
