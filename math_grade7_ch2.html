@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中數學七上：分數的運算與因數倍數 | 水晶幾何礦山</title>
+  <meta name="description" content="國中數學翰林版七上第二章（2-1~2-4）：質因數分解、最大公因數最小公倍數、分數加減乘除、分數指數律。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Cinzel:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap">
+  <style>
+    :root {
+      --bg-crystal: #0f172a;
+      --bg-card: #1e293b;
+      --bg-surface: #334155;
+      --color-gem-cyan: #38bdf8;
+      --color-gem-purple: #c084fc;
+      --color-gem-emerald: #34d399;
+      --color-gem-amber: #fbbf24;
+      --color-gem-rose: #f43f5e;
+      --color-text: #f8fafc;
+      --font-cinzel: 'Cinzel', serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #1e1b4b 0%, #09090b 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-gem-cyan);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(15, 23, 42, 0.95);
+      border-bottom: 2px solid var(--color-gem-cyan); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-gem-cyan); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .gem-bar { flex: 1; height: 12px; background: #0b0f19; border: 1px solid var(--color-gem-cyan); border-radius: 3px; position: relative; overflow: hidden; }
+    .gem-bar-fill { height: 100%; background: linear-gradient(90deg, #38bdf8, #c084fc); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-gem-cyan); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-gem-cyan); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-gem-cyan); box-shadow: 0 0 8px var(--color-gem-cyan); }
+    .progress-dot.cleared { background: var(--color-gem-emerald); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-gem-cyan); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #bae6fd; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-gem-amber); }
+    .btn-crystal-icon { background: var(--bg-surface); border: 1px solid var(--color-gem-cyan); color: var(--color-gem-cyan); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .crystal-arena {
+      flex: 1.1; background: linear-gradient(180deg, #09090b 0%, #1e293b 100%);
+      border: 1.5px solid #334155; border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-gem-cyan);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(15, 23, 42, 0.9); border: 1px solid var(--color-gem-cyan); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatGem 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .crystal-board-container { height: 75px; background: var(--bg-surface); border: 1px solid #334155; border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .crystal-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-gem-cyan); margin-bottom: 2px; }
+    .crystal-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #crystal-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid #334155; border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(56, 189, 248, 0.15); color: var(--color-gem-cyan); border: 1px solid var(--color-gem-cyan); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .crystal-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid #334155; border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left; font-family: var(--font-mono), var(--font-chinese);
+    }
+    .crystal-btn:hover { background: #3b4252; border-color: var(--color-gem-cyan); transform: translateY(-1px); }
+    .crystal-btn .btn-key { width: 26px; height: 26px; background: #0f172a; color: var(--color-gem-cyan); border: 1px solid var(--color-gem-cyan); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .crystal-btn.btn-correct { background: rgba(52, 211, 153, 0.25) !important; border-color: var(--color-gem-emerald) !important; color: #86efac !important; }
+    .crystal-btn.btn-wrong { background: rgba(244, 63, 94, 0.25) !important; border-color: var(--color-gem-rose) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(15, 23, 42, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .crystal-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-gem-cyan); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-gem-cyan); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-gem-cyan); }
+    .misconception-box { background: rgba(244, 63, 94, 0.15); border-left: 4px solid var(--color-gem-rose); border-radius: 4px; padding: 10px 14px; font-size: 15px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 12px 14px; font-size: 15px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-gem-cyan); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-gem-purple); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-gem-cyan); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-crystal { background: var(--color-gem-cyan); color: #0f172a; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-cinzel); cursor: pointer; box-shadow: 0 0 20px rgba(56, 189, 248, 0.4); }
+    @keyframes floatGem { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:MATH_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let timer;const renderMath=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(renderMath).observe(document.body,{subtree:true,childList:true,characterData:true});renderMath()});
+</script>
+<!-- END:MATH_FORMULA_RENDER_V1 -->
+<!-- BEGIN:MATH_QUESTION_BOX_V2 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box{background:#ffffff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important;overflow-y:visible!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;font-weight:650!important;line-height:1.75!important;letter-spacing:.01em!important;text-align:left!important;color:#111827!important;-webkit-text-fill-color:#111827!important;white-space:normal!important;overflow-wrap:anywhere!important}
+mjx-container{color:#111827!important;font-size:108%!important;max-width:100%!important}
+mjx-container[display="true"]{margin:.55em 0!important;overflow-x:auto!important;overflow-y:hidden!important;padding:.15em 0!important}
+#options-grid button mjx-container,.options-grid button mjx-container{font-size:105%!important;margin:0 .08em!important}
+#modal-content mjx-container,.dialog-content mjx-container{color:#111827!important}
+@media(max-width:700px){#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box{padding:14px 14px!important}#formula-text,.formula-text,#question-text,.question-text{font-size:18px!important;line-height:1.65!important}}
+</style>
+<!-- END:MATH_QUESTION_BOX_V2 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>💎</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-gem-cyan); font-size:10px;">FRACTION</span>
+            <div class="gem-bar"><div id="player-hp-bar" class="gem-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-gem-cyan);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-gem-purple); font-size:10px;">MATH G7 CH2</span>
+            <span style="font-size:10px; color:#bae6fd;">FACTORS & FRACTIONS</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 質因數分解與公因數公倍數</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-crystal-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="crystal-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🧙‍♂️</span></div>
+          <div class="char-nametag">因數結晶術士</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">💎</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-gem-purple);">最大公因數石像怪</div>
+          <div class="monster-hp-wrap">
+            <div class="gem-bar" style="height:8px;"><div id="monster-hp-bar" class="gem-bar-fill" style="width: 100%; background:var(--color-gem-rose);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="crystal-board-container">
+        <div class="crystal-board-header">
+          <span>💎 短除法・最大公因數 (a, b)・最小公倍數 [a, b]・分數通分乘除四則圖解</span>
+          <span style="color:var(--color-gem-cyan); font-size:10px;">★ 幾何因數儀表</span>
+        </div>
+        <div class="crystal-canvas-wrap"><canvas id="crystal-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#bae6fd;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入因數倍數核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="crystal-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">💎</span>
+          <div id="modal-title" class="dialog-title">分數幾何診斷：觀念拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-crystal" style="font-size:13px; padding:6px 20px;">融會貫通，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">💎✨</div>
+      <h1 class="game-title-main">國中數學七上：分數的運算與因數倍數</h1>
+      <h2 class="game-subtitle">★ 翰林版七上第二章（2-1 至 2-4）全單元水晶特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-gem-cyan);">【四大分數因數核心領域】：</strong>
+        <ul>
+          <li>💎 <strong>Level 1 質因數分解與因倍數 (2-1)</strong>：標準分解式、最大公因數 $(a, b)$ 取共同質因數最低次方、最小公倍數 $[a, b]$。</li>
+          <li>➕ <strong>Level 2 分數的加減法與通分 (2-2)</strong>：異分母分數加減通分、帶分數與假分數換算、負分數加減去括號。</li>
+          <li>✖️ <strong>Level 3 分數的乘除法與倒數 (2-3)</strong>：分子乘分子/分母乘分母、除以一個分數等於乘以其倒數、負負得正。</li>
+          <li>🔢 <strong>Level 4 分數的指數律與四則運算 (2-4)</strong>：$(\frac{a}{b})^n = \frac{a^n}{b^n}$、先乘除後加減、括號優先法則。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-crystal">進入水晶礦山 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆👑</div>
+      <h1 class="game-title-main" style="color:var(--color-gem-emerald);">CRYSTAL MATRIX CLEAR!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通七上數學第二章因數倍數與分數全考點！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-gem-cyan);">【七上分數運算特級大宗師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-gem-emerald); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-crystal">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥💎</div>
+      <h1 class="game-title-main" style="color:var(--color-gem-rose);">水晶碎裂！</h1>
+      <h2 class="game-subtitle">公因數或分數四則計算有誤，聚能後重新再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-crystal" style="background:var(--color-gem-rose); color:#fff;">重新聚能 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class CrystalAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'triangle', 0.08, 0); this.playTone(659.25, 'triangle', 0.1, 0.06); this.playTone(1046.50, 'triangle', 0.2, 0.12); }
+      playWrong() { this.playTone(220, 'sawtooth', 0.15, 0); this.playTone(146.83, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(440, 'square', 0.08, 0); this.playTone(880, 'sine', 0.1, 0.04); }
+      playLevelUp() { [523.25, 659.25, 783.99, 1046.50].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new CrystalAudioEngine();
+
+    class CrystalVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawGCD(ctx, w, h);
+        else if (level === 2) this.drawAddSub(ctx, w, h);
+        else if (level === 3) this.drawMulDiv(ctx, w, h);
+        else this.drawPower(ctx, w, h);
+      }
+      drawGCD(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#38bdf8"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("💎 標準分解式取法： (a, b) 最大公因數 ➔ 取『共同質因數的最低次方』", midX, h / 2 - 4);
+        ctx.fillStyle = "#c084fc";
+        ctx.fillText("[a, b] 最小公倍數 ➔ 取『所有出現過的質因數的最高次方』", midX, h / 2 + 12);
+      }
+      drawAddSub(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#34d399"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("➕ 異分母加減核心： 通分 (找分母的最小公倍數) ➔ 分子相加減，最後化為最簡分數", midX, h / 2 - 4);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText("去括號法則： a - (b - c) = a - b + c ｜ 負負得正", midX, h / 2 + 12);
+      }
+      drawMulDiv(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#38bdf8"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("✖️ 分數乘除法法則： (a/b) × (c/d) = (a×c)/(b×d) (先約分再相乘)", midX, h / 2 - 4);
+        ctx.fillStyle = "#f43f5e";
+        ctx.fillText("除法轉乘法倒數： (a/b) ÷ (c/d) = (a/b) × (d/c) (倒數乘積等於 1)", midX, h / 2 + 12);
+      }
+      drawPower(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#c084fc"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🔢 分數指數律： (a/b)ⁿ = aⁿ / bⁿ ｜ (-2/3)² = 4/9 (偶次方為正) ｜ (-2/3)³ = -8/27 (奇次方為負)", midX, h / 2 - 4);
+        ctx.fillStyle = "#34d399";
+        ctx.fillText("運算順序： 括號內 ➔ 次方乘方 ➔ 乘除 ➔ 加減 (由左至右)", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 質因數分解與因倍數 (2-1)",
+        monsterName: "標準分解魔",
+        monsterEmoji: "💎",
+        questions: [
+          {
+            formula: "將整數 360 做質因數分解，寫成『標準分解式』應為下列何者？",
+            options: ["$2^3 \\times 3^2 \\times 5$", "$2^2 \\times 3^3 \\times 5$", "$2^3 \\times 3 \\times 5^2$", "$4 \\times 9 \\times 10$"],
+            correct: "$2^3 \\times 3^2 \\times 5$",
+            hint: "360 = 36 × 10 = (4 × 9) × (2 × 5) = (2² × 3²) × (2 × 5) = 2³ × 3² × 5。",
+            misconceptions: {
+              "$4 \\times 9 \\times 10$": "【標準分解式底數必須是質數】4, 9, 10 都是合數！必須拆解為質數底數：【$2^3 \\times 3^2 \\times 5$】！"
+            },
+            explanation: "$360 = 8 \\times 9 \\times 5 = 2^3 \\times 3^2 \\times 5$。底數 2, 3, 5 皆為質數。"
+          },
+          {
+            formula: "已知 $a = 2^3 \\times 3^2 \\times 5$，$b = 2^2 \\times 3^4 \\times 7$。試求 $a$ 與 $b$ 的『最大公因數 $(a, b)$』為何？",
+            options: ["$2^2 \\times 3^2$ (即 36)", "$2^3 \\times 3^4 \\times 5 \\times 7$", "$2^2 \\times 3^4$", "$2^3 \\times 3^2$"],
+            correct: "$2^2 \\times 3^2$ (即 36)",
+            hint: "最大公因數：取『共同有的質因數』且取『較低次方』➔ 2 取 2 次方，3 取 2 次方。故 (a, b) = 2² × 3² = 36。",
+            misconceptions: {
+              "$2^3 \\times 3^4 \\times 5 \\times 7$": "【最大公因數 vs 最小公倍數】這是『最小公倍數 $[a, b]$』！【最大公因數 $(a, b)$ 只能取共同有的質因數之最低次方】＝$2^2 \\times 3^2 = 36$！"
+            },
+            explanation: "最大公因數取共同質因數最低次方：$(a, b) = 2^{\\min(3,2)} \\times 3^{\\min(2,4)} = 2^2 \\times 3^2 = 36$。"
+          },
+          {
+            formula: "若兩個正整數 $a$ 與 $b$ 的最大公因數 $(a, b) = 1$，則稱 $a$ 與 $b$ 具有何種關係？下列哪一組數『互質』？",
+            options: ["兩數『互質』；8 與 15 互質（$(8, 15) = 1$）", "兩數皆為質數；9 與 12 互質", "兩數為倍數關係；14 與 21 互質", "8 與 15 不是互質因為兩者都是合數"],
+            correct: "兩數『互質』；8 與 15 互質（$(8, 15) = 1$）",
+            hint: "互質的定義是『最大公因數為 1』！8（2³）與 15（3×5）無共同質因數，故 (8, 15) = 1 互質。",
+            misconceptions: {
+              "兩數皆為質數；9 與 12 互質": "【互質不代表兩數都要是質數】合數之間也可以互質！8 與 15 雖都是合數，但因 $(8, 15) = 1$，故【8 與 15 互質】。"
+            },
+            explanation: "互質定義：公因數只有 1 的兩正整數。8 的因數為 1,2,4,8；15 的因數為 1,3,5,15，最大公因數為 1，故互質。"
+          },
+          {
+            formula: "某車站每 12 分鐘發出一班甲線公車，每 18 分鐘發出一班乙線公車。若上午 8:00 兩線公車同時發車，試問下一次兩線公車『同時發車』的最早時間為何？",
+            options: ["上午 8:36（求最小公倍數 $[12, 18] = 36$ 分鐘）", "上午 8:18", "上午 9:00", "上午 8:30"],
+            correct: "上午 8:36（求最小公倍數 $[12, 18] = 36$ 分鐘）",
+            hint: "[12, 18] = 36 分鐘。8:00 + 36 分鐘 = 8:36。",
+            misconceptions: {
+              "上午 9:00": "【最小公倍數應用】12 與 18 的最小公倍數為 $[12, 18] = 36$ 分鐘！8:00 加上 36 分鐘為【8:36】，非 60 分鐘！"
+            },
+            explanation: "週期重合問題取最小公倍數：$[12, 18] = [2^2 \\times 3, 2 \\times 3^2] = 2^2 \\times 3^2 = 36$ 分鐘。發車時間為 8:36。"
+          },
+          {
+            formula: "已知三位數 $5\\Box 2$ 是 9 的倍數，則空格 $\\Box$ 內應填入的數字為何？（9 的倍數判別法）",
+            options: ["2（因為 $5 + 2 + 2 = 9$ 為 9 的倍數）", "4", "0", "9"],
+            correct: "2（因為 $5 + 2 + 2 = 9$ 為 9 的倍數）",
+            hint: "9 的倍數判別法：各個數字和是 9 的倍數。5 + 口 + 2 = 7 + 口 ➔ 口 = 2（使和為 9）。",
+            misconceptions: {
+              "4": "【9的倍數判別法】數字總和 $5 + \\Box + 2 = 7 + \\Box$ 必須是 9 的倍數！令 $7 + \\Box = 9 \\Rightarrow \\Box = 2$。"
+            },
+            explanation: "9 之倍數特性：各數位數字和必為 9 之倍數。$5 + x + 2 = 7 + x = 9 \\Rightarrow x = 2$。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 分數的加減法與通分 (2-2)",
+        monsterName: "異分母混沌怪",
+        monsterEmoji: "➕",
+        questions: [
+          {
+            formula: "計算 $\\frac{5}{6} - \\frac{3}{8}$ 的值為何？（通分運算）",
+            options: ["$\\frac{11}{24}$", "$\\frac{2}{24}$", "$\\frac{1}{12}$", "$\\frac{2}{-2}$"],
+            correct: "$\\frac{11}{24}$",
+            hint: "6 與 8 的最小公倍數是 24。5/6 = 20/24，3/8 = 9/24。20/24 - 9/24 = 11/24。",
+            misconceptions: {
+              "$\\frac{2}{24}$": "【異分母通分不可直接分子減分子分母減分母】6與8通分為24：$\\frac{20}{24} - \\frac{9}{24} = \\frac{11}{24}$！"
+            },
+            explanation: "通分計算：$[6, 8] = 24$。$\\frac{5 \\times 4}{6 \\times 4} - \\frac{3 \\times 3}{8 \\times 3} = \\frac{20}{24} - \\frac{9}{24} = \\frac{11}{24}$。"
+          },
+          {
+            formula: "計算 $\\left(-\\frac{2}{3}\\right) + \\left(-\\frac{3}{4}\\right)$ 的結果為何？",
+            options: ["$-\\frac{17}{12}$ (即 $-1\\frac{5}{12}$)", "$-\\frac{5}{7}$", "$\\frac{1}{12}$", "$-\\frac{1}{12}$"],
+            correct: "$-\\frac{17}{12}$ (即 $-1\\frac{5}{12}$)",
+            hint: "同號數相加取同號（負）：-(2/3 + 3/4) = -(8/12 + 9/12) = -17/12。",
+            misconceptions: {
+              "$-\\frac{5}{7}$": "【絕對不可分母加分母】分母 3 與 4 必須通分為 12！$-\\frac{8}{12} - \\frac{9}{12} = -\\frac{17}{12}$！"
+            },
+            explanation: "同號負數相加：$-\\left(\\frac{8}{12} + \\frac{9}{12}\\right) = -\\frac{17}{12} = -1\\frac{5}{12}$。"
+          },
+          {
+            formula: "計算 $\\frac{7}{15} - \\left(-\\frac{4}{5}\\right)$ 的值為何？（去括號負負得正）",
+            options: ["$\\frac{19}{15}$ (即 $1\\frac{4}{15}$)", "$-\\frac{1}{3}$", "$\\frac{3}{15}$", "$-\\frac{19}{15}$"],
+            correct: "$\\frac{19}{15}$ (即 $1\\frac{4}{15}$)",
+            hint: "減去負數等於加上正數：7/15 + 4/5 = 7/15 + 12/15 = 19/15。",
+            misconceptions: {
+              "$-\\frac{1}{3}$": "【去括號負負得正】$-(-\\frac{4}{5}) = +\\frac{4}{5} = +\\frac{12}{15}$！$\\frac{7}{15} + \\frac{12}{15} = \\frac{19}{15}$！"
+            },
+            explanation: "負負得正：$\\frac{7}{15} - \\left(-\\frac{4}{5}\\right) = \\frac{7}{15} + \\frac{12}{15} = \\frac{19}{15} = 1\\frac{4}{15}$。"
+          },
+          {
+            formula: "下列哪一個數是 $-\\frac{3}{5}$ 的『相反數』？哪一個是其『倒數』？",
+            options: ["相反數為 $\\frac{3}{5}$；倒數為 $-\\frac{5}{3}$", "相反數為 $-\\frac{5}{3}$；倒數為 $\\frac{3}{5}$", "相反數為 $\\frac{5}{3}$；倒數為 $\\frac{5}{3}$", "兩者皆為 $\\frac{3}{5}$"],
+            correct: "相反數為 $\\frac{3}{5}$；倒數為 $-\\frac{5}{3}$",
+            hint: "相反數：變號 ➔ +3/5；倒數：分子分母顛倒（正負號不變） ➔ -5/3。",
+            misconceptions: {
+              "相反數為 $-\\frac{5}{3}$；倒數為 $\\frac{3}{5}$": "【相反數 vs 倒數定義區分】相反數是【改變正負號（$+3/5$）】；倒數是【分子分母上下對調（$-5/3$，符號維持負號）】！"
+            },
+            explanation: "相反數定義 $a + (-a) = 0 \\Rightarrow -(-3/5) = 3/5$；倒數定義 $a \\times \\frac{1}{a} = 1 \\Rightarrow -3/5 \\times (-5/3) = 1$。"
+          },
+          {
+            formula: "計算 $2\\frac{1}{3} - 3\\frac{3}{4}$ 的值為何？",
+            options: ["$-1\\frac{5}{12}$", "$1\\frac{5}{12}$", "$-1\\frac{2}{1}$", "$-\\frac{17}{12}$"],
+            correct: "$-1\\frac{5}{12}$",
+            hint: "2 + 1/3 = 7/3 = 28/12。3 + 3/4 = 15/4 = 45/12。28/12 - 45/12 = -17/12 = -1又5/12。",
+            misconceptions: {
+              "$1\\frac{5}{12}$": "【小數減大數為負】$2\\frac{1}{3} < 3\\frac{3}{4}$，相減結果必為【負數】！$\\frac{28}{12} - \\frac{45}{12} = -\\frac{17}{12} = -1\\frac{5}{12}$。"
+            },
+            explanation: "化假分數計算：$\\frac{7}{3} - \\frac{15}{4} = \\frac{28 - 45}{12} = -\\frac{17}{12} = -1\\frac{5}{12}$。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 分數的乘除法與倒數 (2-3)",
+        monsterName: "乘除倒數精靈",
+        monsterEmoji: "✖️",
+        questions: [
+          {
+            formula: "計算 $\\left(-\\frac{8}{15}\\right) \\times \\left(-\\frac{25}{16}\\right)$ 的值為何？（負負得正與約分）",
+            options: ["$\\frac{5}{6}$", "$-\\frac{5}{6}$", "$\\frac{125}{120}$", "$\\frac{1}{2}$"],
+            correct: "$\\frac{5}{6}$",
+            hint: "負負得正。交叉約分：8 與 16 約成 1 與 2；15 與 25 約成 3 與 5。結果 = (1×5) / (3×2) = 5/6。",
+            misconceptions: {
+              "$-\\frac{5}{6}$": "【符號法則：負負得正】兩個負數相乘結果必為【正數】！約分後為 $+\\frac{5}{6}$！"
+            },
+            explanation: "符號與約分：$(-1) \\times (-1) = +1$。$\\frac{8}{15} \\times \\frac{25}{16} = \\frac{1 \\times 5}{3 \\times 2} = \\frac{5}{6}$。"
+          },
+          {
+            formula: "計算 $\\frac{9}{14} \\div \\left(-\\frac{3}{7}\\right)$ 的值為何？（除法轉乘以倒數）",
+            options: ["$-\\frac{3}{2}$ (即 $-1\\frac{1}{2}$)", "$\\frac{3}{2}$", "$-\\frac{27}{98}$", "$-\\frac{2}{3}$"],
+            correct: "$-\\frac{3}{2}$ (即 $-1\\frac{1}{2}$)",
+            hint: "正除以負得負。除以 3/7 等於乘以 7/3：9/14 × (-7/3) = -(9×7)/(14×3) = -3/2。",
+            misconceptions: {
+              "$\\frac{3}{2}$": "【正除以負得負】符號為負！$\\frac{9}{14} \\times \\left(-\\frac{7}{3}\\right) = -\\frac{3 \\times 1}{2 \\times 1} = -\\frac{3}{2}$！"
+            },
+            explanation: "除法轉倒數乘法：$\\frac{9}{14} \\div \\left(-\\frac{3}{7}\\right) = \\frac{9}{14} \\times \\left(-\\frac{7}{3}\\right) = -\\frac{3}{2} = -1\\frac{1}{2}$。"
+          },
+          {
+            formula: "若 $\\left(-\\frac{4}{9}\\right) \\div \\Box = \\frac{2}{3}$，則空格 $\\Box$ 中的數應為何？",
+            options: ["$-\\frac{2}{3}$", "$\\frac{2}{3}$", "$-\\frac{8}{27}$", "$-\\frac{3}{2}$"],
+            correct: "$-\\frac{2}{3}$",
+            hint: "被除數 ÷ 除數 = 商 ➔ 除數 = 被除數 ÷ 商。(-4/9) ÷ (2/3) = (-4/9) × (3/2) = -2/3。",
+            misconceptions: {
+              "$\\frac{2}{3}$": "【除數計算與正負號】除數 $\\Box = \\left(-\\frac{4}{9}\\right) \\div \\frac{2}{3} = \\left(-\\frac{4}{9}\\right) \\times \\frac{3}{2} = -\\frac{2}{3}$！"
+            },
+            explanation: "解方程式：$\\Box = \\left(-\\frac{4}{9}\\right) \\div \\frac{2}{3} = -\\frac{4}{9} \\times \\frac{3}{2} = -\\frac{2}{3}$。"
+          },
+          {
+            formula: "一條繩子長 $12\\frac{1}{2}$ 公尺，每 $\\frac{5}{6}$ 公尺剪成一段做跳繩。試問最多可剪成幾段？還剩下幾公尺？",
+            options: ["最多可剪成 15 段，還剩下 $\\frac{0}{6} = 0$ 公尺（恰好整除）", "最多剪成 14 段，剩下 1 公尺", "最多剪成 12 段", "剪成 10 段"],
+            correct: "最多可剪成 15 段，還剩下 $\\frac{0}{6} = 0$ 公尺（恰好整除）",
+            hint: "12又1/2 = 25/2。25/2 ÷ 5/6 = 25/2 × 6/5 = (5×3) = 15 段，恰好整除！",
+            misconceptions: {
+              "最多剪成 14 段，剩下 1 公尺": "【分數除法直接計算】$\\frac{25}{2} \\div \\frac{5}{6} = \\frac{25}{2} \\times \\frac{6}{5} = 5 \\times 3 = 15$ 段，恰好整除！"
+            },
+            explanation: "分數除法：$\\frac{25}{2} \\div \\frac{5}{6} = \\frac{25}{2} \\times \\frac{6}{5} = 15$ 段整。"
+          },
+          {
+            formula: "計算 $\\left(-\\frac{3}{4}\\right) \\times \\frac{8}{9} \\div \\left(-\\frac{2}{3}\\right)$ 的值為何？",
+            options: ["$1$", "$-1$", "$\\frac{1}{2}$", "$-\\frac{4}{9}$"],
+            correct: "$1$",
+            hint: "負乘正除以負 ➔ 兩個負號，結果為正數！(3/4 × 8/9) × 3/2 = (2/3) × 3/2 = 1。",
+            misconceptions: {
+              "$-1$": "【連乘除正負號判斷】算式中有 2 個負號（偶數個），負負得正，結果為【$+1$】！"
+            },
+            explanation: "運算化簡：$\\left(-\\frac{3}{4}\\right) \\times \\frac{8}{9} \\times \\left(-\\frac{3}{2}\\right) = +\\left(\\frac{3 \\times 8 \\times 3}{4 \\times 9 \\times 2}\\right) = +\\frac{72}{72} = 1$。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 分數指數律與四則混合運算 (2-4)",
+        monsterName: "指數四則結晶巨神",
+        monsterEmoji: "🔢",
+        questions: [
+          {
+            formula: "計算 $\\left(-\\frac{2}{3}\\right)^2 - \\left(-\\frac{1}{2}\\right)^3 \\times \\frac{8}{3}$ 的值為何？（先乘方後乘除再加減）",
+            options: ["$\\frac{7}{9}$", "$\\frac{1}{9}$", "$-\\frac{7}{9}$", "$\\frac{4}{9}$"],
+            correct: "$\\frac{7}{9}$",
+            hint: "(-2/3)² = 4/9。(-1/2)³ = -1/8。(-1/8) × (8/3) = -1/3。4/9 - (-1/3) = 4/9 + 3/9 = 7/9。",
+            misconceptions: {
+              "$\\frac{1}{9}$": "【負負得正與次方運算】$(-1/2)^3 = -1/8$，乘上 $8/3$ 得 $-1/3$。$4/9 - (-1/3) = 4/9 + 3/9 = 7/9$！"
+            },
+            explanation: "分步運算：$\\left(-\\frac{2}{3}\\right)^2 = \\frac{4}{9}$；$\\left(-\\frac{1}{2}\\right)^3 = -\\frac{1}{8}$；$-\\frac{1}{8} \\times \\frac{8}{3} = -\\frac{1}{3}$。原式 $= \\frac{4}{9} - \\left(-\\frac{1}{3}\\right) = \\frac{4}{9} + \\frac{3}{9} = \\frac{7}{9}$。"
+          },
+          {
+            formula: "計算 $\\left(1 - \\frac{1}{2}\\right) \\times \\left(1 - \\frac{1}{3}\\right) \\times \\left(1 - \\frac{1}{4}\\right) \\times \\cdots \\times \\left(1 - \\frac{1}{10}\\right)$ 的連乘積為何？（會考規律消去題）",
+            options: ["$\\frac{1}{10}$", "$\\frac{1}{2}$", "$\\frac{9}{10}$", "$\\frac{1}{100}$"],
+            correct: "$\\frac{1}{10}$",
+            hint: "化為 1/2 × 2/3 × 3/4 × 4/5 × ... × 9/10。前一項分母與後一項分子互相對消，最後剩下最前分子 1 與最後分母 10 ➔ 1/10。",
+            misconceptions: {
+              "$\\frac{9}{10}$": "【前後對消規律】$\\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{3}{4} \\times \\cdots \\times \\frac{9}{10}$，中間全部交叉約分消去，只剩下【$\\frac{1}{10}$】！"
+            },
+            explanation: "望遠鏡消去法：$\\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{3}{4} \\times \\cdots \\times \\frac{9}{10} = \\frac{1}{10}$。"
+          },
+          {
+            formula: "計算 $\\frac{3}{4} \\div \\left[\\left(\\frac{1}{2} - \\frac{1}{3}\\right) \\times 6\\right]$ 的值為何？",
+            options: ["$\\frac{3}{4}$", "$\\frac{1}{4}$", "$4$", "$\\frac{9}{4}$"],
+            correct: "$\\frac{3}{4}$",
+            hint: "括號內優先：1/2 - 1/3 = 1/6。中括號內 = 1/6 × 6 = 1。3/4 ÷ 1 = 3/4。",
+            misconceptions: {
+              "$4$": "【中括號優先運算】中括號內為 $\\left(\\frac{1}{6}\\right) \\times 6 = 1$！$\\frac{3}{4} \\div 1 = \\frac{3}{4}$！"
+            },
+            explanation: "運算順序：小括號 $\\frac{1}{2} - \\frac{1}{3} = \\frac{1}{6}$；中括號 $\\frac{1}{6} \\times 6 = 1$；$\\frac{3}{4} \\div 1 = \\frac{3}{4}$。"
+          },
+          {
+            formula: "已知 $a = \\left(-\\frac{2}{3}\\right)^2$，$b = \\left(-\\frac{2}{3}\\right)^3$，$c = \\left(-\\frac{2}{3}\\right)^4$。試比較 $a, b, c$ 三數的大小關係：",
+            options: ["$a > c > b$ (因 $a = 4/9 = 36/81$，$c = 16/81$，$b = -8/27 < 0$)", "$c > a > b$", "$a > b > c$", "$b > a > c$"],
+            correct: "$a > c > b$ (因 $a = 4/9 = 36/81$，$c = 16/81$，$b = -8/27 < 0$)",
+            hint: "偶次方為正：a = 4/9 ≈ 0.444，c = 16/81 ≈ 0.198 ➔ a > c。奇次方為負：b = -8/27 < 0 最小。故 a > c > b。",
+            misconceptions: {
+              "$c > a > b$": "【真分數次方越大值越小】真分數（$|x| < 1$）正數次方越大數值越小！$a = \\frac{4}{9} = \\frac{36}{81} > c = \\frac{16}{81} > b$（負數），故【$a > c > b$】！"
+            },
+            explanation: "$a = 4/9 = 36/81$；$c = 16/81$；$b = -8/27$（負數）。故正數 $a > c > 0 > b$，排序為 $a > c > b$。"
+          },
+          {
+            formula: "【會考應用題】某水果商進貨一批蘋果共 120 公斤，第一天賣出全部的 $\\frac{1}{3}$，第二天賣出『剩下的 $\\frac{3}{5}$』。試問兩天賣完後，倉庫還剩下多少公斤的蘋果？",
+            options: ["32 公斤", "40 公斤", "48 公斤", "24 公斤"],
+            correct: "32 公斤",
+            hint: "第一天賣出 120 × 1/3 = 40kg ➔ 剩下 80kg。第二天賣出剩下的 3/5 ➔ 80 × 3/5 = 48kg。最後剩下 80 - 48 = 32kg。",
+            misconceptions: {
+              "48 公斤": "【注意『剩下的』陷阱】第二天賣出的是剩下的 $\\frac{3}{5}$（即 48 公斤），最後剩下 $80 - 48 = 32$ 公斤！"
+            },
+            explanation: "第一天剩餘 $120 \\times \\left(1 - \\frac{1}{3}\\right) = 80$ kg；第二天剩餘 $80 \\times \\left(1 - \\frac{3}{5}\\right) = 80 \\times \\frac{2}{5} = 32$ kg。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('crystal-canvas');
+        this.visualizer = new CrystalVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.crystal-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.textContent = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'crystal-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-gem-amber);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-gem-rose);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.crystal-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "💎 分數幾何診斷：觀念拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的因倍數分解、分數通分加減、倒數乘除或指數律運算順序，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-gem-emerald); font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+</body>
+</html>
