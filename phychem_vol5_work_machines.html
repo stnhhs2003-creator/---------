@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中理化第五冊：功與能＆簡單機械 | 能量機械神殿</title>
+  <meta name="description" content="國中理化九上第二模組：功與功率 W=Fs, P=W/t、動能與重力位能 U=mgh, K=1/2mv²、力學能守恆、槓桿原理、滑輪組、斜面與輪軸。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Cinzel:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap">
+  <style>
+    :root {
+      --bg-theme: #171007;
+      --bg-card: #281b0c;
+      --bg-surface: #3d2913;
+      --color-primary: #f59e0b;
+      --color-accent: #fbbf24;
+      --color-gold: #fde68a;
+      --color-danger: #f43f5e;
+      --color-success: #10b981;
+      --color-text: #fef3c7;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #78350f 0%, #0c0803 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-primary);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(245, 158, 11, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(23, 16, 7, 0.95);
+      border-bottom: 2px solid var(--color-primary); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-primary); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .theme-bar { flex: 1; height: 12px; background: #0c0803; border: 1px solid var(--color-primary); border-radius: 3px; position: relative; overflow: hidden; }
+    .theme-bar-fill { height: 100%; background: linear-gradient(90deg, #d97706, #fbbf24); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-gold); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-primary); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-gold); box-shadow: 0 0 8px var(--color-gold); }
+    .progress-dot.cleared { background: var(--color-success); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-primary); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #fde68a; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-gold); }
+    .btn-theme-icon { background: var(--bg-surface); border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .theme-arena {
+      flex: 1.1; background: linear-gradient(180deg, #0c0803 0%, #281b0c 100%);
+      border: 1.5px solid #5a3a14; border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-primary);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(23, 16, 7, 0.9); border: 1px solid var(--color-primary); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatTheme 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .theme-board-container { height: 75px; background: var(--bg-surface); border: 1px solid #5a3a14; border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .theme-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-primary); margin-bottom: 2px; }
+    .theme-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #theme-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid #5a3a14; border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(245, 158, 11, 0.2); color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #171007; border: 1px solid #5a3a14; border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 21px; font-weight: 900; line-height: 1.5; color: #fff; font-family: var(--font-mono), var(--font-chinese); }
+    .question-hint-text { margin-top: 4px; font-size: 15px; color: var(--color-primary); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .theme-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid #5a3a14; border-radius: 10px;
+      padding: 13px 18px; font-size: 17px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left; font-family: var(--font-mono), var(--font-chinese);
+    }
+    .theme-btn:hover { background: #523719; border-color: var(--color-gold); transform: translateY(-1px); }
+    .theme-btn .btn-key { width: 26px; height: 26px; background: #171007; color: var(--color-gold); border: 1px solid var(--color-primary); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .theme-btn.btn-correct { background: rgba(16, 185, 129, 0.25) !important; border-color: var(--color-success) !important; color: #86efac !important; }
+    .theme-btn.btn-wrong { background: rgba(244, 63, 94, 0.25) !important; border-color: var(--color-danger) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(12, 8, 3, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .theme-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-primary); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-primary); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-gold); }
+    .misconception-box { background: rgba(244, 63, 94, 0.15); border-left: 4px solid var(--color-danger); border-radius: 4px; padding: 10px 14px; font-size: 16px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #171007; border: 1px solid #5a3a14; border-radius: 6px; padding: 12px 14px; font-size: 16px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-gold); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-primary); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-primary); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-theme { background: var(--color-gold); color: #171007; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
+    @keyframes floatTheme { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>⚙️</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-gold); font-size:10px;">WORK & ENERGY</span>
+            <div class="theme-bar"><div id="player-hp-bar" class="theme-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-gold);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-primary); font-size:10px;">PHYCHEM G9 VOL.5</span>
+            <span style="font-size:10px; color:#fde68a;">MOD 2: ENERGY & MACHINES</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 功與功率定義 (2-1)</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-theme-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="theme-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🏗️</span></div>
+          <div class="char-nametag">能量機械工程師</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">⚙️</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-accent);">能量損耗泰坦</div>
+          <div class="monster-hp-wrap">
+            <div class="theme-bar" style="height:8px;"><div id="monster-hp-bar" class="theme-bar-fill" style="width: 100%; background:var(--color-danger);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="theme-board-container">
+        <div class="theme-board-header">
+          <span>⚙️ 功 W=F·s (垂直不做功) ｜ 動能 K=1/2 mv² ｜ 位能 U=mgh ｜ 力學能守恆 E=K+U ｜ 槓桿平衡 L₁F₁=L₂F₂</span>
+          <span style="color:var(--color-gold); font-size:10px;">★ 機械能量動態儀表</span>
+        </div>
+        <div class="theme-canvas-wrap"><canvas id="theme-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#fde68a;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入九上功與能、簡單機械核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="theme-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">⚙️</span>
+          <div id="modal-title" class="dialog-title">能量機械診斷：觀念拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-theme" style="font-size:13px; padding:6px 20px;">轉換能量，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">⚙️⚡</div>
+      <h1 class="game-title-main">國中理化第五冊：功與能＆簡單機械</h1>
+      <h2 class="game-subtitle">★ 九年級上冊第二核心模組（力學能守恆、槓桿、滑輪與斜面）★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-gold);">【三大核心領域】：</strong>
+        <ul>
+          <li>🔨 <strong>Level 1 功與功率計算 (2-1)</strong>：做功條件 $W = F \times s$（力與位移同向做正功、反向做負功、垂直不做功）、功率 $P = W / t$（瓦特 W）。</li>
+          <li>🎢 <strong>Level 2 動能、位能與力學能守恆 (2-2)</strong>：重力位能 $U = mgh$、動能 $K = \frac{1}{2}mv^2$、力學能守恆 $E = K + U = \text{定值}$（單擺與雲霄飛車）。</li>
+          <li>🏗️ <strong>Level 3 簡單機械與槓桿原理 (2-3)</strong>：槓桿平衡（順時針力矩＝逆時針力矩）、省力槓桿（抗力臂＜施力臂）、動滑輪（省力費時）、定滑輪（改變方向）、斜面與輪軸。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-theme">啟動能量神殿 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆👑</div>
+      <h1 class="game-title-main" style="color:var(--color-success);">ENERGY CONSERVATION MASTERED!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通九上功與能、力學能守恆與機械全考點！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-gold);">【九上能量力學總工程師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-success); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-theme">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥⚙️</div>
+      <h1 class="game-title-main" style="color:var(--color-danger);">能量耗盡！</h1>
+      <h2 class="game-subtitle">做功正負號判定或槓桿力臂力矩計算有誤，重來一次！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-theme" style="background:var(--color-danger); color:#fff;">重新聚能 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 3 };
+
+    class ThemeAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'triangle', 0.08, 0); this.playTone(659.25, 'triangle', 0.1, 0.06); this.playTone(1046.50, 'triangle', 0.2, 0.12); }
+      playWrong() { this.playTone(220, 'sawtooth', 0.15, 0); this.playTone(146.83, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(440, 'square', 0.08, 0); this.playTone(880, 'sine', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new ThemeAudioEngine();
+
+    class ThemeVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawWork(ctx, w, h);
+        else if (level === 2) this.drawEnergy(ctx, w, h);
+        else this.drawMachines(ctx, w, h);
+      }
+      drawWork(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#f59e0b"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🔨 做功定義： W = F · s ➔ 同向正功、反向負功、垂直不做功 (W = 0，如向心力、背書包水平走)", midX, h / 2 - 4);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText("功率單位： 1 瓦特 (W) = 1 焦耳/秒 (J/s) ➔ 代表單位時間內做功的快慢", midX, h / 2 + 12);
+      }
+      drawEnergy(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#10b981"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🎢 力學能守恆： E = 動能 K (1/2 mv²) ＋ 重力位能 U (mgh) ＝ 定值", midX, h / 2 - 4);
+        ctx.fillStyle = "#f59e0b";
+        ctx.fillText("單擺運動： 最高點動能為零、位能最大 ｜ 最低點位能最小、動能與速度最大！", midX, h / 2 + 12);
+      }
+      drawMachines(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#fbbf24"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🏗️ 槓桿平衡： 施力 × 施力臂 ＝ 抗力 × 抗力臂 (L₁F₁ = L₂F₂) ｜ 施力臂 > 抗力臂 ➔ 省力費時", midX, h / 2 - 4);
+        ctx.fillStyle = "#10b981";
+        ctx.fillText("滑輪與斜面： 【定滑輪】等臂槓桿不省力改變方向 ｜ 【動滑輪】省力一半費時一倍 ｜ 機械絕不省功！", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 功與功率計算 (2-1)",
+        monsterName: "做功虛耗獸",
+        monsterEmoji: "🔨",
+        questions: [
+          {
+            formula: "下列哪一種情境中，施力對物體所做的『功為零（$W = 0$）』？",
+            options: ["學生背著 5 公斤重的書包，在平直走廊上『等速度水平向前行走』", "手提重物爬樓梯向上", "推車受水平推力向前移動 10 公尺", "煞車時摩擦力使汽車減速停下"],
+            correct: "學生背著 5 公斤重的書包，在平直走廊上『等速度水平向前行走』",
+            hint: "不做功的三種情況：1. 施力 F = 0；2. 位移 s = 0；3. 施力與位移垂直（垂直不做功，書包向上施力但水平位移）。",
+            misconceptions: {
+              "煞車時摩擦力使汽車減速停下": "【摩擦力做負功】摩擦力方向與位移相反，做『負功』！而水平背書包施力向上但位移水平（兩者互相垂直），所做的功【恰好為零】！"
+            },
+            explanation: "手對書包的施力方向垂直向上，而位移方向為水平向右，施力與位移垂直時，功 $W = F s \\cos(90^\\circ) = 0$。"
+          },
+          {
+            formula: "小華用 $50\\text{ 牛頓}$ 的水平推力推動質量 $10\\text{ kg}$ 的木箱，在水平地面上等速前進了 $4\\text{ 公尺}$。試問小華對木箱所做的功為多少焦耳？",
+            options: ["$200\\text{ 焦耳（J）}$", "$500\\text{ 焦耳}$", "$0\\text{ 焦耳}$", "$20\\text{ 焦耳}$"],
+            correct: "$200\\text{ 焦耳（J）}$",
+            hint: "W = F · s = 50 N × 4 m = 200 焦耳（J）。",
+            misconceptions: {
+              "$500\\text{ 焦耳}$": "【做功與物體質量不直接相乘】功 $W = F \\times s = 50 \\times 4 = 200$ J！質量 10kg 不必代入做功公式中。"
+            },
+            explanation: "功的定義：$W = F \\times s = 50\\text{ N} \\times 4\\text{ m} = 200\\text{ J}$。"
+          },
+          {
+            formula: "一台起重機在 $10\\text{ 秒}$ 內將質量 $500\\text{ kg}$ 的貨物垂直等速吊起 $6\\text{ 公尺}$ 高（設重力加速度 $g = 10\\text{ m/s}^2$）。試求此起重機的『輸出功率』為多少瓦特（W）？",
+            options: ["$3000\\text{ W}$（即 $3\\text{ kW}$）", "$300\\text{ W}$", "$5000\\text{ W}$", "$30000\\text{ W}$"],
+            correct: "$3000\\text{ W}$（即 $3\\text{ kW}$）",
+            hint: "施力 F = mg = 500 × 10 = 5000 N。做功 W = F · h = 5000 × 6 = 30000 J。功率 P = W / t = 30000 / 10 = 3000 W。",
+            misconceptions: {
+              "$300\\text{ W}$": "【重量要乘 g】重力 $F = mg = 500 \\times 10 = 5000$ N！做功 30000 J，除以 10 秒得【3000 W】！"
+            },
+            explanation: "功 $W = mgh = 500 \\times 10 \\times 6 = 30000\\text{ J}$。功率 $P = \\frac{W}{t} = \\frac{30000}{10} = 3000\\text{ W}$。"
+          },
+          {
+            formula: "物體在光滑水平面上作『等速率圓周運動』時，向心力對物體所做的功為何？",
+            options: ["始終為零（$W = 0$，因向心力恆垂直於切線速度與瞬時位移方向）", "做正功使動能增加", "做負功使速率減慢", "無法確定"],
+            correct: "始終為零（$W = 0$，因向心力恆垂直於切線速度與瞬時位移方向）",
+            hint: "等速率圓周運動的向心力指向圓心，而位移方向沿切線方向，兩者時刻垂直，故向心力不做功（物體動能與速率保持不變）。",
+            misconceptions: {
+              "做正功使動能增加": "【向心力垂直速度不做功】向心力只改變運動方向，不改變速度大小，垂直不做功，故 $W = 0$！"
+            },
+            explanation: "向心力方向垂直於物體的瞬時運動方向，故向心力不做功，動能保持定值。"
+          },
+          {
+            formula: "下列關於『功與能量單位』的換算，何者完全正確？",
+            options: ["$1\\text{ 焦耳（J）} = 1\\text{ 牛頓} \\times 1\\text{ 公尺} = 1\\text{ kg}\\cdot\\text{m}^2/\\text{s}^2$", "$1\\text{ 瓦特} = 1\\text{ 焦耳} \\times 1\\text{ 秒}$", "$1\\text{ 度電} = 1\\text{ 焦耳}$", "$1\\text{ 焦耳} = 1\\text{ 瓦特}$"],
+            correct: "$1\\text{ 焦耳（J）} = 1\\text{ 牛頓} \\times 1\\text{ 公尺} = 1\\text{ kg}\\cdot\\text{m}^2/\\text{s}^2$",
+            hint: "1 J = 1 N · m = 1 (kg · m/s²) · m = 1 kg · m²/s²。1 度電 = 1 千瓦·小時 = 3.6 × 10⁶ 焦耳。",
+            misconceptions: {
+              "$1\\text{ 瓦特} = 1\\text{ 焦耳} \\times 1\\text{ 秒}$": "【功率是除以秒】功率 $1\\text{ W} = 1\\text{ J}/\\text{s}$（除法，非乘法）！"
+            },
+            explanation: "單位定義：$1\\text{ J} = 1\\text{ N}\\cdot\\text{m} = 1\\text{ kg}\\cdot\\text{m}^2/\\text{s}^2$。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 動能、位能與力學能守恆 (2-2)",
+        monsterName: "力學能守恆神獸",
+        monsterEmoji: "🎢",
+        questions: [
+          {
+            formula: "質量為 $4\\text{ kg}$ 的物體，以 $5\\text{ m/s}$ 的速度運動。試求該物體的『動能（$K$）』為多少焦耳？",
+            options: ["$50\\text{ 焦耳（J）}$", "$100\\text{ 焦耳}$", "$20\\text{ 焦耳}$", "$10\\text{ 焦耳}$"],
+            correct: "$50\\text{ 焦耳（J）}$",
+            hint: "動能公式：K = 1/2 mv² = 1/2 × 4 × 5² = 2 × 25 = 50 焦耳。",
+            misconceptions: {
+              "$100\\text{ 焦耳}$": "【動能公式有 1/2】$K = \\frac{1}{2}mv^2 = \\frac{1}{2} \\times 4 \\times 25 = 50$ 焦耳！不要忘記乘 $\\frac{1}{2}$。"
+            },
+            explanation: "$K = \\frac{1}{2} m v^2 = \\frac{1}{2}(4)(5^2) = 50\\text{ J}$。"
+          },
+          {
+            formula: "雲霄飛車在光滑軌道上從高 $20\\text{ 公尺}$ 的起點由靜止下滑（設無摩擦阻力，$g = 10\\text{ m/s}^2$）。試求雲霄飛車滑到地面（最低點）時的『速度大小』為何？（力學能守恆）",
+            options: ["$20\\text{ m/s}$", "$400\\text{ m/s}$", "$14.14\\text{ m/s}$", "$10\\text{ m/s}$"],
+            correct: "$20\\text{ m/s}$",
+            hint: "力學能守恆：mgh = 1/2 mv² ➔ v = √(2gh) = √(2 × 10 × 20) = √400 = 20 m/s。",
+            misconceptions: {
+              "$10\\text{ m/s}$": "【$v = \\sqrt{2gh}$ 公式計算】$v = \\sqrt{2 \\times 10 \\times 20} = \\sqrt{400} = 20\\text{ m/s}$！"
+            },
+            explanation: "位能全部轉換為動能：$mgh = \\frac{1}{2}mv^2 \\Rightarrow v = \\sqrt{2gh} = \\sqrt{2(10)(20)} = 20\\text{ m/s}$。"
+          },
+          {
+            formula: "單擺在擺動過程中，下列關於單擺在『最高點』與『最低點（平衡位置）』的能量變化敘述，何者完全正確？",
+            options: ["在『最高點』時瞬時速度為 0，動能為 0，重力位能最大；在『最低點』時位能最小，動能與擺動速度達到最大", "最高點動能最大", "最低點位能最大", "全程動能與位能皆保持不變"],
+            correct: "在『最高點』時瞬時速度為 0，動能為 0，重力位能最大；在『最低點』時位能最小，動能與擺動速度達到最大",
+            hint: "單擺擺動：最高點動能轉為位能（速度為 0 位能極大）；最低點位能轉為動能（高度最低速度極大）。",
+            misconceptions: {
+              "最高點動能最大": "【最高點靜止轉向】最高點瞬間擺錘速度為 0（動能為 0），高度最高（重力位能最大）！"
+            },
+            explanation: "單擺符合力學能守恆：最高點 $K = 0, U = U_{\\max}$；最低點 $U = 0, K = K_{\\max}$。"
+          },
+          {
+            formula: "若汽車的行駛速率由 $30\\text{ km/h}$ 提高到 $60\\text{ km/h}$（變為 2 倍），則汽車的『動能』將會變為原來的幾倍？煞車距離會變為原來的幾倍？",
+            options: ["動能變為原來的 $4\\text{ 倍}$，煞車距離變為 $4\\text{ 倍}$", "動能變為 2 倍，煞車距離變為 2 倍", "動能變為 8 倍", "動能保持不變"],
+            correct: "動能變為原來的 $4\\text{ 倍}$，煞車距離變為 $4\\text{ 倍}$",
+            hint: "動能 K ∝ v²。速度變 2 倍 ➔ 動能變 2² = 4 倍。摩擦力做功 W = f · s = ΔK ➔ 煞車距離 s ∝ K ∝ v² ➔ 距離變 4 倍。",
+            misconceptions: {
+              "動能變為 2 倍，煞車距離變為 2 倍": "【動能與速度平方成正比】$K = \\frac{1}{2}mv^2$！速率加倍，動能與煞車距離皆變為【$2^2 = 4$ 倍】！"
+            },
+            explanation: "動能 $K \\propto v^2$，速度變為 2 倍時動能變為 4 倍；由功—能定理 $f \\cdot s = \\frac{1}{2}mv^2$，煞車距離亦變為 4 倍。"
+          },
+          {
+            formula: "將一顆質量 $0.2\\text{ kg}$ 的棒球以 $20\\text{ m/s}$ 的初速度垂直向上拋出。在不計阻力下（$g = 10\\text{ m/s}^2$），棒球所能達到的『最大上升高度』為多少公尺？",
+            options: ["$20\\text{ 公尺}$", "$40\\text{ 公尺}$", "$10\\text{ 公尺}$", "$2\\text{ 公尺}$"],
+            correct: "$20\\text{ 公尺}$",
+            hint: "力學能守恆：1/2 mv² = mgh ➔ h = v² / (2g) = 20² / (2 × 10) = 400 / 20 = 20 公尺。",
+            misconceptions: {
+              "$10\\text{ 公尺}$": "【最高點位能等於初動能】$h = \\frac{v^2}{2g} = \\frac{400}{20} = 20$ 公尺！"
+            },
+            explanation: "$\\frac{1}{2}mv^2 = mgh \\Rightarrow h = \\frac{v^2}{2g} = \\frac{400}{20} = 20\\text{ m}$。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 簡單機械與槓桿原理 (2-3)",
+        monsterName: "機械槓桿大領主",
+        monsterEmoji: "🏗️",
+        questions: [
+          {
+            formula: "使用任何理想的簡單機械（如槓桿、滑輪、斜面），下列哪一項結論符合物理定律？",
+            options: ["簡單機械可以『省力』或『省時』或『改變施力方向』，但『絕對無法省功（功永遠守恆）』", "使用簡單機械可以省功", "省力的機械同時也可以省時", "動滑輪可以省功一半"],
+            correct: "簡單機械可以『省力』或『省時』或『改變施力方向』，但『絕對無法省功（功永遠守恆）』",
+            hint: "機械做功原理：輸入功 = 輸出功（省力必費時、省時必費力）。自然界中【絕對沒有任何機械可以省功】！",
+            misconceptions: {
+              "使用簡單機械可以省功": "【功的原理核心】省力時施力位移必變長（$W = Fs$ 固定），【世界上絕對沒有省功的機械】！"
+            },
+            explanation: "機械原理定理：能量守恆下，輸出功不可能大於輸入功，故使用任何機械均不能省功。"
+          },
+          {
+            formula: "一根長 100 公分的輕質槓桿，支點在距左端 20 公分處。若在左端掛上 40 公斤重的重物，則在右端最少需施力多少公斤重才能維持槓桿水平平衡？",
+            options: ["$10\\text{ kgw}$", "$8\\text{ kgw}$", "$20\\text{ kgw}$", "$40\\text{ kgw}$"],
+            correct: "$10\\text{ kgw}$",
+            hint: "左端抗力臂 = 20 cm。右端施力臂 = 100 - 20 = 80 cm。力矩平衡：40 × 20 = F × 80 ➔ 800 = 80F ➔ F = 10 kgw。",
+            misconceptions: {
+              "$8\\text{ kgw}$": "【施力臂長度計算】施力臂是 $100 - 20 = 80$ cm！$40 \\times 20 = F \\times 80 \\Rightarrow F = 10$ kgw！"
+            },
+            explanation: "力矩平衡：$L_1 F_1 = L_2 F_2 \\Rightarrow 20 \\times 40 = 80 \\times F \\Rightarrow F = 10\\text{ kgw}$。"
+          },
+          {
+            formula: "下列關於『定滑輪』與『動滑輪』特性的比較，何者完全正確？",
+            options: ["『定滑輪』相當於等臂槓桿，『不省力但可改變施力方向』；『動滑輪』施力臂為抗力臂的 2 倍，『可省力一半但施力拉動距離加倍』", "定滑輪可以省力一半", "動滑輪可以省功", "兩者皆不能改變方向"],
+            correct: "『定滑輪』相當於等臂槓桿，『不省力但可改變施力方向』；『動滑輪』施力臂為抗力臂的 2 倍，『可省力一半但施力拉動距離加倍』",
+            hint: "定滑輪軸心固定 ➔ 不省力但改方向（如旗桿）。動滑輪軸心隨物體移動 ➔ 施力 F = W/2（省力一半，費時一倍）。",
+            misconceptions: {
+              "定滑輪可以省力一半": "【定滑輪 vs 動滑輪】定滑輪軸心固定，施力等於物重（不省力）；動滑輪由兩條繩子分擔物重，才是【省力一半】！"
+            },
+            explanation: "定滑輪為等臂槓桿（支點在軸心），$F = W$；動滑輪支點在邊緣切點，施力臂為直徑、抗力臂為半徑，故 $F = \\frac{1}{2}W$。"
+          },
+          {
+            formula: "下列生活常見工具中，哪一個屬於『省力槓桿（施力臂大於抗力臂）』？",
+            options: ["開瓶器、裁紙刀、拔釘器的鐵槌", "用筷子夾菜", "用掃帚掃地", "用釣竿釣魚"],
+            correct: "開瓶器、裁紙刀、拔釘器的鐵槌",
+            hint: "省力槓桿：施力臂 > 抗力臂（開瓶器、指甲剪、手推車）。費力省時槓桿：施力臂 < 抗力臂（筷子、鑷子、釣竿、掃帚）。",
+            misconceptions: {
+              "用筷子夾菜": "【筷子是費力省時槓桿】筷子手捏在中間（施力臂小），前端夾菜（抗力臂大），是『費力省時槓桿』！開瓶器才是【省力槓桿】。"
+            },
+            explanation: "開瓶器、裁紙刀施力點距離支點遠（施力臂長），屬於省力機械；筷子、鑷子為費力省時機械。"
+          },
+          {
+            formula: "【會考斜面機械】將質量 $60\\text{ kg}$ 的物體沿著長度 $5\\text{ 公尺}$、高度 $3\\text{ 公尺}$ 的光滑斜面等速推到頂端（$g = 10\\text{ m/s}^2$）。試問沿斜面的推力大小及推力所做的功分別為何？",
+            options: ["推力為 $360\\text{ N}$，所做的功為 $1800\\text{ J}$", "推力為 $600\\text{ N}$，做功 $3000\\text{ J}$", "推力為 $360\\text{ N}$，做功 $3600\\text{ J}$", "推力為 $180\\text{ N}$，做功 $900\\text{ J}$"],
+            correct: "推力為 $360\\text{ N}$，所做的功為 $1800\\text{ J}$",
+            hint: "斜面省力比 = 高度/長度 = 3/5。物重 W = mg = 600 N。推力 F = 600 × (3/5) = 360 N。做功 = F × L = 360 × 5 = 1800 J（恰等於 mgh = 600 × 3 = 1800 J，功守恆！）。",
+            misconceptions: {
+              "推力為 $600\\text{ N}$，做功 $3000\\text{ J}$": "【斜面推力與功】斜面推力 $F = mg \\times \\frac{h}{L} = 600 \\times \\frac{3}{5} = 360$ N，做功 $W = 360 \\times 5 = 1800$ J！"
+            },
+            explanation: "斜面推力 $F = mg \\sin\\theta = 600 \\times \\frac{3}{5} = 360\\text{ N}$；做功 $W = F \\times L = 360 \\times 5 = 1800\\text{ J}$（等於直接垂直抬升之重力位能 $mgh = 1800\\text{ J}$）。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('theme-canvas');
+        this.visualizer = new ThemeVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.theme-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'theme-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-gold);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-danger);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.theme-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "⚙️ 能量機械診斷：觀念拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的做功正負號與垂直不做功、力學能守恆轉換或槓桿力矩平衡計算，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-success); font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「斜面長度對拉動同一物體所需拉力的影響」。本實驗的操作變因為何？","options":["沿斜面等速拉動物體的拉力","提升高度、物體重量與接觸面材質","斜面長度","每組實驗重複次數"],"correct":"斜面長度","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「斜面長度」。"},{"formula":"【實驗探究】進行「斜面長度對拉動同一物體所需拉力的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["提升高度、物體重量與接觸面材質","實驗器材品牌","沿斜面等速拉動物體的拉力","斜面長度"],"correct":"沿斜面等速拉動物體的拉力","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「沿斜面等速拉動物體的拉力」。"},{"formula":"【實驗設計】為公平比較「斜面長度對拉動同一物體所需拉力的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","提升高度、物體重量與接觸面材質","各組可使用不同測量方法"],"correct":"提升高度、物體重量與接觸面材質","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：提升高度、物體重量與接觸面材質。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","提升高度相同時，斜面越長通常越省力","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"提升高度相同時，斜面越長通常越省力","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：提升高度相同時，斜面越長通常越省力。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「斜面長度 對 所需拉力 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：提升高度相同時，斜面越長通常越省力。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「斜面長度」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「斜面長度」與「所需拉力」的關係，何者最合理？","options":["提升高度相同時，斜面越長通常越省力","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"提升高度相同時，斜面越長通常越省力","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：提升高度相同時，斜面越長通常越省力；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+</body>
+</html>
