@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中理化第四冊：化學計量、莫耳數與氧化還原 | 蒸氣龐克鍊金</title>
+  <meta name="description" content="國中理化會考第四冊（八下第一、二章）：莫耳數換算、反應式平衡、質量守恆定律、金屬活性順序、氧化還原反應與高爐煉鐵。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Cinzel:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap">
+  <style>
+    :root {
+      --bg-steam: #18120c;
+      --bg-card: #281d14;
+      --bg-surface: #3d2c1e;
+      --color-brass: #d97706;
+      --color-copper: #f59e0b;
+      --color-steam-cyan: #38bdf8;
+      --color-flame: #ef4444;
+      --color-gold: #fbbf24;
+      --color-text: #fef3c7;
+      --font-steampunk: 'Cinzel', serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #3a2818 0%, #120c07 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 3px solid var(--color-brass);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(217, 119, 6, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(24, 18, 12, 0.95);
+      border-bottom: 2px solid var(--color-brass); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-brass); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .steam-bar { flex: 1; height: 12px; background: #0e0a07; border: 1px solid var(--color-brass); border-radius: 3px; position: relative; overflow: hidden; }
+    .steam-bar-fill { height: 100%; background: linear-gradient(90deg, #d97706, #fbbf24); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-gold); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-brass); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-gold); box-shadow: 0 0 8px var(--color-gold); }
+    .progress-dot.cleared { background: #10b981; }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-brass); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #d1c1a5; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-gold); }
+    .btn-steam-icon { background: var(--bg-surface); border: 1px solid var(--color-brass); color: var(--color-gold); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .steam-arena {
+      flex: 1.1; background: linear-gradient(180deg, #120c07 0%, #281d14 100%);
+      border: 1.5px solid #5a3d24; border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-brass);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(217, 119, 6, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(24, 18, 12, 0.9); border: 1px solid var(--color-brass); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatSteam 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .steam-board-container { height: 75px; background: var(--bg-surface); border: 1px solid #5a3d24; border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .steam-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-gold); margin-bottom: 2px; }
+    .steam-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #steam-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid #5a3d24; border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(217, 119, 6, 0.2); color: var(--color-gold); border: 1px solid var(--color-brass); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #18120c; border: 1px solid #5a3d24; border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .steam-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid #5a3d24; border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left;
+    }
+    .steam-btn:hover { background: #4e341f; border-color: var(--color-brass); transform: translateY(-1px); }
+    .steam-btn .btn-key { width: 26px; height: 26px; background: #18120c; color: var(--color-gold); border: 1px solid var(--color-brass); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .steam-btn.btn-correct { background: rgba(16, 185, 129, 0.25) !important; border-color: #10b981 !important; color: #86efac !important; }
+    .steam-btn.btn-wrong { background: rgba(239, 68, 68, 0.25) !important; border-color: #ef4444 !important; color: #fca5a5 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(18, 12, 7, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .steam-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-brass); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-brass); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-gold); }
+    .misconception-box { background: rgba(239, 68, 68, 0.15); border-left: 4px solid #ef4444; border-radius: 4px; padding: 10px 14px; font-size: 15px; color: #fca5a5; line-height: 1.5; }
+    .step-by-step { background: #18120c; border: 1px solid #5a3d24; border-radius: 6px; padding: 12px 14px; font-size: 15px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-gold); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-steam-cyan); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-brass); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-steam { background: var(--color-brass); color: #18120c; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-steampunk); cursor: pointer; box-shadow: 0 0 20px rgba(217, 119, 6, 0.4); }
+    @keyframes floatSteam { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>⚙️</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-gold); font-size:10px;">MOLE</span>
+            <div class="steam-bar"><div id="player-hp-bar" class="steam-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-gold);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-steam-cyan); font-size:10px;">PHYCHEM VOL.4</span>
+            <span style="font-size:10px; color:#d1c1a5;">REACTIONS & REDOX</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 莫耳數與粒子質量換算</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-steam-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="steam-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>⚗️</span></div>
+          <div class="char-nametag">化學計量工程師</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">🪨</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-flame);">高爐氧化礦石怪</div>
+          <div class="monster-hp-wrap">
+            <div class="steam-bar" style="height:8px;"><div id="monster-hp-bar" class="steam-bar-fill" style="width: 100%; background:var(--color-flame);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="steam-board-container">
+        <div class="steam-board-header">
+          <span>⚙️ 莫耳公式 n=M/Mw・化學反應式平衡係數・金屬活性順序・氧化還原得失氧圖解</span>
+          <span style="color:var(--color-gold); font-size:10px;">★ 蒸氣龐克計量儀表</span>
+        </div>
+        <div class="steam-canvas-wrap"><canvas id="steam-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#d1c1a5;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入化學反應核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="steam-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">⚙️</span>
+          <div id="modal-title" class="dialog-title">計量工程診斷：觀念拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-steam" style="font-size:13px; padding:6px 20px;">掌握反應，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">⚙️🔥</div>
+      <h1 class="game-title-main">國中理化第四冊：化學計量、莫耳數與氧化還原</h1>
+      <h2 class="game-subtitle">★ 國中會考理化第四冊（八下第一、二章）蒸氣龐克特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-gold);">【四大反應核心主題領域】：</strong>
+        <ul>
+          <li>🧪 <strong>Level 1 莫耳數與粒子換算</strong>：$1\text{ mol} = 6 \times 10^{23}$ 個粒子、莫耳數 $n = \frac{M}{\text{分子量}}$。</li>
+          <li>⚖️ <strong>Level 2 化學反應式與質量守恆</strong>：係數比 = 莫耳數比 = 分子數比（≠ 質量比！）、密閉系統質量守恆。</li>
+          <li>⚡ <strong>Level 3 金屬活性順序與燃燒</strong>：鉀鈉鈣鎂鋁碳鋅鐵錫鉛氫銅汞銀鉑金、金屬氧化物溶於水呈鹼性。</li>
+          <li>🏭 <strong>Level 4 氧化還原與高爐煉鐵</strong>：得氧者氧化（還原劑）、失氧者還原（氧化劑）、煤焦(C)與一氧化碳(CO)還原鐵礦。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-steam">啟動高爐熔爐 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆✨</div>
+      <h1 class="game-title-main" style="color:#10b981;">ALCHEMY MASTERED!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通八下化學反應式計量與氧化還原全考點！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-gold);">【八下化學計量首席大師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:#10b981; font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-steam">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥⚙️</div>
+      <h1 class="game-title-main" style="color:var(--color-flame);">高爐失控！</h1>
+      <h2 class="game-subtitle">莫耳數或氧化還原活性判斷出現差錯，冷卻後重新再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-steam" style="background:var(--color-flame); color:#fff;">重新重啟 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class SteamAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'triangle', 0.08, 0); this.playTone(659.25, 'triangle', 0.1, 0.06); this.playTone(1046.50, 'triangle', 0.2, 0.12); }
+      playWrong() { this.playTone(220, 'sawtooth', 0.15, 0); this.playTone(164.81, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(350, 'square', 0.08, 0); this.playTone(700, 'sine', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'triangle', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50].forEach((n, i) => this.playTone(n, 'triangle', 0.2, i * 0.1)); }
+    }
+    const audio = new SteamAudioEngine();
+
+    class SteamVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawMole(ctx, w, h);
+        else if (level === 2) this.drawEquation(ctx, w, h);
+        else if (level === 3) this.drawActivity(ctx, w, h);
+        else this.drawRedox(ctx, w, h);
+      }
+      drawMole(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#fbbf24"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🧪 莫耳公式三通車： 莫耳數 n = 質量 (g) ÷ 分子量 = 粒子個數 ÷ (6 × 10²³)", midX, h / 2 - 4);
+        ctx.fillStyle = "#38bdf8";
+        ctx.fillText("陷阱提醒： 1 莫耳水分子 (H₂O = 18g) 含有 1 莫耳氧原子與 2 莫耳氫原子 (共 3 莫耳原子)！", midX, h / 2 + 12);
+      }
+      drawEquation(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#10b981"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("⚖️ 化學反應式係數意義： 係數比 = 分子數比 = 莫耳數比 (注意：絕對不等於質量比！)", midX, h / 2 - 4);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText("質量守恆定律： 反應物消耗總質量 ＝ 生成物產生總質量 (密閉系統原子種類與個數不滅)", midX, h / 2 + 12);
+      }
+      drawActivity(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#ef4444"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("⚡ 金屬活性口訣：【鉀 鈉 鈣 鎂 鋁】➔【碳 鋅 鐵 錫 鉛】➔【氫 銅 汞 銀 鉑 金】", midX, h / 2 - 4);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText("活性大者易氧化(得氧能力強)；活性小者氧化物易被還原 (強搶弱的氧)", midX, h / 2 + 12);
+      }
+      drawRedox(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#38bdf8"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🏭 高爐煉鐵反應： Fe₂O₃ (氧化劑/失氧被還原) + 3CO (還原劑/得氧被氧化) ➔ 2Fe + 3CO₂", midX, h / 2 - 4);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fillText("熔渣形成： 灰石 (CaCO₃) 受熱分解為 CaO，與鐵礦泥沙 (SiO₂) 結合成 CaSiO₃ 浮於鐵水上方！", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 莫耳數與粒子質量換算 ($n = M/\\text{Mw}$)",
+        monsterName: "莫耳轉換巨獸",
+        monsterEmoji: "🧪",
+        questions: [
+          {
+            formula: "已知水的分子式為 H₂O（氫原子量 H=1，氧原子量 O=16）。試問 36 公克的水中，含有多少『莫耳（mol）』的水分子？含有多少個水分子？",
+            options: ["含有 2 莫耳水分子，共約 $1.2 \\times 10^{24}$ 個水分子", "含有 1 莫耳水分子，共約 $6 \\times 10^{23}$ 個", "含有 36 莫耳水分子", "含有 0.5 莫耳水分子"],
+            correct: "含有 2 莫耳水分子，共約 $1.2 \\times 10^{24}$ 個水分子",
+            hint: "水分子的分子量 = 1×2 + 16 = 18。莫耳數 n = 質量 36 ÷ 18 = 2 莫耳。個數 = 2 × 6×10²³ = 1.2×10²⁴ 個。",
+            misconceptions: {
+              "含有 1 莫耳水分子，共約 $6 \\times 10^{23}$ 個": "【莫耳數計算公式】水的分子量為 18（18g/mol），36 公克的水莫耳數為 $36 / 18 = 2$ 莫耳，分子數為 $2 \\times (6 \\times 10^{23}) = 1.2 \\times 10^{24}$ 個！"
+            },
+            explanation: "莫耳數 $n = \\frac{M}{\\text{Mw}} = \\frac{36}{18} = 2$ mol。分子個數 $= 2 \\times (6 \\times 10^{23}) = 1.2 \\times 10^{24}$ 個。"
+          },
+          {
+            formula: "若某杯水中恰好含有 1 莫耳的水分子（H₂O），則該杯水中總共含有多少莫耳的『原子（包含氫原子與氧原子）』？",
+            options: ["3 莫耳原子（2 莫耳氫原子 + 1 莫耳氧原子）", "1 莫耳原子", "2 莫耳原子", "18 莫耳原子"],
+            correct: "3 莫耳原子（2 莫耳氫原子 + 1 莫耳氧原子）",
+            hint: "每個水分子 H2O 由 2 個 H 和 1 個 O 構成（共 3 個原子）。因此 1 莫耳水分子含有 3 莫耳原子！",
+            misconceptions: {
+              "1 莫耳原子": "【分子個數 vs 原子總數陷阱】題目問的是『原子總數』！1 個水分子（H₂O）含有 3 個原子，故 1 莫耳水分子含有【3 莫耳原子】！"
+            },
+            explanation: "1 個 $H_2O$ 分子由 2 個 H 原子與 1 個 O 原子構成（共 3 個原子），故 1 mol $H_2O$ 含有 2 mol H 與 1 mol O，原子總量為 3 mol。"
+          },
+          {
+            formula: "已知二氧化碳的分子量為 44（C=12, O=16）。試問 $3 \\times 10^{23}$ 個二氧化碳分子，其質量約為多少公克？",
+            options: ["22 公克", "44 公克", "88 公克", "11 公克"],
+            correct: "22 公克",
+            hint: "3×10²³ 個是 0.5 莫耳（6×10²³ 的一半）。質量 = 0.5 × 44 = 22 公克。",
+            misconceptions: {
+              "44 公克": "【粒子數轉莫耳數】$3 \\times 10^{23}$ 個分子為 $\\frac{3 \\times 10^{23}}{6 \\times 10^{23}} = 0.5$ 莫耳；質量 $= 0.5 \\times 44 = 22$ 公克！"
+            },
+            explanation: "莫耳數 $n = \\frac{3 \\times 10^{23}}{6 \\times 10^{23}} = 0.5$ mol。質量 $M = n \\times \\text{Mw} = 0.5 \\times 44 = 22$ g。"
+          },
+          {
+            formula: "下列四種物質中，何者所含有的『分子總個數』最多？（原子量：H=1, C=12, N=14, O=16）",
+            options: ["2 公克的氫氣 (H₂，分子量 2，共 1 莫耳)", "16 公克的氧氣 (O₂，分子量 32，共 0.5 莫耳)", "28 公克的氮氣 (N₂，分子量 28，共 1 莫耳)", "44 公克的二氧化碳 (CO₂，分子量 44，共 1 莫耳)"],
+            correct: "2 公克的氫氣 (H₂，分子量 2，共 1 莫耳)",
+            hint: "比較莫耳數：2g H2 = 1 mol；16g O2 = 0.5 mol；28g N2 = 1 mol；44g CO2 = 1 mol。其中 1 mol = 6×10²³ 個為最多（選項中 H2 質量雖小但分子量極小）。",
+            misconceptions: {
+              "16 公克的氧氣 (O₂，分子量 32，共 0.5 莫耳)": "【莫耳數與質量比較】16g 氧氣只有 $16/32 = 0.5$ 莫耳；2g 氫氣為 $2/2 = 1$ 莫耳，分子數最多！"
+            },
+            explanation: "莫耳數越大分子數越多。$H_2$ 莫耳數 $= 2/2 = 1$ mol；$O_2 = 16/32 = 0.5$ mol；故 $H_2$ 分子數最多。"
+          },
+          {
+            formula: "在化學計量中，『1 莫耳（Mole）』所代表的確切粒子個數定義為何？（亞佛加厥數）",
+            options: ["含有與 12 公克碳-12 原子相同數量的粒子，約為 $6.02 \\times 10^{23}$ 個", "剛好等於 100 萬個", "等於 1 公斤物質所含的粒子數", "隨溫度與壓力改變的變動數值"],
+            correct: "含有與 12 公克碳-12 原子相同數量的粒子，約為 $6.02 \\times 10^{23}$ 個",
+            hint: "莫耳是計數單位（如同 1 打 = 12 個），1 莫耳 = 6×10²³ 個（以 12g 碳-12 為基準）。",
+            misconceptions: {
+              "隨溫度與壓力改變的變動數值": "【莫耳是固定計數單位】莫耳是微觀粒子的數量單位，如同『1打=12個』，$1\\text{ mol} = 6.02 \\times 10^{23}$ 個粒子，數值恆定！"
+            },
+            explanation: "國際單位制定義：1 莫耳為含有 $6.022 \\times 10^{23}$ 個基本粒子的系統物質的量（亞佛加厥常數）。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 化學反應式平衡與質量守恆",
+        monsterName: "係數失衡魔",
+        monsterEmoji: "⚖️",
+        questions: [
+          {
+            formula: "平衡化學反應式：$a \\text{ C}_3\\text{H}_8 + b \\text{ O}_2 \\rightarrow c \\text{ CO}_2 + d \\text{ H}_2\\text{O}$（丙烷完全燃燒）。當最簡整數係數 $a = 1$ 時，係數 $b, c, d$ 分別為何？",
+            options: ["b = 5, c = 3, d = 4", "b = 10, c = 3, d = 4", "b = 5, c = 6, d = 8", "b = 3, c = 3, d = 4"],
+            correct: "b = 5, c = 3, d = 4",
+            hint: "C3H8：碳有 3 個 ➔ c=3；氫有 8 個 ➔ d=4 (4×2=8)；右邊氧總數 = 3×2 + 4×1 = 10 個 ➔ b=5 (5×2=10)。",
+            misconceptions: {
+              "b = 10, c = 3, d = 4": "【氧分子 O2 計算盲點】右邊氧原子總數為 $3 \\times 2 + 4 \\times 1 = 10$ 個氧原子；因左邊為 $O_2$ 分子，故係數 $b = 10 / 2 = 5$！"
+            },
+            explanation: "原子不滅平衡法：碳原子平衡 $c=3$；氫原子平衡 $2d=8 \\Rightarrow d=4$；氧原子平衡 $2b = 2c + d = 6 + 4 = 10 \\Rightarrow b=5$。"
+          },
+          {
+            formula: "根據反應式：$2 \\text{ H}_2 + \\text{O}_2 \\rightarrow 2 \\text{ H}_2\\text{O}$。下列關於各物質之間比例關係的敘述，何者『錯誤』？",
+            options: ["消耗 2 公克的氫氣必定與 1 公克的氧氣反應生成 2 公克的水", "反應時消耗的氫氣分子數與氧氣分子數之比為 2 : 1", "反應時消耗的氫氣莫耳數與氧氣莫耳數之比為 2 : 1", "每消耗 2 莫耳氫氣可生成 2 莫耳水蒸氣"],
+            correct: "消耗 2 公克的氫氣必定與 1 公克的氧氣反應生成 2 公克的水",
+            hint: "化學反應式的係數比是『莫耳數比、分子數比』，絕對不等於『質量比』！2g H2 + 16g O2 ➔ 18g H2O。",
+            misconceptions: {
+              "反應時消耗的氫氣莫耳數與氧氣莫耳數之比為 2 : 1": "【係數比不等於質量比】錯誤選項是第一項！係數比代表【莫耳數比 (2:1:2)】，質量比為 $(2 \\times 2) : 32 : (2 \\times 18) = 4 : 32 : 36 = 1 : 8 : 9$！"
+            },
+            explanation: "化學反應式係數比等於莫耳數比與粒子數比，但不等於質量比。質量比需乘以各自之分子量計算。"
+          },
+          {
+            formula: "在一個『密閉容器』中點燃木炭（C）使其與氧氣（O₂）完全燃燒生成二氧化碳（CO₂）。在燃燒前後測量密閉容器的總質量，下列何者正確？（質量守恆定律）",
+            options: ["反應前後總質量完全相等（遵守質量守恆定律，原子種類與總個數不滅）", "燃燒後總質量會變輕，因為木炭燒成灰燼", "燃燒後總質量會變重，因為氣體膨脹", "密閉系統無法遵守質量守恆"],
+            correct: "反應前後總質量完全相等（遵守質量守恆定律，原子種類與總個數不滅）",
+            hint: "在密閉系統中，氣體沒有逸出，化學反應前後原子不滅，總質量恆定守恆。",
+            misconceptions: {
+              "燃燒後總質量會變輕，因為木炭燒成灰燼": "【密閉容器質量守恆】若在開放空間 CO₂ 逸散會變輕；但在【密閉容器內所有生成氣體皆被保留】，反應前後【總質量必定完全守恆相等】！"
+            },
+            explanation: "質量守恆定律（拉瓦節）：化學反應僅涉及原子重新排列組合，原子種類與數目不變，密閉系統反應前後總質量不變。"
+          },
+          {
+            formula: "若將 4 公克的氫氣（H₂）與 40 公克的氧氣（O₂）混合點火完全燃燒（$2\\text{H}_2 + \\text{O}_2 \\rightarrow 2\\text{H}_2\\text{O}$），反應後最多可生成多少公克的水？哪一種反應物會有剩餘？",
+            options: ["最多生成 36 公克的水，氧氣剩餘 8 公克", "最多生成 44 公克的水，無剩餘", "最多生成 18 公克的水，氫氣剩餘 2 公克", "最多生成 40 公克的水"],
+            correct: "最多生成 36 公克的水，氧氣剩餘 8 公克",
+            hint: "4g H2 是 2 mol，需 1 mol O2（32g）反應，生成 2 mol H2O（36g）。氧氣原有 40g，剩下 40 - 32 = 8g。",
+            misconceptions: {
+              "最多生成 44 公克的水，無剩餘": "【限量試劑計算】4g 氫氣（2 mol）只能消耗 32g 氧氣（1 mol）生成 36g 水！氧氣過量剩餘 $40 - 32 = 8$g，不可直接相加 4+40=44g！"
+            },
+            explanation: "$H_2$ 莫耳數 $= 4/2 = 2$ mol；$O_2 = 40/32 = 1.25$ mol。$H_2$ 為限量試劑，消耗 1 mol $O_2$（32g），生成 2 mol $H_2O$（36g），剩餘 $O_2 = 8$ g。"
+          },
+          {
+            formula: "雙氧水在開口錐形瓶中加入二氧化錳催化分解，測得反應後錐形瓶總質量變輕了。造成質量變輕的原因為何？",
+            options: ["生成的氧氣是氣體，逸散到空氣中，但整體依然嚴格遵守質量守恆定律", "質量守恆定律在此反應中完全失效", "二氧化錳把雙氧水質量吃掉了", "化學反應產生了核能衰變"],
+            correct: "生成的氧氣是氣體，逸散到空氣中，但整體依然嚴格遵守質量守恆定律",
+            hint: "開放系統中生成物氣體逸散，若將逸散的氧氣質量加回，總質量完全守恆。",
+            misconceptions: {
+              "質量守恆定律在此反應中完全失效": "【開放系統視質量減少】質量守恆定律在任何化學反應中【永遠成立】！瓶內變輕純粹是因為生成之 $O_2\\uparrow$ 散逸至大氣。"
+            },
+            explanation: "開放系統中氣體生成物逸出造成測得質量減少，若計入逸出氧氣質量，反應物總質量仍等於生成物總質量。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 金屬活性順序與燃燒氧化",
+        monsterName: "金屬活性火魔",
+        monsterEmoji: "⚡",
+        questions: [
+          {
+            formula: "下列金屬元素中，何者的『化學活性最大』，在空氣中極易燃燒且與冷水反應劇烈？",
+            options: ["鉀（K）與鈉（Na）", "鐵（Fe）", "銅（Cu）", "金（Au）"],
+            correct: "鉀（K）與鈉（Na）",
+            hint: "金屬活性之王：鉀 > 鈉 > 鈣 > 鎂 > 鋁。鉀與鈉活性極大，需泡在礦物油中。",
+            misconceptions: {
+              "鐵（Fe）": "【金屬活性大小順序】金屬活性由大到小：鉀>鈉>鈣>鎂>鋁>碳>鋅>鐵...，【鉀與鈉活性最高】，遇水即劇烈反應產生氫氣！"
+            },
+            explanation: "活性順序：K > Na > Ca > Mg > Al > C > Zn > Fe > Sn > Pb > H > Cu > Hg > Ag > Pt > Au。鉀鈉活性最大。"
+          },
+          {
+            formula: "將鎂帶（Mg）點燃後放入裝有『二氧化碳（CO₂）』的集氣瓶中，鎂帶依然能劇烈燃燒發出強烈白光，瓶壁出現黑色炭粒與白色粉末（$2\\text{Mg} + \\text{CO}_2 \\rightarrow 2\\text{MgO} + \\text{C}$）。此實驗證明了下列何者？",
+            options: ["鎂（Mg）對氧的活性大於碳（C），鎂能搶奪二氧化碳中的氧", "二氧化碳具有強烈助燃性", "碳對氧的活性大於鎂", "鎂帶燃燒不需要氧氣"],
+            correct: "鎂（Mg）對氧的活性大於碳（C），鎂能搶奪二氧化碳中的氧",
+            hint: "活性大的金屬（Mg）可以把活性小的非金屬（C）從氧化物（CO2）中還原出來（強奪弱氧）。",
+            misconceptions: {
+              "二氧化碳具有強烈助燃性": "【強搶弱氧氧化還原】CO₂ 本身不可燃也不助燃！是因為【鎂的活性大於碳】，鎂強行搶走 CO₂ 中的氧結合為氧化鎂（MgO），還原出黑碳（C）！"
+            },
+            explanation: "金屬活性 $Mg > C$，故高溫下鎂能奪取 $CO_2$ 中的氧原子，進行置換反應生成 $MgO$ 與碳顆粒。"
+          },
+          {
+            formula: "將『金屬鈉』與『非金屬硫磺』分別在空氣中燃燒後，將其燃燒產物溶於水中。以紅色石蕊試紙檢驗，水溶液的酸鹼性變化何者正確？",
+            options: ["鈉燃燒產物（氧化鈉）溶於水呈『鹼性』（石蕊試紙變藍色）；硫燃燒產物（二氧化硫）溶於水呈『酸性』（石蕊試紙呈紅色）", "兩者溶於水皆呈中性", "金屬氧化物呈酸性，非金屬氧化物呈鹼性", "兩者皆呈強酸性"],
+            correct: "鈉燃燒產物（氧化鈉）溶於水呈『鹼性』（石蕊試紙變藍色）；硫燃燒產物（二氧化硫）溶於水呈『酸性』（石蕊試紙呈紅色）",
+            hint: "口訣：金屬氧化物溶於水呈『鹼性』；非金屬氧化物溶於水呈『酸性』！",
+            misconceptions: {
+              "金屬氧化物呈酸性，非金屬氧化物呈鹼性": "【金屬/非金屬氧化物水溶液酸鹼口訣】剛好相反！【金屬氧化物（$Na_2O$）溶於水呈鹼性（生成 NaOH）】；【非金屬氧化物（$SO_2$）溶於水呈酸性（亞硫酸）】！"
+            },
+            explanation: "活潑金屬氧化物溶於水生成金屬氫氧化物（鹼性，pH>7）；非金屬氧化物溶於水生成酸（酸性，pH<7，如酸雨成因）。"
+          },
+          {
+            formula: "古代出土的青銅劍（銅合金）與黃金飾品歷經數千年依然光亮完好，而鐵製兵器卻多已銹蝕成粉末。其主要原因為何？",
+            options: ["鐵的活性大於銅與金，鐵極易與空氣中的氧氣及水反應生鏽；金的活性極小不易氧化", "黃金的硬度比鐵高 100 倍", "古代完全沒有氧氣", "銅與金是人造元素"],
+            correct: "鐵的活性大於銅與金，鐵極易與空氣中的氧氣及水反應生鏽；金的活性極小不易氧化",
+            hint: "活性順序：鐵 > 銅 > 銀 > 金。金的化學性質最安定不生鏽。",
+            misconceptions: {
+              "黃金的硬度比鐵高 100 倍": "【金屬化學活性抗蝕性】黃金質地柔軟，保存千年的原因是【金的化學活性極小（惰性極高）】，極難與氧氣或水反應！"
+            },
+            explanation: "金屬活性 $Fe > Cu > Au$。鐵活性大易氧化生成疏鬆鐵鏽（$Fe_2O_3\\cdot nH_2O$）；金活性極小在自然界以游離態穩定存在。"
+          },
+          {
+            formula: "將乾燥的氧化銅粉末（CuO）與鋅粉（Zn）混合加熱，會發生劇烈反應生成金屬銅（Cu）與氧化鋅（ZnO）。若將氧化銅與銀粉（Ag）混合加熱，則完全不發生反應。根據此實驗，鋅、銅、銀三種金屬對氧的活性大小排序應為：",
+            options: ["鋅 (Zn) > 銅 (Cu) > 銀 (Ag)", "銀 > 銅 > 鋅", "銅 > 鋅 > 銀", "三者活性相同"],
+            correct: "鋅 (Zn) > 銅 (Cu) > 銀 (Ag)",
+            hint: "Zn 能搶走 CuO 的氧 ➔ Zn > Cu；Ag 搶不走 CuO 的氧 ➔ Cu > Ag。故 Zn > Cu > Ag。",
+            misconceptions: {
+              "銀 > 銅 > 鋅": "【置換反應活性判定】能成功奪氧者活性較大：Zn 能奪 CuO 之氧 $\\Rightarrow Zn > Cu$；Ag 不能奪氧 $\\Rightarrow Cu > Ag$。排序必為【Zn > Cu > Ag】。"
+            },
+            explanation: "置換反應規律：活性較大之金屬可將活性較小金屬自其氧化物中還原出來。反應證明 $Zn > Cu > Ag$。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 氧化還原反應與高爐煉鐵",
+        monsterName: "高爐還原領主",
+        monsterEmoji: "🏭",
+        questions: [
+          {
+            formula: "在化學反應：$\\text{Fe}_2\text{O}_3 + 3 \\text{ CO} \\rightarrow 2 \\text{ Fe} + 3 \\text{ CO}_2$ 中，下列關於『氧化劑』與『還原劑』的判定，何者完全正確？",
+            options: ["CO 是還原劑（自身得氧被氧化成 CO₂）；Fe₂O₃ 是氧化劑（自身失氧被還原成 Fe）", "Fe₂O₃ 是還原劑，CO 是氧化劑", "CO 與 Fe 都是氧化劑", "此反應不是氧化還原反應"],
+            correct: "CO 是還原劑（自身得氧被氧化成 CO₂）；Fe₂O₃ 是氧化劑（自身失氧被還原成 Fe）",
+            hint: "得氧者 ➔ 發生氧化反應 ➔ 作為『還原劑』；失氧者 ➔ 發生還原反應 ➔ 作為『氧化劑』。",
+            misconceptions: {
+              "Fe₂O₃ 是還原劑，CO 是氧化劑": "【氧化劑 vs 還原劑定義陷阱】得氧的物質（CO 變 CO₂）是【還原劑（促使別人還原）】；失氧的物質（Fe₂O₃ 變 Fe）是【氧化劑】！"
+            },
+            explanation: "氧化還原伴隨發生：$CO$ 得氧進行氧化反應（充當還原劑）；$Fe_2O_3$ 失氧進行還原反應（充當氧化劑）。"
+          },
+          {
+            formula: "工業高爐煉鐵時，加入『灰石（碳酸鈣 CaCO₃）』的主要目的為何？",
+            options: ["灰石高溫分解為氧化鈣（CaO），與鐵礦中的泥沙雜質（二氧化矽 SiO₂）反應生成『熔渣（CaSiO₃）』浮於鐵水表面，便於分離雜質並防止鐵水再氧化", "灰石用作主要燃料燃燒產熱", "灰石用來直接還原鐵礦", "增加鐵水重量"],
+            correct: "灰石高溫分解為氧化鈣（CaO），與鐵礦中的泥沙雜質（二氧化矽 SiO₂）反應生成『熔渣（CaSiO₃）』浮於鐵水表面，便於分離雜質並防止鐵水再氧化",
+            hint: "灰石是造渣劑：CaCO3 ➔ CaO + CO2，CaO + SiO2 ➔ CaSiO3（矽酸鈣熔渣，密度小浮在鐵水上方）。",
+            misconceptions: {
+              "灰石用作主要燃料燃燒產熱": "【高爐灰石造渣功能】燃料與主要還原劑是『煤焦（碳 C）』！【灰石（CaCO₃）是造渣劑】，去除泥沙雜質（生成 CaSiO₃ 熔渣）。"
+            },
+            explanation: "高爐造渣原理：$\\text{CaCO}_3 \\xrightarrow{\\Delta} \\text{CaO} + \\text{CO}_2\\uparrow$；$\\text{CaO} + \\text{SiO}_2 \\rightarrow \\text{CaSiO}_3$（熔渣密度小浮於上方，出渣口排出）。"
+          },
+          {
+            formula: "由高爐剛煉出的生鐵，其含碳量高且質地硬脆。下列關於『生鐵、熟鐵（鍛鐵）與鋼』的含碳量與特性比較，何者正確？",
+            options: ["含碳量：生鐵 > 鋼 > 熟鐵；鋼的韌性與彈性最佳，廣泛用於建築與鋼筋", "熟鐵含碳量最高最硬", "生鐵完全不含碳是純鐵", "鋼的含碳量高於生鐵"],
+            correct: "含碳量：生鐵 > 鋼 > 熟鐵；鋼的韌性與彈性最佳，廣泛用於建築與鋼筋",
+            hint: "含碳量排序：生鐵（2~4.5% 硬脆） > 鋼（0.2~2% 韌性佳） > 熟鐵（<0.2% 質軟延展佳）。",
+            misconceptions: {
+              "熟鐵含碳量最高最硬": "【鐵合金含碳量口訣】含碳量由多到少：【生鐵（硬脆鑄鐵） > 鋼（強韌） > 熟鐵（純度最高質軟）】！"
+            },
+            explanation: "生鐵（銑鐵）含碳量 2%~4.5%，熔點低質脆耐壓（鑄造）；鋼含碳 0.05%~2%，硬度韌性兼備；熟鐵含碳 <0.05%，質軟延展佳。"
+          },
+          {
+            formula: "食品包裝中常見的『小包脫氧劑』，其內部所含的主要主要活性化學成分通常為下列何者？",
+            options: ["細鐵粉（利用鐵極易吸收包裝內氧氣氧化生鏽，以達除氧保鮮目的）", "活性炭", "生石灰", "乾燥乾燥劑氯化鈣"],
+            correct: "細鐵粉（利用鐵極易吸收包裝內氧氣氧化生鏽，以達除氧保鮮目的）",
+            hint: "鐵粉在微量水分下極易與氧氣反應（氧化生鏽），消耗袋內殘留氧氣。",
+            misconceptions: {
+              "乾燥乾燥劑氯化鈣": "【脫氧劑 vs 乾燥劑】生石灰/矽膠是『吸水乾燥劑』；【脫氧劑成分為鐵粉】，透過鐵的氧化反應消耗氧氣防止食品氧化變質。"
+            },
+            explanation: "化學脫氧劑利用高比表面積還原鐵粉與氧氣發生氧化反應（$4\\text{Fe} + 3\\text{O}_2 + 6\\text{H}_2\\text{O} \\rightarrow 4\\text{Fe(OH)}_3$），降低包裝內氧濃度。"
+          },
+          {
+            formula: "【會考生活題】在切開的蘋果表面滴上檸檬汁（富含維生素 C），可以有效防止蘋果表面氧化褐變。在此過程中，維生素 C 所扮演的角色為何？",
+            options: ["抗氧化劑（還原劑，比蘋果多酚更優先與氧氣反應而被氧化）", "催化劑加速蘋果腐爛", "氧化劑奪取蘋果水分", "漂白劑破壞果肉纖維"],
+            correct: "抗氧化劑（還原劑，比蘋果多酚更優先與氧氣反應而被氧化）",
+            hint: "維生素 C 活性大容易先被氧化，保護食物成分免於被氧化（抗氧化劑 = 還原劑）。",
+            misconceptions: {
+              "氧化劑奪取蘋果水分": "【抗氧化劑化學本質】抗氧化劑本身是【優良還原劑】！它犧牲自己『優先與氧反應』，保護食品中的營養素不被氧化褐變。"
+            },
+            explanation: "維生素 C（抗壞血酸）具有強還原性，作為抗氧化劑優先與環境中活性氧反應，阻止多酚氧化酶引發之褐變反應。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('steam-canvas');
+        this.visualizer = new SteamVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.steam-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'steam-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-gold);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-flame);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.steam-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "⚙️ 計量工程診斷：觀念拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的莫耳數公式、反應式平衡質量比、活性順序或氧化還原定義，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:#10b981; font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「反應物顆粒大小對化學反應速率的影響」。本實驗的操作變因為何？","options":["產生固定體積氣體所需時間","反應物質量、濃度與溫度","反應物顆粒大小","每組實驗重複次數"],"correct":"反應物顆粒大小","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「反應物顆粒大小」。"},{"formula":"【實驗探究】進行「反應物顆粒大小對化學反應速率的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["反應物質量、濃度與溫度","實驗器材品牌","產生固定體積氣體所需時間","反應物顆粒大小"],"correct":"產生固定體積氣體所需時間","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「產生固定體積氣體所需時間」。"},{"formula":"【實驗設計】為公平比較「反應物顆粒大小對化學反應速率的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","反應物質量、濃度與溫度","各組可使用不同測量方法"],"correct":"反應物質量、濃度與溫度","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：反應物質量、濃度與溫度。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","顆粒越小，接觸面積越大，反應通常越快","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"顆粒越小，接觸面積越大，反應通常越快","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：顆粒越小，接觸面積越大，反應通常越快。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「顆粒大小 對 反應速率 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：顆粒越小，接觸面積越大，反應越快。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「顆粒大小」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「顆粒大小」與「反應速率」的關係，何者最合理？","options":["顆粒越小，接觸面積越大，反應越快","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"顆粒越小，接觸面積越大，反應越快","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：顆粒越小，接觸面積越大，反應越快；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+</body>
+</html>
