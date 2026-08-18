@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中社會：世界地理特訓 | 環球經緯地圖</title>
+  <meta name="description" content="世界各洲氣候特徵（溫帶海洋性、地中海型夏乾冬雨、季風氣候）、主要地形農業與全球環境議題">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Orbitron:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap">
+  <style>
+    :root {
+      --bg-theme: #091726;
+      --bg-card: #10243b;
+      --bg-surface: #19375c;
+      --color-primary: #38bdf8;
+      --color-accent: #60a5fa;
+      --color-gold: #facc15;
+      --color-danger: #f43f5e;
+      --color-success: #10b981;
+      --color-text: #f8fafc;
+      --color-border: #0284c7;
+      --btn-hover: #0369a1;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-orbitron: 'Orbitron', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #0284c7 0%, #030b14 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-primary);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(10, 14, 23, 0.95);
+      border-bottom: 2px solid var(--color-primary); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-primary); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .theme-bar { flex: 1; height: 12px; background: #030712; border: 1px solid var(--color-primary); border-radius: 3px; position: relative; overflow: hidden; }
+    .theme-bar-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-accent)); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-gold); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-primary); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-gold); box-shadow: 0 0 8px var(--color-gold); }
+    .progress-dot.cleared { background: var(--color-success); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-primary); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #bae6fd; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-gold); }
+    .btn-theme-icon { background: var(--bg-surface); border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .theme-arena {
+      flex: 1.1; background: linear-gradient(180deg, #020617 0%, var(--bg-card) 100%);
+      border: 1.5px solid var(--color-border); border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-primary);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(10, 14, 23, 0.9); border: 1px solid var(--color-primary); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatTheme 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .theme-board-container { height: 75px; background: var(--bg-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .theme-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-primary); margin-bottom: 2px; }
+    .theme-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #theme-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid var(--color-border); border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(56, 189, 248, 0.2); color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #0a0e17; border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 21px; font-weight: 900; line-height: 1.5; color: #fff; font-family: var(--font-mono), var(--font-chinese); }
+    .question-hint-text { margin-top: 4px; font-size: 15px; color: var(--color-primary); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .theme-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid var(--color-border); border-radius: 10px;
+      padding: 13px 18px; font-size: 17px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left; font-family: var(--font-mono), var(--font-chinese);
+    }
+    .theme-btn:hover { background: var(--btn-hover); border-color: var(--color-gold); transform: translateY(-1px); }
+    .theme-btn .btn-key { width: 26px; height: 26px; background: #0a0e17; color: var(--color-gold); border: 1px solid var(--color-primary); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .theme-btn.btn-correct { background: rgba(16, 185, 129, 0.25) !important; border-color: var(--color-success) !important; color: #86efac !important; }
+    .theme-btn.btn-wrong { background: rgba(244, 63, 94, 0.25) !important; border-color: var(--color-danger) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .theme-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-primary); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-primary); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-gold); }
+    .misconception-box { background: rgba(244, 63, 94, 0.15); border-left: 4px solid var(--color-danger); border-radius: 4px; padding: 10px 14px; font-size: 16px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #0a0e17; border: 1px solid var(--color-border); border-radius: 6px; padding: 12px 14px; font-size: 16px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-gold); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-primary); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-primary); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-theme { background: var(--color-gold); color: #0a0e17; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-orbitron); cursor: pointer; box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
+    @keyframes floatTheme { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>🌐</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-gold); font-size:10px;">QUEST</span>
+            <div class="theme-bar"><div id="player-hp-bar" class="theme-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-gold);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-primary); font-size:10px;">SOCIAL G9 (VOL.5-6)</span>
+            <span style="font-size:10px; color:#bae6fd;">WORLD GEOGRAPHY</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">關卡載入中...</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-theme-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="theme-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🛡️</span></div>
+          <div class="char-nametag">會考特訓官</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">👾</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-accent);">考點守護獸</div>
+          <div class="monster-hp-wrap">
+            <div class="theme-bar" style="height:8px;"><div id="monster-hp-bar" class="theme-bar-fill" style="width: 100%; background:var(--color-danger);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="theme-board-container">
+        <div class="theme-board-header">
+          <span>🌐 溫帶海洋性(西歐全年有雨溫和) ｜ 地中海型(夏乾冬雨/橄欖柑橘) ｜ 熱帶雨林vs季風 ｜ 北美商業專業農業帶 ｜ 澳洲混合農業</span>
+          <span style="color:var(--color-gold); font-size:10px;">★ 會考核心指標</span>
+        </div>
+        <div class="theme-canvas-wrap"><canvas id="theme-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">關卡載入中...</span>
+        <span style="font-size:11px; color:#bae6fd;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入會考核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="theme-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">💡</span>
+          <div id="modal-title" class="dialog-title">會考觀念診斷：盲點剖析</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-theme" style="font-size:13px; padding:6px 20px;">掌握觀念，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">🌐✨</div>
+      <h1 class="game-title-main">國中社會：世界地理特訓 | 環球經緯地圖</h1>
+      <h2 class="game-subtitle">★ 世界各洲氣候特徵（溫帶海洋性、地中海型夏乾冬雨、季風氣候）、主要地形農業與全球環境議題 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-gold);">【三大核心領域重點關卡】：</strong>
+        <ul>
+          <li>🔹 <strong>Level 1</strong>：Level 1: 歐洲、俄羅斯與地中海氣候特徵 (2-1)</li>
+          <li>🔹 <strong>Level 2</strong>：Level 2: 美洲、亞洲各區與大洋洲地理 (2-2)</li>
+          <li>🔹 <strong>Level 3</strong>：Level 3: 全球環境變遷、永續發展與區域議題 (2-3)</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-theme">開始會考挑戰 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆👑</div>
+      <h1 class="game-title-main" style="color:var(--color-success);">CHALLENGE COMPLETED!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通本單元所有會考必考關鍵概念！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-gold);">【會考精通首席大師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-success); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-theme">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥⚠️</div>
+      <h1 class="game-title-main" style="color:var(--color-danger);">挑戰中斷！</h1>
+      <h2 class="game-subtitle">考點混淆或觀念理解有誤，重新複習後再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-theme" style="background:var(--color-danger); color:#fff;">重新聚能 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 3 };
+
+    class ThemeAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'triangle', 0.08, 0); this.playTone(659.25, 'triangle', 0.1, 0.06); this.playTone(1046.50, 'triangle', 0.2, 0.12); }
+      playWrong() { this.playTone(220, 'sawtooth', 0.15, 0); this.playTone(146.83, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(440, 'square', 0.08, 0); this.playTone(880, 'sine', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new ThemeAudioEngine();
+
+    class ThemeVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        const midX = w / 2;
+        ctx.fillStyle = "#38bdf8"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("⚡ 會考核心觀念突破 ｜ 第 " + level + " 階段特訓", midX, h / 2 - 4);
+        ctx.fillStyle = "#facc15";
+        ctx.fillText("掌握題幹關鍵字 ｜ 排除干擾選項 ｜ 提升答題準確率", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+            "level": 1,
+            "title": "Level 1: 歐洲、俄羅斯與地中海氣候特徵 (2-1)",
+            "monsterName": "西風海洋泰坦",
+            "monsterEmoji": "🌊",
+            "questions": [
+                  {
+                        "formula": "【會考必考氣候對比】『西歐（如英國、法國、荷蘭）』與『南歐地中海沿岸（如義大利、西班牙、希臘）』的氣候特徵比較，何者完全正確？",
+                        "options": [
+                              "『西歐』受北大西洋暖流與終年西風吹拂，屬『溫帶海洋性氣候（全年有雨、冬暖夏涼、溫差小）』；『南歐』屬『地中海型氣候（夏季乾燥炎熱、冬季溫暖多雨【夏乾冬雨】）』",
+                              "西歐夏季乾燥無雨",
+                              "南歐全年降雨均勻",
+                              "兩者皆為寒帶苔原氣候"
+                        ],
+                        "correct": "『西歐』受北大西洋暖流與終年西風吹拂，屬『溫帶海洋性氣候（全年有雨、冬暖夏涼、溫差小）』；『南歐』屬『地中海型氣候（夏季乾燥炎熱、冬季溫暖多雨【夏乾冬雨】）』",
+                        "hint": "西歐：溫帶海洋性氣候，降雨全年均勻，適合多汁牧草發展乳酪畜牧業。南歐：地中海型氣候，夏季受副熱帶高壓籠罩乾燥少雨，發展耐旱『地中海型農業（橄欖、葡萄、柑橘、軟木）』。",
+                        "explanation": "西歐受暖流與西風影響全年溫和多雨；南歐具典型夏乾冬雨之地中海氣候特徵。"
+                  },
+                  {
+                        "formula": "北歐挪威沿海擁有幽深狹長、兩側峭壁如懸崖的壯麗『峽灣（Fjord）』景觀，此地形是由下列哪一種地質營力侵蝕雕刻而成？",
+                        "options": [
+                              "『冰河侵蝕作用（冰河刨蝕 U 型谷經海水入侵淹沒）』",
+                              "河流侵蝕 V 型谷",
+                              "風力吹蝕作用",
+                              "板塊張裂海溝"
+                        ],
+                        "correct": "『冰河侵蝕作用（冰河刨蝕 U 型谷經海水入侵淹沒）』",
+                        "hint": "第四紀冰河時期巨大冰川下切形成 U 型谷，冰河消退後海平面上升海水湧入 ➔ 峽灣海岸（挪威、紐西蘭南島、智利南部）。",
+                        "explanation": "峽灣為冰川侵蝕形成的 U 型槽谷受海水淹沒所形成之特殊海岸地形。"
+                  },
+                  {
+                        "formula": "世界國土面積最大的國家為俄羅斯，橫跨歐亞兩洲。劃分俄羅斯歐洲部分與亞洲西伯利亞部分的重要分界山脈為：",
+                        "options": [
+                              "『烏拉山脈（烏拉爾山脈）』",
+                              "阿爾卑斯山脈",
+                              "喜馬拉雅山脈",
+                              "安地斯山脈"
+                        ],
+                        "correct": "『烏拉山脈（烏拉爾山脈）』",
+                        "hint": "烏拉山脈為歐亞大陸分界線。俄羅斯人口與經濟重心高度集中在烏拉山以西的『東歐平原（莫斯科/聖彼得堡）』。",
+                        "explanation": "烏拉山脈為歐洲與亞洲之地理分界線。"
+                  },
+                  {
+                        "formula": "南歐地中海型氣候區的傳統民居建築常漆成『白色牆壁』並設有『厚牆小窗』，其地理環境適應理由為何？",
+                        "options": [
+                              "白色牆面能『強烈反射夏季炙熱陽光』，厚牆小窗能『阻絕室外高溫乾燥熱氣』保持室內涼爽",
+                              "為了防範冬季暴風雪",
+                              "因為缺乏木材建材",
+                              "純粹宗教裝飾要求"
+                        ],
+                        "correct": "白色牆面能『強烈反射夏季炙熱陽光』，厚牆小窗能『阻絕室外高溫乾燥熱氣』保持室內涼爽",
+                        "hint": "希臘聖托里尼等島嶼白屋藍頂：防盛夏烈日強光照射、厚牆隔熱保溫。",
+                        "explanation": "白色反射日光、厚壁小窗隔熱防曬，適應夏季高溫少雨氣候。"
+                  },
+                  {
+                        "formula": "歐洲多瑙河與萊茵河為兩大重要國際河流，其中流經國家最多、注入黑海的河流為：",
+                        "options": [
+                              "『多瑙河』",
+                              "萊茵河",
+                              "伏爾加河",
+                              "泰晤士河"
+                        ],
+                        "correct": "『多瑙河』",
+                        "hint": "多瑙河源於德國黑森林，流經奧地利、匈牙利等 10 個國家注入黑海，為歐洲流經國家最多之河流；萊茵河則注入北海（鹿特丹港）。",
+                        "explanation": "多瑙河流經 10 國，為世界上流經國家最多之國際河流。"
+                  }
+            ]
+      },
+      {
+            "level": 2,
+            "title": "Level 2: 美洲、亞洲各區與大洋洲地理 (2-2)",
+            "monsterName": "美洲板塊巨獸",
+            "monsterEmoji": "🌎",
+            "questions": [
+                  {
+                        "formula": "美國中部大平原農業極具發達，其農業生產呈現高度『區域專業化（農業帶）』與高度機械化。下列美國主要農業帶的分佈配對何者正確？",
+                        "options": [
+                              "『五大湖與東北部：乳酪帶』、 『中部平原：玉米帶與小麥帶』、 『南部沿海：棉花帶與亞熱帶作物帶』",
+                              "五大湖區種棉花",
+                              "南部沿海為小麥帶",
+                              "全美各地農作物均勻混合種植"
+                        ],
+                        "correct": "『五大湖與東北部：乳酪帶』、 『中部平原：玉米帶與小麥帶』、 『南部沿海：棉花帶與亞熱帶作物帶』",
+                        "hint": "美國農業帶依氣候市場因地制宜專業化：五大湖（氣候涼濕都市人口密集 ➔ 乳酪帶）；中部（地平土肥 ➔ 玉米帶、小麥帶）；南部（氣候暖濕 ➔ 棉花帶）。",
+                        "explanation": "美國依據氣候、土壤與市場區位形成高度專業化的農業帶分佈。"
+                  },
+                  {
+                        "formula": "南美洲擁有世界流量最大、流域面積最廣的大河，孕育了世界最大的『熱帶雨林（地球之肺）』。這條河流為：",
+                        "options": [
+                              "『亞馬遜河（亞馬孫河）』",
+                              "密西西比河",
+                              "尼羅河",
+                              "剛果河"
+                        ],
+                        "correct": "『亞馬遜河（亞馬孫河）』",
+                        "hint": "亞馬遜河位於赤道附近，終年受赤道低壓帶籠罩對流旺盛形成熱帶雨林，生物多樣性全球第一。",
+                        "explanation": "亞馬遜河流域擁有全球面積最大、生物資源最豐富的熱帶雨林。"
+                  },
+                  {
+                        "formula": "西亞（中東）與北非地區氣候極度乾燥，但因地理位置扼守歐亞非樞紐且蘊藏豐富戰略資源，成為國際焦點。該區域最豐富與最匱乏的資源分別為：",
+                        "options": [
+                              "最豐富資源為『石油（波斯灣沿岸）』，最匱乏資源為『水資源』",
+                              "最豐富為淡水，最匱乏為石油",
+                              "最豐富為煤炭，最匱乏為天然氣",
+                              "最豐富為木材，最匱乏為鐵礦"
+                        ],
+                        "correct": "最豐富資源為『石油（波斯灣沿岸）』，最匱乏資源為『水資源』",
+                        "hint": "中東特徵：水比油貴！波斯灣沿岸（沙烏地阿拉伯、伊朗、伊拉克、科威特）石油儲量佔全球大半，但全區沙漠廣布缺乏淡水（發展海水淡化）。",
+                        "explanation": "西亞為世界石油寶庫，但氣候乾燥嚴重缺乏水資源。"
+                  },
+                  {
+                        "formula": "東南亞中南半島（如泰國、越南）與南亞印度半島夏季主要的氣候類型為：",
+                        "options": [
+                              "『熱帶季風氣候（年分雨季與乾季，雨熱同行適合種植水稻）』",
+                              "溫帶大陸性氣候",
+                              "地中海型氣候",
+                              "極地苔原氣候"
+                        ],
+                        "correct": "『熱帶季風氣候（年分雨季與乾季，雨熱同行適合種植水稻）』",
+                        "hint": "熱帶季風氣候：全年高溫，夏季西南季風帶來豐沛降水（雨季），冬季東北季風乾燥（乾季），為世界主要稻米出口區（泰國米、越南米）。",
+                        "explanation": "熱帶季風氣候雨熱同期，為亞洲主要水稻種植與輸出地區。"
+                  },
+                  {
+                        "formula": "澳洲（澳大利亞）長期與其他大陸板塊隔離，保留了許多特有的古老原始哺乳動物。下列哪一組動物全部為澳洲特有種？",
+                        "options": [
+                              "『袋鼠、無尾熊（考拉）、鴨嘴獸、針鼴（有袋類與單孔類）』",
+                              "長頸鹿、斑馬、獅子",
+                              "大貓熊、金絲猴",
+                              "北極熊、馴鹿"
+                        ],
+                        "correct": "『袋鼠、無尾熊（考拉）、鴨嘴獸、針鼴（有袋類與單孔類）』",
+                        "hint": "澳洲孤立於南半球大洋中，缺乏大型肉食胎盤哺乳類競爭，保存了原始的有袋類（袋鼠無尾熊）與卵生單孔類（鴨嘴獸）。",
+                        "explanation": "澳洲板塊長期孤立演化，孕育獨特之有袋類與單孔類特有物種。"
+                  }
+            ]
+      },
+      {
+            "level": 3,
+            "title": "Level 3: 全球環境變遷、永續發展與區域議題 (2-3)",
+            "monsterName": "全球暖化生態領主",
+            "monsterEmoji": "🔥",
+            "questions": [
+                  {
+                        "formula": "非洲撒哈拉沙漠南緣的『薩赫爾地區（Sahel）』近年面臨嚴重的生態環境浩劫，主要原因為過度放牧、過度開墾加上乾旱，導致土地迅速演變為：",
+                        "options": [
+                              "『荒漠化（沙漠化）』，引發大面積飢荒與環境難民",
+                              "冰河覆蓋",
+                              "熱帶雨林蔓延",
+                              "土壤鹽鹼化完全解決"
+                        ],
+                        "correct": "『荒漠化（沙漠化）』，引發大面積飢荒與環境難民",
+                        "hint": "薩赫爾為草原向沙漠過渡地帶，人口激增導致超載過牧、砍伐林木，植被破壞使沙漠迅速向南擴張（土地沙漠化）。",
+                        "explanation": "過度人為利用與氣候乾旱加劇薩赫爾地區土地荒漠化危機。"
+                  },
+                  {
+                        "formula": "人類大量燃燒化石燃料排放二氧化碳等溫室氣體，造成『全球暖化與氣候變遷』。下列何者『不是』全球暖化直接引發的生態危機？",
+                        "options": [
+                              "全球各地地震與火山噴發次數永久暴增",
+                              "極地冰川與格陵蘭冰冠加速融化，海平面上升淹沒低窪沿海與島國（如吐瓦魯）",
+                              "極端氣候事件（熱浪、超級暴雨、世紀乾旱）頻率與強度大幅增加",
+                              "海水溫度上升導致珊瑚礁大面積白化死亡"
+                        ],
+                        "correct": "全球各地地震與火山噴發次數永久暴增",
+                        "hint": "地震與火山由地球內部板塊構造運動引發，與大氣溫室效應無直接關聯。海平面上升、極端天氣、珊瑚白化皆為暖化直接後果。",
+                        "explanation": "地震與火山活動源於地球內部構造動力，非全球氣候暖化所致。"
+                  },
+                  {
+                        "formula": "中亞地區曾為世界第四大湖泊的『鹹海（Aral Sea）』，在近半世紀內面積急遽萎縮 90% 以上近乎乾涸。其主要人為原因為：",
+                        "options": [
+                              "蘇聯時期大規模引阿姆河與錫爾河河水灌溉種植『棉花』，使得注入鹹海的水量急劇斷流",
+                              "當地興建巨型水力發電站蓄水",
+                              "氣候變冷結冰",
+                              "海水淡化廠抽取過多水"
+                        ],
+                        "correct": "蘇聯時期大規模引阿姆河與錫爾河河水灌溉種植『棉花』，使得注入鹹海的水量急劇斷流",
+                        "hint": "不合理農業開發悲劇：盲目引河水灌溉沙漠種棉花（白金計劃），使入湖水源枯竭，鹹海乾涸演變為『鹹海鹽沙漠』引發鹽塵暴。",
+                        "explanation": "過度引河灌溉棉花導致入湖徑流銳減，造成鹹海生態萎縮災難。"
+                  },
+                  {
+                        "formula": "南美洲智利沿海的『阿塔卡馬沙漠（Atacama Desert）』被稱為世界最乾燥的旱極。其極度乾燥成因主要受到下列哪一股強大『涼流（寒流）』降溫減濕的影響？",
+                        "options": [
+                              "『秘魯涼流（本伯特涼流）』",
+                              "墨西哥灣暖流",
+                              "北大西洋暖流",
+                              "黑潮暖流"
+                        ],
+                        "correct": "『秘魯涼流（本伯特涼流）』",
+                        "hint": "涼流（寒流）流經海面氣溫低、空氣穩定下沉不易對流成雨 ➔ 沿海形成乾燥沙漠（如秘魯涼流形成的阿塔卡馬沙漠、本格拉涼流形成的納米比沙漠）。暖流則增溫增濕。",
+                        "explanation": "秘魯涼流減濕降溫效應加上副熱帶高壓籠罩，造就阿塔卡馬極度乾燥氣候。"
+                  },
+                  {
+                        "formula": "【會考永續發展題】聯合國提出的『永續發展目標（SDGs）』共包含 17 項核心目標，其最根本的跨世代核心精神為何？",
+                        "options": [
+                              "『兼顧經濟成長、社會進步與環境保護，滿足當代人需求同時不損害後代子孫滿足其需求之能力』",
+                              "完全停止所有工業生產回歸原始",
+                              "只追求經濟利益最大化",
+                              "禁止開發任何天然資源"
+                        ],
+                        "correct": "『兼顧經濟成長、社會進步與環境保護，滿足當代人需求同時不損害後代子孫滿足其需求之能力』",
+                        "hint": "永續發展（Sustainable Development）三大支柱：經濟、社會、環境平衡共好，不犧牲下一代權益。",
+                        "explanation": "SDGs 核心理念為在世代平衡下實現經濟、社會包容與環境永續。"
+                  }
+            ]
+      }
+];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('theme-canvas');
+        this.visualizer = new ThemeVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.theme-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.textContent = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'theme-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-gold);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-danger);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.theme-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "💡 會考觀念診斷：盲點剖析";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題目核心觀念與會考常見關鍵字陷阱，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-success); font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+</body>
+</html>
