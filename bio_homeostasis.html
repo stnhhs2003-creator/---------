@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生物體之恆定：未來生化核心 | 國中生物會考第五章 科幻風 Web 闖關遊戲</title>
+  <meta name="description" content="專為國中生物會考第五章恆定性打造的未來科幻風 Web 闖關遊戲，精準涵蓋體溫恆定、呼吸運動與氣體交換、血糖調節、排泄與水分恆定。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Noto+Sans+TC:wght@500;700;900&display=swap">
+  <style>
+    :root {
+      --bg-cyber: #050b14;
+      --bg-card: #0a192f;
+      --bg-surface: #112240;
+      
+      --color-cyan: #64ffda;
+      --color-blue: #00b4d8;
+      --color-purple: #bd93f9;
+      --color-neon-pink: #ff79c6;
+      --color-neon-green: #50fa7b;
+      --color-neon-red: #ff5555;
+      
+      --color-text-main: #e6f1ff;
+      --color-text-dim: #8892b0;
+      
+      --border-cyan: #233554;
+      --font-cyber: 'Orbitron', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #0d1b2a 0%, #050b14 100%);
+      font-family: var(--font-chinese); color: var(--color-text-main);
+      display: flex; justify-content: center; align-items: center;
+    }
+
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2px solid var(--color-cyan);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(100, 255, 218, 0.2), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+
+    #hud-bar {
+      height: 70px; background: rgba(10, 25, 47, 0.95);
+      border-bottom: 2px solid var(--color-cyan); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 20px; z-index: 10;
+    }
+
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 46px; height: 46px; background: var(--bg-surface);
+      border: 2px solid var(--color-cyan); border-radius: 10px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+      box-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+    }
+
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-cyber); }
+    .cyber-bar { flex: 1; height: 12px; background: #020c1b; border: 1px solid var(--color-cyan); border-radius: 3px; position: relative; overflow: hidden; }
+    .cyber-bar-fill { height: 100%; background: linear-gradient(90deg, #00b4d8, #64ffda); transition: width 0.3s ease; }
+
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 800; color: var(--color-cyan); font-family: var(--font-chinese); letter-spacing: 1px; margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--border-cyan); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-cyan); box-shadow: 0 0 8px var(--color-cyan); }
+    .progress-dot.cleared { background: var(--color-neon-green); }
+
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-cyan); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: var(--color-text-dim); font-family: var(--font-cyber); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-cyber); color: var(--color-cyan); }
+
+    .btn-cyber-icon { background: var(--bg-surface); border: 1px solid var(--color-cyan); color: var(--color-cyan); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .cyber-arena {
+      flex: 1.1; background: linear-gradient(180deg, #020c1b 0%, #0a192f 100%);
+      border: 1.5px solid var(--border-cyan); border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-cyan);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(100, 255, 218, 0.2); transition: transform 0.2s ease;
+    }
+
+    .char-nametag { background: rgba(5, 11, 20, 0.85); border: 1px solid var(--color-cyan); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-cyber); animation: floatCyber 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+
+    .cyber-board-container { height: 75px; background: var(--bg-surface); border: 1px solid var(--border-cyan); border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .cyber-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-cyan); margin-bottom: 2px; }
+    .cyber-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #homeostasis-canvas { width: 100%; height: 100%; display: block; }
+
+    #question-panel { background: var(--bg-surface); border: 1.5px solid var(--border-cyan); border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(100, 255, 218, 0.1); color: var(--color-cyan); border: 1px solid var(--color-cyan); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #020c1b; border: 1px solid var(--border-cyan); border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .cyber-btn {
+      background: var(--bg-card); color: var(--color-text-main); border: 1px solid var(--border-cyan); border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px;
+      transition: all 0.15s ease; outline: none; text-align: left;
+    }
+
+    .cyber-btn:hover { background: #172a45; border-color: var(--color-cyan); transform: translateY(-1px); box-shadow: 0 0 10px rgba(100,255,218,0.2); }
+    .cyber-btn .btn-key { width: 26px; height: 26px; background: #020c1b; color: var(--color-cyan); border: 1px solid var(--color-cyan); border-radius: 4px; font-size: 13px; font-family: var(--font-cyber); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cyber-btn.btn-correct { background: rgba(80, 250, 123, 0.2) !important; border-color: var(--color-neon-green) !important; color: var(--color-neon-green) !important; }
+    .cyber-btn.btn-wrong { background: rgba(255, 85, 85, 0.2) !important; border-color: var(--color-neon-red) !important; color: var(--color-neon-red) !important; }
+
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(2, 12, 27, 0.85); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .cyber-dialog { width: 90%; max-width: 560px; background: var(--bg-card); border: 2px solid var(--color-cyan); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 0 30px rgba(100,255,218,0.3); }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-cyan); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-cyan); }
+    .misconception-box { background: rgba(255, 85, 85, 0.15); border-left: 4px solid var(--color-neon-red); border-radius: 4px; padding: 8px 12px; font-size: 15px; color: #ffb8b8; line-height: 1.5; }
+    .step-by-step { background: #020c1b; border: 1px solid var(--border-cyan); border-radius: 6px; padding: 10px 12px; font-size: 15px; color: var(--color-text-main); line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-cyan); margin-bottom: 4px; font-family: var(--font-chinese); letter-spacing: 1px; }
+    .game-subtitle { font-size: 13px; color: var(--color-blue); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1px solid var(--border-cyan); border-radius: 12px; padding: 14px 18px; max-width: 520px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-cyber { background: var(--color-cyan); color: #020c1b; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-cyber); cursor: pointer; box-shadow: 0 0 20px rgba(100, 255, 218, 0.4); }
+
+    @keyframes floatCyber { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    .anim-attack { animation: cyberAttack 0.3s ease; }
+    .anim-hurt { animation: cyberHurt 0.35s ease; }
+    @keyframes cyberAttack { 0% { transform: translateX(0); } 40% { transform: translateX(30px); } 100% { transform: translateX(0); } }
+    @keyframes cyberHurt { 0% { filter: brightness(1); } 30% { filter: brightness(2) drop-shadow(0 0 10px #ff5555); } 100% { filter: brightness(1); } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>🤖</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-cyan); font-size:10px;">CORE</span>
+            <div class="cyber-bar"><div id="player-hp-bar" class="cyber-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-cyan);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-purple); font-size:10px;">BIO CH5</span>
+            <span style="font-size:10px; color:var(--color-text-dim);">HOMEOSTASIS</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 體溫恆定防護網</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-cyber-icon">🔊 AUDIO: ON</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="cyber-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🧑‍🚀</span></div>
+          <div class="char-nametag">生化調控員</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">🧊</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-neon-pink);">失衡冰霜怪</div>
+          <div class="monster-hp-wrap">
+            <div class="cyber-bar" style="height:8px;"><div id="monster-hp-bar" class="cyber-bar-fill" style="width: 100%; background:var(--color-neon-pink);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="cyber-board-container">
+        <div class="cyber-board-header">
+          <span>⚙️ 負回饋機制 / 呼吸運動(肋骨橫膈) / 腎臟過濾再吸收圖解</span>
+          <span style="color:var(--color-cyan); font-size:10px;">★ 生化即時反饋</span>
+        </div>
+        <div class="cyber-canvas-wrap"><canvas id="homeostasis-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:var(--color-text-dim);">KEYBOARD: [1] - [4] KEYS</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入會考核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="cyber-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">🧬</span>
+          <div id="modal-title" class="dialog-title">生化調控診斷：觀念解析與迷思拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-cyber" style="font-size:13px; padding:6px 20px;">確認並繼續 (NEXT) ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">🧬⚙️</div>
+      <h1 class="game-title-main">生物體之恆定：未來生化核心</h1>
+      <h2 class="game-subtitle">★ 國中生物會考第五章 恆定性 科幻特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-cyan);">【四大生化恆定模組】：</strong>
+        <ul>
+          <li>🧊 <strong>Level 1 體溫防護網</strong>：恆溫 vs 變溫、熱時血管擴張/排汗、冷時肌肉顫抖/代謝加快。</li>
+          <li>🫁 <strong>Level 2 呼吸調控室</strong>：呼吸運動（肋骨升+橫膈降=吸氣）、肺泡氣體擴散、二氧化碳刺激腦幹。</li>
+          <li>🍬 <strong>Level 3 血糖平衡樞紐</strong>：胰島素降糖 vs 升糖素升糖、飢餓與進食曲線負回饋。</li>
+          <li>💧 <strong>Level 4 排泄與體液過濾</strong>：排泄(尿素/水/CO2) vs 排遺(糞便)、腎臟過濾再吸收、氨轉尿素在肝臟！</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-cyber">啟動生化系統 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆✨</div>
+      <h1 class="game-title-main" style="color:var(--color-neon-green);">HOMEOSTASIS STABILIZED!</h1>
+      <h2 class="game-subtitle">恭喜你完全穩定體內生化環境，榮獲會考滿分認證！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-cyan);">【恆定性生化首席指揮官】</strong></p>
+        <p>最終總得分：<strong id="final-victory-score" style="color:var(--color-neon-green); font-size:24px; font-family:var(--font-cyber);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-cyber">重新模擬 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">⚠️⚡</div>
+      <h1 class="game-title-main" style="color:var(--color-neon-red);">SYSTEM CRITICAL!</h1>
+      <h2 class="game-subtitle">核心能量耗盡，恆定性失控！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-cyber);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-cyber" style="background:var(--color-neon-red); color:#fff;">系統重啟 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class CyberAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'sine', 0.08, 0); this.playTone(783.99, 'sine', 0.1, 0.06); this.playTone(1046.50, 'sine', 0.2, 0.12); }
+      playWrong() { this.playTone(200, 'sawtooth', 0.15, 0); this.playTone(150, 'sawtooth', 0.2, 0.1); }
+      playAttack() { this.playTone(440, 'triangle', 0.08, 0); this.playTone(880, 'sine', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880, 1108.73].forEach((n, i) => this.playTone(n, 'sine', 0.12, i * 0.07)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.18, i * 0.1)); }
+    }
+    const audio = new CyberAudioEngine();
+
+    class CyberVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawTempHomeostasis(ctx, w, h);
+        else if (level === 2) this.drawBreathing(ctx, w, h);
+        else if (level === 3) this.drawGlucose(ctx, w, h);
+        else this.drawExcretion(ctx, w, h);
+      }
+      drawTempHomeostasis(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "rgba(100, 255, 218, 0.08)";
+        ctx.strokeStyle = "#64ffda";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(10, 6, w - 20, h - 12, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "#ff79c6"; ctx.font = "bold 10px 'Noto Sans TC', sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🔥 熱：皮膚微血管擴張・排汗散熱・食慾下降", midX, h / 2 - 4);
+        ctx.fillStyle = "#00b4d8";
+        ctx.fillText("❄️ 冷：皮膚微血管收縮・肌肉顫抖產熱・代謝加快", midX, h / 2 + 12);
+      }
+      drawBreathing(ctx, w, h) {
+        const colW = (w - 20) / 2;
+        ctx.fillStyle = "#0a192f"; ctx.strokeStyle = "#00b4d8"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(10, 6, colW - 6, h - 12, 6); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#64ffda"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🌬️ 吸氣：肋骨上舉 + 橫膈下降", 10 + (colW - 6) / 2, h / 2 - 4);
+        ctx.fillStyle = "#8892b0"; ctx.font = "9px sans-serif";
+        ctx.fillText("胸腔擴大 ➔ 肺內壓小於外界 ➔ 氣體進入", 10 + (colW - 6) / 2, h / 2 + 10);
+
+        ctx.beginPath(); ctx.roundRect(colW + 10, 6, colW - 6, h - 12, 6); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#ff79c6"; ctx.font = "bold 10px sans-serif";
+        ctx.fillText("💨 呼氣：肋骨下降 + 橫膈上升", colW + 10 + (colW - 6) / 2, h / 2 - 4);
+        ctx.fillStyle = "#8892b0"; ctx.font = "9px sans-serif";
+        ctx.fillText("胸腔縮小 ➔ 肺內壓大於外界 ➔ 氣體排出", colW + 10 + (colW - 6) / 2, h / 2 + 10);
+      }
+      drawGlucose(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#50fa7b"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🩸 飯後高血糖 ➔ 刺激【胰島素】分泌 ➔ 促使葡萄糖進入細胞 & 肝臟合成肝醣 (血糖降)", midX, h / 2 - 4);
+        ctx.fillStyle = "#f1fa8c";
+        ctx.fillText("⚡ 飢餓低血糖 ➔ 刺激【升糖素】分泌 ➔ 促使肝醣分解為葡萄糖釋入血液 (血糖升)", midX, h / 2 + 12);
+      }
+      drawExcretion(ctx, w, h) {
+        const steps = ["蛋白質代謝產生毒性氨", "肝臟將氨轉化為尿素", "腎臟過濾血液形成尿液", "膀胱儲存 ➔ 尿道排出"];
+        const stepW = (w - 20) / steps.length;
+        steps.forEach((s, i) => {
+          const x = 10 + i * stepW + stepW / 2, y = h / 2;
+          ctx.fillStyle = (i === 1) ? "#ff79c6" : (i === 2 ? "#64ffda" : "#00b4d8");
+          ctx.beginPath(); ctx.arc(x, y - 6, 6, 0, Math.PI * 2); ctx.fill();
+          if (i < steps.length - 1) {
+            ctx.strokeStyle = "#233554"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + 8, y - 6); ctx.lineTo(x + stepW - 8, y - 6); ctx.stroke();
+          }
+          ctx.fillStyle = "#e6f1ff"; ctx.font = "bold 9px sans-serif"; ctx.textAlign = "center"; ctx.fillText(s, x, y + 16);
+        });
+      }
+    }
+
+    const CHAPTER5_STAGES = [
+      {
+        level: 1,
+        title: "Level 1: 體溫防護網 (體溫恆定與調節)",
+        monsterName: "失衡冰霜怪",
+        monsterEmoji: "🧊",
+        questions: [
+          {
+            formula: "當寒流來襲氣溫劇降時，人體為了維持 37°C 體溫恆定，會自動引發下列何種生理反應以『增加產熱並減少散熱』？",
+            options: ["皮膚微血管收縮減少散熱、骨骼肌不自主顫抖產熱、代謝速率加快", "皮膚微血管擴張、大量排汗以散熱", "呼吸減慢至完全停止", "食慾顯著下降以減少消化產熱"],
+            correct: "皮膚微血管收縮減少散熱、骨骼肌不自主顫抖產熱、代謝速率加快",
+            hint: "天冷時皮膚發白（血管縮）、發抖（肌肉顫抖產熱）、食慾大增。",
+            misconceptions: {
+              "皮膚微血管擴張、大量排汗以散熱": "【冷熱調節混淆】微血管擴張與排汗是【天氣熱時的散熱反應】！天冷時血管會收縮（減少血液流經體表散熱）並透過發抖產熱。"
+            },
+            explanation: "寒冷時：交感神經刺激體表微血管收縮（減少散熱）、肌肉顫抖（增加產熱）、甲狀腺素促時代謝加快、食慾增加。"
+          },
+          {
+            formula: "下列關於『恆溫動物（如狗、麻雀、人）』與『變溫動物（如青蛙、烏龜、蛇）』的比較，何者完全正確？",
+            options: ["恆溫動物具有體溫調節中樞，能維持體溫近乎恆定；變溫動物體溫會隨外界環境溫度改變而波動", "變溫動物的體溫永遠比恆溫動物高", "恆溫動物完全不需要從外界攝取食物產生熱量", "變溫動物主要靠排汗來調節體溫"],
+            correct: "恆溫動物具有體溫調節中樞，能維持體溫近乎恆定；變溫動物體溫會隨外界環境溫度改變而波動",
+            hint: "鳥類與哺乳類是恆溫動物；魚類、兩生類、爬蟲類是變溫動物。",
+            misconceptions: {
+              "變溫動物主要靠排汗來調節體溫": "【變溫動物適應盲點】變溫動物（如蛇、蜥蜴）沒有排汗腺體，主要靠【行為調節】（如曬太陽取暖或躲入洞穴避暑）來改變體溫。"
+            },
+            explanation: "鳥類與哺乳類為恆溫動物，大腦下視丘調節產熱與散熱平衡；變溫動物體溫隨環境波動，冬季常有冬眠現象。"
+          },
+          {
+            formula: "炎熱夏天在戶外劇烈跑步時，小華滿臉通紅且滿身大汗。造成『滿臉通紅』與『流汗』的主要生理目的為何？",
+            options: ["臉部微血管擴張增加血流散熱；汗水蒸發吸收體表大量熱量", "體內血液過多必須從臉部排出", "預防臉部皮膚被紫外線曬傷", "促使體溫升高以加速排毒"],
+            correct: "臉部微血管擴張增加血流散熱；汗水蒸發吸收體表大量熱量",
+            hint: "微血管擴張帶走體內核心熱量，汗水利用汽化熱散熱。",
+            misconceptions: {
+              "促使體溫升高以加速排毒": "【體溫調節目標】恆定性追求的是【維持體溫在正常範圍（防中暑）】！臉紅代表血管擴張散熱，出汗蒸發帶走熱量。"
+            },
+            explanation: "高溫或運動時體溫微升，體溫中樞促使體表微血管舒張（臉紅帶走熱）與汗腺分泌，利用汗水蒸發之汽化熱高效散熱。"
+          },
+          {
+            formula: "犬類（狗）在夏天酷熱時常伸出長長的舌頭快速喘氣，主要原因為何？",
+            options: ["狗的體表汗腺不發達，藉由舌頭水分蒸發散熱", "狗在夏天必須吸收空氣中的水分", "狗藉由喘氣來降低體內的血糖濃度", "狗利用舌頭吸收地面涼氣"],
+            correct: "狗的體表汗腺不發達，藉由舌頭水分蒸發散熱",
+            hint: "不同動物有不同的散熱適應構造。",
+            misconceptions: {
+              "狗藉由喘氣來降低體內的血糖濃度": "【動物散熱機制考點】狗體表毛皮覆蓋且汗腺極少，藉由伸舌喘氣使呼吸道與舌頭水分快速蒸發以達成散熱。"
+            },
+            explanation: "大部分哺乳動物汗腺分布不同，犬類主要靠口舌黏膜水分蒸發散熱；貓則藉由理毛唾液蒸發或肉墊散熱。"
+          },
+          {
+            formula: "人體負責感應體溫變化並發出產熱或散熱神經指令的『體溫調節中樞』位於腦部的何處？",
+            options: ["下視丘（間腦）", "小腦", "大腦皮質運動區", "延腦呼吸區"],
+            correct: "下視丘（間腦）",
+            hint: "如同體內的恆溫空調控制器，位於大腦底部。",
+            misconceptions: {
+              "大腦皮質運動區": "【中樞構造定位】大腦掌管意識行為（如覺得熱主動開冷氣）；而自律性的【體溫調節中樞】是位於【下視丘】！"
+            },
+            explanation: "下視丘監測流經血液的溫度並接收皮膚溫覺受器訊號，協調自律神經與內分泌系統維持體溫恆定。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 呼吸調控室 (呼吸運動與氣體交換)",
+        monsterName: "窒息煙霧怪",
+        monsterEmoji: "🫁",
+        questions: [
+          {
+            formula: "當人體進行『吸氣動作』時，胸腔內部的骨骼與肌肉會產生何種協同變化？",
+            options: ["肋骨上舉、橫膈下降（收縮平坦），使胸腔體積擴大、肺內氣壓小於外界大氣壓，氣體湧入", "肋骨下降、橫膈上升，使胸腔體積縮小", "肺部肌肉主動強力收縮將空氣吸入", "橫膈上升壓迫肺部將空氣吸入"],
+            correct: "肋骨上舉、橫膈下降（收縮平坦），使胸腔體積擴大、肺內氣壓小於外界大氣壓，氣體湧入",
+            hint: "記住口訣：吸氣＝肋骨上舉＋橫膈下降（胸腔變大、壓力變小）！",
+            misconceptions: {
+              "肺部肌肉主動強力收縮將空氣吸入": "【會考最經典觀念陷阱】肺臟本身【完全沒有肌肉】，無法自己收縮！呼吸運動完全是靠【肋間肌（帶動肋骨）與橫膈膜】改變胸腔體積與氣壓！"
+            },
+            explanation: "吸氣時：外肋間肌收縮（肋骨上提）、橫膈收縮下降 $\\rightarrow$ 胸腔容積擴大 $\\rightarrow$ 肺內壓降至低於大氣壓 $\\rightarrow$ 外界空氣被吸入。"
+          },
+          {
+            formula: "在劇烈運動（如百米衝刺）結束後，呼吸會變得非常急促且深快。直接刺激腦幹呼吸中樞加快呼吸的最主要因素為何？",
+            options: ["血液中累積過多的『二氧化碳』（使血液 pH 降低）", "血液中完全沒有氧氣", "血液中水分過多", "胃部消化液分泌過剩"],
+            correct: "血液中累積過多的『二氧化碳』（使血液 pH 降低）",
+            hint: "呼吸中樞對誰最敏感？缺氧還是二氧化碳過多？",
+            misconceptions: {
+              "血液中完全沒有氧氣": "【呼吸刺激受質考點】人體腦幹呼吸中樞對【二氧化碳濃度（及氫離子濃度）最為敏感】！運動後大量產生的 CO2 才是驅動急促呼吸的主因。"
+            },
+            explanation: "細胞呼吸作用產生大量 CO2 溶於血液形成碳酸，刺激腦幹呼吸中樞發出神經衝動，加速呼吸運動以排出 CO2。"
+          },
+          {
+            formula: "肺泡與微血管之間的『氧氣與二氧化碳氣體交換』，是藉由下列哪一種物理機制進行的？",
+            options: ["擴散作用（由高濃度/分壓處朝低濃度處移動）", "主動運輸（消耗大量 ATP 能量逆向運送）", "細胞本體吞噬作用", "微血管管壁的主動收縮擠壓"],
+            correct: "擴散作用（由高濃度/分壓處朝低濃度處移動）",
+            hint: "氣體分子由高濃度往低濃度自然擴散，不需耗費能量。",
+            misconceptions: {
+              "主動運輸（消耗大量 ATP 能量逆向運送）": "【氣體交換物理機制】肺泡壁與微血管壁皆極薄（單層細胞），氣體交換完全依靠【擴散作用（物理擴散）】，不消耗能量！"
+            },
+            explanation: "肺泡中氧氣分壓高於微血管血液，氧氣擴散入血；微血管血液 CO2 分壓高於肺泡，CO2 擴散入肺泡，隨呼氣排出。"
+          },
+          {
+            formula: "下列生物與其負責氣體交換的呼吸構造配對，何者完全正確？",
+            options: ["人體（肺泡）、蝗蟲（氣管系）、魚類（鰓）、蚯蚓（潮濕體表皮膚）", "蝗蟲（肺臟）、魚類（氣管）、蚯蚓（鰓）", "青蛙幼體蝌蚪（肺臟）、成體（鰓）", "植物（肺泡）、昆蟲（微血管）"],
+            correct: "人體（肺泡）、蝗蟲（氣管系）、魚類（鰓）、蚯蚓（潮濕體表皮膚）",
+            hint: "水生用鰓、陸生昆蟲用氣管系、環節動物潮濕皮膚擴散、陸生脊椎動物用肺。",
+            misconceptions: {
+              "青蛙幼體蝌蚪（肺臟）、成體（鰓）": "【兩生類呼吸演化盲點】蝌蚪生活在水中用【鰓】呼吸；成蛙用【肺與潮濕皮膚】呼吸！"
+            },
+            explanation: "不同生物呼吸器官：昆蟲為氣管系直接將氧送達細胞；魚類用鰓絲交換水溶氧；蚯蚓靠潮濕皮膚表面黏液溶解擴散。"
+          },
+          {
+            formula: "用澄清石灰水檢測人體呼出的氣體時，澄清石灰水會迅速變為白色混濁，此實驗證實了人體呼出氣體中含有豐富的何種成分？",
+            options: ["二氧化碳（與氫氧化鈣反應生成碳酸鈣白色沉澱）", "氧氣", "一氧化碳", "氮氣"],
+            correct: "二氧化碳（與氫氧化鈣反應生成碳酸鈣白色沉澱）",
+            hint: "澄清石灰水是檢驗二氧化碳的專屬試劑。",
+            misconceptions: {
+              "氧氣": "【檢驗試劑特性】檢驗氧氣用線香（助燃）；澄清石灰水遇【二氧化碳】才會產生碳酸鈣白色混濁沉澱。"
+            },
+            explanation: "呼出氣體中二氧化碳含量（約 4%）遠高於吸入氣體（約 0.04%），通入澄清石灰水產生 CaCO3 沉澱變混濁。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 血糖平衡樞紐 (血糖恆定與負回饋)",
+        monsterName: "高血糖巨魔",
+        monsterEmoji: "🍬",
+        questions: [
+          {
+            formula: "下列關於人體三大調控血糖激素作用的比較，何者敘述完全正確？",
+            options: ["胰島素（降血糖）；升糖素（升高血糖）；腎上腺素（緊急時迅速升高血糖）", "胰島素與升糖素皆能降低血糖", "腎上腺素能促使血糖降至零以利休息", "人體內有多種激素可降低血糖，但只有一種激素能升高血糖"],
+            correct: "胰島素（降血糖）；升糖素（升高血糖）；腎上腺素（緊急時迅速升高血糖）",
+            hint: "人體降血糖的武器只有一種（胰島素），升血糖有多種（升糖素、腎上腺素、皮質醇等）。",
+            misconceptions: {
+              "人體內有多種激素可降低血糖，但只有一種激素能升高血糖": "【會考必背盲點】剛好相反！人體內【唯一能降低血糖的激素只有『胰島素』】；而能升高血糖的激素有升糖素、腎上腺素等多種！"
+            },
+            explanation: "胰島素促進細胞攝糖與合成肝醣（降糖）；升糖素促進肝醣分解為葡萄糖（升糖）；腎上腺素在應急時快速動員肝醣分解升糖。"
+          },
+          {
+            formula: "當健康成年人進食完一碗白米飯後，血液流經下列哪一條血管時，其『葡萄糖濃度』會達到全身體循環中的最高峰？",
+            options: ["肝門靜脈（由小腸吸收養分直接運往肝臟的血管）", "下大靜脈", "肺動脈", "腎靜脈"],
+            correct: "肝門靜脈（由小腸吸收養分直接運往肝臟的血管）",
+            hint: "小腸絨毛剛吸收大量葡萄糖，第一站直接送往哪裡？",
+            misconceptions: {
+              "下大靜脈": "【消化吸收血液路徑】小腸吸收的葡萄糖經【肝門靜脈】直接送入肝臟儲存為肝醣，故飯後肝門靜脈之葡萄糖濃度最高！"
+            },
+            explanation: "飯後小腸絨毛微血管大量吸收葡萄糖，匯入肝門靜脈進入肝臟，肝細胞在胰島素作用下將多餘葡萄糖轉化為肝醣儲存。"
+          },
+          {
+            formula: "若某糖尿病患者在空腹時注射了『過量』的胰島素，最可能引發下列哪種危險的急性生理反應？",
+            options: ["嚴重低血糖休克（大腦細胞缺乏葡萄糖供應能量而昏迷）", "血糖飆高引發中風", "血液水分過多導致肺水腫", "體溫驟升至 42°C"],
+            correct: "嚴重低血糖休克（大腦細胞缺乏葡萄糖供應能量而昏迷）",
+            hint: "胰島素過多會把血液中的糖分全部抓走，大腦只吃葡萄糖！",
+            misconceptions: {
+              "血糖飆高引發中風": "【胰島素過量效應】胰島素是『降血糖』的，過量會使血糖降得過低（低血糖症），大腦神經元缺乏能量會引發心悸、冒冷汗甚至昏迷休克！"
+            },
+            explanation: "大腦能量來源極度依賴血液葡萄糖，胰島素過量導致嚴重低血糖，大腦能量匱乏會迅速引發低血糖昏迷，需立即補充糖水。"
+          },
+          {
+            formula: "當我們處於睡眠或長時間空腹時，體內維持血糖穩定的主要機制為何？",
+            options: ["胰島分泌升糖素，促進肝臟中儲存的肝醣分解為葡萄糖釋入血液中", "大腦直接停止消耗葡萄糖", "腎臟主動製造大量葡萄糖", "胃壁肌肉分解蛋白質直接轉化為糖"],
+            correct: "胰島分泌升糖素，促進肝臟中儲存的肝醣分解為葡萄糖釋入血液中",
+            hint: "把存在肝臟的『活期存款（肝醣）』提出來用。",
+            misconceptions: {
+              "腎臟主動製造大量葡萄糖": "【肝臟器官定位】儲存並調節肝醣釋放的主要器官是【肝臟】！升糖素促使肝醣分解為葡萄糖維持血糖濃度在 70~110 mg/dL。"
+            },
+            explanation: "空腹血糖下降刺激升糖素分泌，作用於肝臟活化肝醣水解酶，持續供應細胞與大腦所需的基礎葡萄糖。"
+          },
+          {
+            formula: "人體血糖調節屬於典型的『負回饋控制（Negative Feedback）』，所謂負回饋的意義是指何者？",
+            options: ["當系統偏離正常基準值時，調控機制會產生相反的效應以使數值回復正常平衡", "系統偏離數值時，激素會促使其偏離得更遠", "身體完全不受任何外界環境影響", "數值只能單向下降不能上升"],
+            correct: "當系統偏離正常基準值時，調控機制會產生相反的效應以使數值回復正常平衡",
+            hint: "冷氣機溫度設定：高於設定就降溫，低於設定就停止，維持恆定。",
+            misconceptions: {
+              "系統偏離數值時，激素會促使其偏離得更遠": "【正回饋 vs 負回饋】促使偏離更遠的是『正回饋』（如分娩宮縮）；恆定性全靠【負回饋】（數值高就拉低、數值低就拉高）。"
+            },
+            explanation: "負回饋為生物維持恆定之根本機制，當受控變數（如血糖、體溫）偏離正常設定點，系統產生對抗性反應促使其回歸基準。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 排泄與體液過濾 (泌尿系統與含氮廢物)",
+        monsterName: "尿素毒素魔",
+        monsterEmoji: "💧",
+        questions: [
+          {
+            formula: "在生物學上，下列關於『排泄（Excretion）』與『排遺（Defecation）』的定義區分，何者完全正確？（會考超高頻概念題）",
+            options: ["排泄是將細胞代謝廢物（如尿素、CO2、汗水）排出體外；排遺是將未消化的食物殘渣（糞便）由消化道排出", "兩者完全相同，大便與小便都是排泄", "排泄是由肛門排出，排遺是由尿道排出", "大便屬於排泄，流汗屬於排遺"],
+            correct: "排泄是將細胞代謝廢物（如尿素、CO2、汗水）排出體外；排遺是將未消化的食物殘渣（糞便）由消化道排出",
+            hint: "記住：大便從未進入人體細胞參與代謝，只是通過消化管通道（排遺）！",
+            misconceptions: {
+              "兩者完全相同，大便與小便都是排泄": "【會考必考大觀念陷阱】大便是未消化吸收的食物渣滓，未進過細胞代謝，屬於【排遺】；小便（尿液）、汗水、呼出 CO2 才是細胞代謝後的【排泄】！"
+            },
+            explanation: "排泄：排除細胞新陳代謝產生的廢物（腎排尿素/水、肺排CO2、皮膚排汗）；排遺：排除未消化的食物殘渣（糞便）。"
+          },
+          {
+            formula: "人體攝取蛋白質經消化分解為胺基酸後，代謝產生的劇毒含氮廢物『氨（Ammonia）』，主要在人體的哪一個器官被轉化為毒性較低的『尿素（Urea）』？",
+            options: ["肝臟", "腎臟", "膀胱", "膽囊"],
+            correct: "肝臟",
+            hint: "記住黃金法則：肝臟製造尿素、腎臟過濾排出尿素！",
+            misconceptions: {
+              "腎臟": "【製造 vs 排除器官混淆】尿素是【肝臟解毒製造】的！腎臟只負責將血液中的尿素【過濾形成尿液排出】，腎臟本身不製造尿素！"
+            },
+            explanation: "胺基酸去氨作用產生具毒性的氨，經血液送至肝臟合成低毒性的尿素（鳥胺酸循環），再隨血液由腎臟過濾排出。"
+          },
+          {
+            formula: "下列關於三種動物『含氮廢物形式（氨、尿素、尿酸）』的毒性與水溶性比較，何者正確？",
+            options: ["氨（毒性最高/需大量水稀釋/水生魚類）；尿素（毒性中等/哺乳類/溶於水）；尿酸（毒性最低/難溶於水/鳥類與昆蟲保水）", "尿酸毒性最高，需最多水排出", "所有動物皆以尿素形式排出含氮廢物", "鳥類排出的白色固體糞尿是高毒性的氨"],
+            correct: "氨（毒性最高/需大量水稀釋/水生魚類）；尿素（毒性中等/哺乳類/溶於水）；尿酸（毒性最低/難溶於水/鳥類與昆蟲保水）",
+            hint: "鳥類為了飛行減重與保水，將廢物轉化為不溶水的白色固態尿酸結晶。",
+            misconceptions: {
+              "鳥類排出的白色固體糞尿是高毒性的氨": "【含氮廢物形式演化】鳥類與昆蟲為了極致保水與減重，將含氮廢物轉化為【無毒且難溶於水的尿酸結晶】（鳥糞上的白色固體即為尿酸）！"
+            },
+            explanation: "毒性與耗水量：氨（水生動物）> 尿素（哺乳類、兩生類成體）> 尿酸（鳥類、爬蟲類、昆蟲，節省水分適應陸生）。"
+          },
+          {
+            formula: "人體腎臟在形成尿液的過程中，血液流經『腎絲球與鮑氏囊』時會進行『過濾作用』。正常情況下，下列何者因分子過大而『不會』被過濾進入濾液中？",
+            options: ["血球細胞（紅血球、白血球）與大分子蛋白質", "葡萄糖與水分", "尿素與無機鹽", "水分子與胺基酸"],
+            correct: "血球細胞（紅血球、白血球）與大分子蛋白質",
+            hint: "若尿液中出現紅血球（血尿）或蛋白質（蛋白尿），代表腎絲球受損破裂。",
+            misconceptions: {
+              "葡萄糖與水分": "【過濾與再吸收分子大小】水、葡萄糖、胺基酸、尿素都是小分子，【皆能被過濾進入濾液】！只是葡萄糖會在腎小管被 100% 【再吸收】回血液！"
+            },
+            explanation: "過濾作用依分子大小篩選：血球與大分子蛋白質無法通過孔隙留在血液中；水、葡萄糖、鹽類、尿素濾出形成原尿，有用物質再被腎小管再吸收。"
+          },
+          {
+            formula: "【會考情境題】小美連續三小時在烈日下登山且未補充水分，此時她體內的水分調節機制會如何運作？",
+            options: ["血液滲透壓升高，刺激腦垂腺分泌抗利尿激素，促使腎小管加強水分再吸收，排出『量少且顏色深濃』的尿液", "腎臟加速排水，排出大量澄清尿液", "體內水分完全不會有任何調節變化", "大腦命令汗腺完全停止運作"],
+            correct: "血液滲透壓升高，刺激腦垂腺分泌抗利尿激素，促使腎小管加強水分再吸收，排出『量少且顏色深濃』的尿液",
+            hint: "缺水時身體要盡可能『保水』，尿量變少、顏色變深濃。",
+            misconceptions: {
+              "腎臟加速排水，排出大量澄清尿液": "【缺水生理反饋】缺水時體液變濃，腦垂腺分泌抗利尿激素（ADH），促使腎臟【回收更多水分回血液】，故排出的尿液【濃縮且量少】以保住水分。"
+            },
+            explanation: "缺水使血液滲透壓升高，下視丘促發口渴感覺並令腦垂腺釋放抗利尿激素，提升腎小管水通透性回收水分，尿量減少顏色加深。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.combo = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('homeostasis-canvas');
+        this.visualizer = new CyberVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.cyber-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 AUDIO: OFF' : '🔊 AUDIO: ON';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.combo = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTER5_STAGES[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTER5_STAGES[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTER5_STAGES[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'cyber-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.combo++;
+          const gainedScore = Math.round(GAME_BALANCE.scorePerQuestion * (1 + (this.combo - 1) * 0.2));
+          this.score += gainedScore;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${gainedScore} CRIT!`, this.elMonsterEmoji.parentElement, 'color:var(--color-cyan);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.combo = 0;
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-neon-red);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.cyber-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "🧬 生化調控診斷：觀念解析與迷思拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的體溫/呼吸/血糖/排泄機制，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-neon-green); font-size:15px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTER5_STAGES[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTER5_STAGES.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTER5_STAGES[CHAPTER5_STAGES.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「運動強度對呼吸頻率恢復時間的影響」。本實驗的操作變因為何？","options":["停止運動後呼吸頻率恢復所需時間","同一受試者、運動時間與環境溫度","運動強度","每組實驗重複次數"],"correct":"運動強度","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「運動強度」。"},{"formula":"【實驗探究】進行「運動強度對呼吸頻率恢復時間的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["同一受試者、運動時間與環境溫度","實驗器材品牌","停止運動後呼吸頻率恢復所需時間","運動強度"],"correct":"停止運動後呼吸頻率恢復所需時間","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「停止運動後呼吸頻率恢復所需時間」。"},{"formula":"【實驗設計】為公平比較「運動強度對呼吸頻率恢復時間的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","同一受試者、運動時間與環境溫度","各組可使用不同測量方法"],"correct":"同一受試者、運動時間與環境溫度","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：同一受試者、運動時間與環境溫度。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","運動強度越高，恢復時間通常越長","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"運動強度越高，恢復時間通常越長","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：運動強度越高，恢復時間通常越長。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTER5_STAGES[CHAPTER5_STAGES.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「運動強度 對 呼吸恢復時間 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：運動強度越高，恢復時間通常越長。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「運動強度」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「運動強度」與「呼吸恢復時間」的關係，何者最合理？","options":["運動強度越高，恢復時間通常越長","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"運動強度越高，恢復時間通常越長","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：運動強度越高，恢復時間通常越長；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+<!-- BEGIN:MORE_BIO_VISUALS_V2 -->
+<script>
+CHAPTER5_STAGES[CHAPTER5_STAGES.length - 1].questions.push(...[{"formula":"【比例圖】恆定調節 的四類資料如下圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><circle cx=\"300\" cy=\"125\" r=\"92\" fill=\"#dbeafe\"/><path d=\"M300 125 L300 33 A92 92 0 0 1 392 125 Z\" fill=\"#60a5fa\"/><path d=\"M300 125 L392 125 A92 92 0 0 1 300 217 Z\" fill=\"#34d399\"/><path d=\"M300 125 L300 217 A92 92 0 0 1 208 125 Z\" fill=\"#fbbf24\"/><path d=\"M300 125 L208 125 A92 92 0 0 1 300 33 Z\" fill=\"#fca5a5\"/><g font-size=\"22\" fill=\"#111827\" font-weight=\"700\"><text x=\"336\" y=\"82\">A</text><text x=\"342\" y=\"177\">B</text><text x=\"245\" y=\"177\">C</text><text x=\"245\" y=\"82\">D</text></g></svg></div> 圖中四區面積相同，哪一敘述正確？","options":["四類比例相同","A類一定最多","D類一定最少","無法比較任何比例"],"correct":"四類比例相同","hint":"","misconceptions":{},"explanation":"圓被分成四個相同的四分之一，因此A、B、C、D所占比例相同。"},{"formula":"【流程圖】恆定調節 的歷程如圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><defs><marker id=\"a\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 z\" fill=\"#2f7d4a\"/></marker></defs><g fill=\"#e3f3e7\" stroke=\"#2f7d4a\" stroke-width=\"3\"><rect x=\"30\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"175\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"320\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"465\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/></g><g font-size=\"28\" fill=\"#183c27\" text-anchor=\"middle\" font-weight=\"700\"><text x=\"85\" y=\"130\">A</text><text x=\"230\" y=\"130\">B</text><text x=\"375\" y=\"130\">C</text><text x=\"520\" y=\"130\">D</text></g><g stroke=\"#2f7d4a\" stroke-width=\"4\" marker-end=\"url(#a)\"><line x1=\"140\" y1=\"120\" x2=\"170\" y2=\"120\"/><line x1=\"285\" y1=\"120\" x2=\"315\" y2=\"120\"/><line x1=\"430\" y1=\"120\" x2=\"460\" y2=\"120\"/></g></svg></div> 正確順序為何？","options":["A→B→C→D","D→C→B→A","A→C→B→D","B→A→D→C"],"correct":"A→B→C→D","hint":"","misconceptions":{},"explanation":"依箭頭方向由左至右判讀，順序為A、B、C、D。"},{"formula":"【雙折線圖】比較甲、乙兩組的 生理變化。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"555\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"90,180 200,145 310,105 420,70 530,45\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"5\"/><polyline points=\"90,185 200,172 310,158 420,146 530,135\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"5\"/><text x=\"480\" y=\"65\" font-size=\"20\" fill=\"#2563eb\">甲</text><text x=\"480\" y=\"130\" font-size=\"20\" fill=\"#dc2626\">乙</text></svg></div> 哪一組隨時間增加較快？","options":["甲組","乙組","兩組完全相同","無法判斷"],"correct":"甲組","hint":"","misconceptions":{},"explanation":"甲組折線斜率較大，表示相同時間內測量值增加較快。"},{"formula":"【視野圖】同一標本在兩種倍率下的視野如圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><circle cx=\"190\" cy=\"125\" r=\"95\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"5\"/><circle cx=\"420\" cy=\"125\" r=\"95\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"5\"/><g fill=\"#16a34a\"><circle cx=\"150\" cy=\"90\" r=\"12\"/><circle cx=\"205\" cy=\"82\" r=\"12\"/><circle cx=\"235\" cy=\"140\" r=\"12\"/><circle cx=\"165\" cy=\"165\" r=\"12\"/></g><g fill=\"#2563eb\"><circle cx=\"390\" cy=\"105\" r=\"22\"/><circle cx=\"445\" cy=\"145\" r=\"22\"/></g><text x=\"190\" y=\"235\" font-size=\"20\" text-anchor=\"middle\" fill=\"#111827\">視野甲</text><text x=\"420\" y=\"235\" font-size=\"20\" text-anchor=\"middle\" fill=\"#111827\">視野乙</text></svg></div> 哪一視野較可能使用較高倍率？","options":["視野甲","視野乙","兩者倍率一定相同","只看顏色判斷"],"correct":"視野乙","hint":"","misconceptions":{},"explanation":"高倍率視野範圍較小、可見物體數較少但影像較大，因此視野乙較符合。"},{"formula":"【分類矩陣】四組資料依兩項特徵分在矩陣中。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"120\" y=\"35\" width=\"360\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"120\" y1=\"120\" x2=\"480\" y2=\"120\" stroke=\"#334155\" stroke-width=\"3\"/><g font-size=\"28\" fill=\"#111827\" font-weight=\"700\" text-anchor=\"middle\"><text x=\"210\" y=\"88\">A</text><text x=\"390\" y=\"88\">B</text><text x=\"210\" y=\"173\">C</text><text x=\"390\" y=\"173\">D</text></g></svg></div> 位於右下區的是哪一組？","options":["A組","B組","C組","D組"],"correct":"D組","hint":"","misconceptions":{},"explanation":"依圖中位置判讀，右下方格標示為D。"}]);
+</script>
+<!-- END:MORE_BIO_VISUALS_V2 -->
+</body>
+</html>
