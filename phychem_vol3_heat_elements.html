@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中理化第三冊：熱量比熱與元素週期表 | 冰火量子元素特訓</title>
+  <meta name="description" content="國中理化會考第三冊（八上第五、六章）：熱量比熱公式 H=msΔT、熱傳播三途徑、元素符號與週期表規律、原子結構質子中子電子。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Cinzel:wght@800&family=JetBrains+Mono:wght@700&display=swap">
+  <style>
+    :root {
+      --bg-plasma: #1a0808;
+      --bg-card: #2d1010;
+      --bg-surface: #4a1919;
+      --color-fire: #ff6b35;
+      --color-frost: #00e5ff;
+      --color-gold: #ffc837;
+      --color-emerald: #00f090;
+      --color-crimson: #ff2a55;
+      --color-text: #fff5f5;
+      --font-cinzel: 'Cinzel', serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #3d1414 0%, #100404 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-fire);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(255, 107, 53, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(26, 8, 8, 0.95);
+      border-bottom: 2px solid var(--color-fire); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-fire); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+      box-shadow: 0 0 10px rgba(255, 107, 53, 0.3);
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .plasma-bar { flex: 1; height: 12px; background: #0c0202; border: 1px solid var(--color-fire); border-radius: 3px; position: relative; overflow: hidden; }
+    .plasma-bar-fill { height: 100%; background: linear-gradient(90deg, #ff2a55, #ff6b35, #ffc837); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-gold); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-fire); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-fire); box-shadow: 0 0 8px var(--color-fire); }
+    .progress-dot.cleared { background: var(--color-emerald); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-fire); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #fecdd3; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-gold); }
+    .btn-fire-icon { background: var(--bg-surface); border: 1px solid var(--color-fire); color: var(--color-fire); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .plasma-arena {
+      flex: 1.1; background: linear-gradient(180deg, #100404 0%, #2d1010 100%);
+      border: 1.5px solid #5a1e1e; border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-fire);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(255, 107, 53, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(26, 8, 8, 0.9); border: 1px solid var(--color-fire); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatPlasma 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .plasma-board-container { height: 75px; background: var(--bg-surface); border: 1px solid #5a1e1e; border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .plasma-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-gold); margin-bottom: 2px; }
+    .plasma-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #plasma-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid #5a1e1e; border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(255, 107, 53, 0.15); color: var(--color-fire); border: 1px solid var(--color-fire); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #1a0808; border: 1px solid #5a1e1e; border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .plasma-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1px solid #5a1e1e; border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px;
+      transition: all 0.15s ease; outline: none; text-align: left;
+    }
+    .plasma-btn:hover { background: #551818; border-color: var(--color-fire); transform: translateY(-1px); }
+    .plasma-btn .btn-key { width: 26px; height: 26px; background: #1a0808; color: var(--color-gold); border: 1px solid var(--color-fire); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .plasma-btn.btn-correct { background: rgba(0, 240, 144, 0.25) !important; border-color: var(--color-emerald) !important; color: #86efac !important; }
+    .plasma-btn.btn-wrong { background: rgba(255, 42, 85, 0.25) !important; border-color: var(--color-crimson) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(16, 4, 4, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .plasma-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-fire); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-fire); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-gold); }
+    .misconception-box { background: rgba(255, 42, 85, 0.15); border-left: 4px solid var(--color-crimson); border-radius: 4px; padding: 8px 12px; font-size: 15px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #1a0808; border: 1px solid #5a1e1e; border-radius: 6px; padding: 10px 12px; font-size: 15px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-gold); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-frost); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-fire); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-plasma { background: var(--color-fire); color: #1a0808; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 0 20px rgba(255, 107, 53, 0.4); }
+    @keyframes floatPlasma { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>🔥</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-gold); font-size:10px;">HEAT</span>
+            <div class="plasma-bar"><div id="player-hp-bar" class="plasma-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-gold);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-frost); font-size:10px;">PHYCHEM VOL.3</span>
+            <span style="font-size:10px; color:#fca5a5;">HEAT & ELEMENTS</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 溫度與溫標比例換算</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-fire-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="plasma-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>⚛️</span></div>
+          <div class="char-nametag">熱能量子鍊金師</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">🌋</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-fire);">比熱熔岩魔</div>
+          <div class="monster-hp-wrap">
+            <div class="plasma-bar" style="height:8px;"><div id="monster-hp-bar" class="plasma-bar-fill" style="width: 100%; background:var(--color-crimson);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="plasma-board-container">
+        <div class="plasma-board-header">
+          <span>🔥 熱量比熱公式 H=msΔT・熱傳遞(傳導/對流/輻射)・原子結構(質子/中子/電子)圖解</span>
+          <span style="color:var(--color-gold); font-size:10px;">★ 元素熱力學即時儀表</span>
+        </div>
+        <div class="plasma-canvas-wrap"><canvas id="plasma-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#fca5a5;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入熱學元素核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="plasma-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">⚛️</span>
+          <div id="modal-title" class="dialog-title">熱能元素診斷：觀念拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-plasma" style="font-size:13px; padding:6px 20px;">融會貫通，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">🌋⚛️</div>
+      <h1 class="game-title-main">國中理化第三冊：熱量比熱與元素週期表</h1>
+      <h2 class="game-subtitle">★ 國中會考理化第三冊（八上第五、六章）熱學與原子特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-gold);">【四大熱學與元素主題領域】：</strong>
+        <ul>
+          <li>🌡️ <strong>Level 1 溫度計與溫標換算</strong>：攝氏 °C 與華氏 °F ($F = \frac{9}{5}C + 32$)、自製溫標線性比例計算。</li>
+          <li>🔥 <strong>Level 2 熱量與比熱計算</strong>：$H = m \cdot s \cdot \Delta T$、比熱大者難冷難熱、海陸風成因、三態變化潛熱。</li>
+          <li>♨️ <strong>Level 3 熱傳播三途徑與應用</strong>：傳導(固體金屬最佳)、對流(液體氣體循環)、輻射(不需介質/黑吸白反/真空中傳播)。</li>
+          <li>⚛️ <strong>Level 4 元素週期表與原子結構</strong>：原子序=質子數、質量數=質子+中子、同位素、金屬非金屬性質、化學式。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-plasma">啟動量子爐 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆👑</div>
+      <h1 class="game-title-main" style="color:var(--color-emerald);">QUANTUM CORE STABLE!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通八上理化熱學計算與元素週期表全考點！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-gold);">【八上理化熱學元素大宗師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-emerald); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-plasma">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥🔥</div>
+      <h1 class="game-title-main" style="color:var(--color-crimson);">核心過熱！</h1>
+      <h2 class="game-subtitle">熱量或元素週期律計算出現差錯，冷卻後重新再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-plasma" style="background:var(--color-crimson); color:#fff;">重新聚能 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class PlasmaAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'triangle', 0.08, 0); this.playTone(783.99, 'triangle', 0.1, 0.06); this.playTone(1046.50, 'triangle', 0.2, 0.12); }
+      playWrong() { this.playTone(220, 'sawtooth', 0.15, 0); this.playTone(146.83, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(350, 'square', 0.08, 0); this.playTone(700, 'sine', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'triangle', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'triangle', 0.2, i * 0.1)); }
+    }
+    const audio = new PlasmaAudioEngine();
+
+    class PlasmaVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawTempScale(ctx, w, h);
+        else if (level === 2) this.drawHeatFormula(ctx, w, h);
+        else if (level === 3) this.drawHeatTransfer(ctx, w, h);
+        else this.drawAtomPeriodic(ctx, w, h);
+      }
+      drawTempScale(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#ffc837"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🌡️ 溫標換算公式： °F = (9/5) × °C + 32 ｜ 自製溫標比例： (T - 冰點) ÷ (沸點 - 冰點) = 定值", midX, h / 2 - 4);
+        ctx.fillStyle = "#00e5ff";
+        ctx.fillText("水的三態標準點： 1 atm 下，冰的熔點 = 0°C (32°F) ｜ 水的沸點 = 100°C (212°F)", midX, h / 2 + 12);
+      }
+      drawHeatFormula(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#ff6b35"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🔥 熱量計算核心： H = m × s × ΔT (熱量 = 質量 × 比熱 × 溫度變化) ｜ 水的比熱 s = 1.0 cal/g·°C", midX, h / 2 - 4);
+        ctx.fillStyle = "#00f090";
+        ctx.fillText("比熱特性：比熱大者難冷難熱、溫度難升降 (如水) ｜ 比熱小者易冷易熱 (如金屬、砂石)", midX, h / 2 + 12);
+      }
+      drawHeatTransfer(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#ffc837"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("♨️ 熱傳播三方式：【傳導】(固體金屬最佳) ｜ 【對流】(液體氣體循環) ｜ 【輻射】(不需介質/光速傳遞)", midX, h / 2 - 4);
+        ctx.fillStyle = "#00e5ff";
+        ctx.fillText("應用：保溫瓶真空層防傳導與對流、內壁鍍銀防輻射反射熱 ｜ 黑色粗糙面吸熱快也散熱快", midX, h / 2 + 12);
+      }
+      drawAtomPeriodic(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00e5ff"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("⚛️ 原子結構：【原子核 (質子 + 中子)】 + 【核外電子】 ｜ 原子序 = 質子數 = 電子數", midX, h / 2 - 4);
+        ctx.fillStyle = "#ffc837";
+        ctx.fillText("週期表：同族 (同一直行) 具相似化學性質 ｜ 第1族鹼金屬(Li, Na, K 活潑放氫氣) ｜ 第18族鈍氣(最安定)", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 溫度與溫標比例換算 (攝氏、華氏與自製溫標)",
+        monsterName: "溫標刻度怪",
+        monsterEmoji: "🌡️",
+        questions: [
+          {
+            formula: "若某天氣溫為攝氏 25°C，換算成華氏溫度（°F）應為多少度？（公式：$F = \\frac{9}{5}C + 32$）",
+            options: ["77°F", "45°F", "68°F", "82°F"],
+            correct: "77°F",
+            hint: "F = (9/5) × 25 + 32 = 45 + 32 = 77°F。",
+            misconceptions: {
+              "45°F": "【忘記加 32 陷阱】計算公式是 $F = \\frac{9}{5}C + 32$！$\\frac{9}{5} \\times 25 = 45$，再加上 $32 = 77^\\circ\\text{F}$！"
+            },
+            explanation: "溫標換算公式：$F = \\frac{9}{5} \\times 25 + 32 = 45 + 32 = 77^\\circ\\text{F}$。"
+          },
+          {
+            formula: "在標準一大氣壓下，有一支未標示刻度的自製溫度計，放入正在融化的冰水混合物中時液面高度為 4 cm，放入正在沸騰的熱水中時液面高度為 24 cm。若將此溫度計測量某杯溫水時液面高 14 cm，則該杯溫水的攝氏溫度為何？",
+            options: ["50°C", "40°C", "60°C", "70°C"],
+            correct: "50°C",
+            hint: "總長度 24 - 4 = 20 cm 代表 100°C（每 1 cm 代表 5°C）。14 cm 比冰點高 10 cm ➔ 10 × 5°C = 50°C。",
+            misconceptions: {
+              "40°C": "【線性比例計算】$\\frac{14 - 4}{24 - 4} = \\frac{T - 0}{100 - 0} \\Rightarrow \\frac{10}{20} = \\frac{T}{100} \\Rightarrow T = 50^\\circ\\text{C}$！"
+            },
+            explanation: "線性內插比例：$\\frac{L - L_0}{L_{100} - L_0} = \\frac{T - 0}{100 - 0} \\Rightarrow \\frac{14 - 4}{24 - 4} = \\frac{T}{100} \\Rightarrow T = 50^\\circ\\text{C}$。"
+          },
+          {
+            formula: "下列關於『溫度（Temperature）』與『熱量（Heat）』的物理意義區分，何者完全正確？",
+            options: ["溫度代表物體分子微觀冷熱運動程度的平均動能；熱量是因兩物體存在『溫度差』而在兩者間轉移的能量形式", "溫度高的物體含有的熱量必定比溫度低的物體多", "將兩物體接觸時，熱量必定由熱量多的物體流向熱量少的物體", "溫度是能量的一種形式可以直接儲存"],
+            correct: "溫度代表物體分子微觀冷熱運動程度的平均動能；熱量是因兩物體存在『溫度差』而在兩者間轉移的能量形式",
+            hint: "熱量流動的唯一驅動力是『溫度差（由高溫流向低溫）』，與物體本身所含熱量多寡無關。",
+            misconceptions: {
+              "將兩物體接觸時，熱量必定由熱量多的物體流向熱量少的物體": "【會考最經典觀念陷阱】熱量流動方向只決定於【溫度高低】！熱量必定由【高溫物體自發流向低溫物體】，直到溫度相同（熱平衡）。"
+            },
+            explanation: "熱平衡定律：熱量傳遞由高溫物體流向低溫物體，與質量大小或內能多寡無關，達到熱平衡時兩者溫度相同。"
+          },
+          {
+            formula: "攝氏溫標（°C）與華氏溫標（°F）在下列哪一個特定溫度時，兩者的『數值恰好相等』？",
+            options: ["-40° (即 -40°C = -40°F)", "0°", "100°", "-273°"],
+            correct: "-40° (即 -40°C = -40°F)",
+            hint: "設 X = (9/5)X + 32 ➔ -4/5 X = 32 ➔ X = -40。",
+            misconceptions: {
+              "0°": "【溫標相交點計算】0°C 對應的是 32°F！解方程式 $X = \\frac{9}{5}X + 32 \\Rightarrow -\\frac{4}{5}X = 32 \\Rightarrow X = -40$。"
+            },
+            explanation: "代入 $C = F = X$ 得 $X = \\frac{9}{5}X + 32 \\Rightarrow -\\frac{4}{5}X = 32 \\Rightarrow X = -40$。故 $-40^\\circ\\text{C} = -40^\\circ\\text{F}$。"
+          },
+          {
+            formula: "在標準大氣壓下，『熱力學絕對零度（0 K）』對應的攝氏溫度應為多少？",
+            options: ["-273.15°C（理論上粒子完全停止熱運動的最低極限溫度）", "0°C", "-100°C", "-460°C"],
+            correct: "-273.15°C（理論上粒子完全停止熱運動的最低極限溫度）",
+            hint: "絕對零度 0 K = -273.15°C，為物質分子動能最低極限。",
+            misconceptions: {
+              "0°C": "【絕對零度定義】0°C 只是水的冰點；理論上的【絕對零度（0 K）】等於【$-273.15^\\circ\\text{C}$】！"
+            },
+            explanation: "克氏溫標（Kelvin）：$T(K) = t(^\\circ\\text{C}) + 273.15$。絕對零度 $0\\text{ K} = -273.15^\\circ\\text{C}$，物質分子動能降至最低。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 熱量計算與比熱 ($H = ms\\Delta T$)",
+        monsterName: "比熱熔岩魔",
+        monsterEmoji: "🔥",
+        questions: [
+          {
+            formula: "將 500 公克、20°C 的水加熱至 80°C，若加熱過程中無熱量散失，試問水吸收了多少卡（cal）的熱量？（水的比熱 $s = 1.0\\text{ cal/g}\\cdot^\\circ\\text{C}$）",
+            options: ["30000 卡 (30 kcal)", "40000 卡", "10000 卡", "60000 卡"],
+            correct: "30000 卡 (30 kcal)",
+            hint: "H = m · s · ΔT = 500 × 1.0 × (80 - 20) = 500 × 60 = 30000 卡。",
+            misconceptions: {
+              "40000 卡": "【熱量公式直接計算】$\\Delta T = 80 - 20 = 60^\\circ\\text{C}$。$H = 500 \\times 1.0 \\times 60 = 30000$ cal！"
+            },
+            explanation: "熱量公式：$H = m \\cdot s \\cdot \\Delta T = 500\\text{ g} \\times 1.0\\text{ cal/g}\\cdot^\\circ\\text{C} \\times (80 - 20)^\\circ\\text{C} = 30000\\text{ cal}$。"
+          },
+          {
+            formula: "質量相同的鋁塊（比熱 0.22）、鐵塊（比熱 0.11）、銅塊（比熱 0.09）與鉛塊（比熱 0.03），若由同一熱源加熱相同時間（吸收相同熱量），哪一個金屬塊的『溫度上升幅度（$\\Delta T$）最大』？",
+            options: ["鉛塊（比熱最小，易冷易熱，升溫最快）", "鋁塊", "鐵塊", "銅塊"],
+            correct: "鉛塊（比熱最小，易冷易熱，升溫最快）",
+            hint: "當質量與熱量相同時，溫度變化 ΔT 與比熱 s 成反比：比熱越小，溫度變化越大（升溫最快）！",
+            misconceptions: {
+              "鋁塊": "【比熱與升溫反比關係】比熱大者（鋁）難冷難熱、升溫慢；【比熱最小的鉛塊（s=0.03）最易熱，升溫幅度最高】！"
+            },
+            explanation: "由 $H = ms\\Delta T \\Rightarrow \\Delta T = \\frac{H}{ms}$。在 $m$ 與 $H$ 相同條件下，$\\Delta T$ 與比熱 $s$ 成反比，鉛比熱最小故升溫最大。"
+          },
+          {
+            formula: "夏天白天在海邊遊玩時，赤腳踩在沙灘上的沙子感覺非常燙腳，但走進海水中卻感覺相當清涼。造成沙灘與海水在陽光下溫度差異顯著的主要原因為何？",
+            options: ["水的比熱（1.0）遠大於砂石的比熱（約 0.2），水吸熱後溫度上升較慢", "太陽只照射沙灘沒有照射海水", "海水的質量比沙子少", "沙子會自己燃燒產熱"],
+            correct: "水的比熱（1.0）遠大於砂石的比熱（約 0.2），水吸熱後溫度上升較慢",
+            hint: "水的比熱大 ➔ 難冷難熱；砂石比熱小 ➔ 易冷易熱（白天吸熱飆高溫，海風吹向陸地）。",
+            misconceptions: {
+              "太陽只照射沙灘沒有照射海水": "【比熱物理應用】沙與水同時接受日照吸熱，因【水的比熱約為砂石的 5 倍】，吸收相同熱量時水溫上升幅度遠小於砂石。"
+            },
+            explanation: "水的比熱大具熱緩衝效應，吸放熱時溫差小；陸地砂石比熱小，白天迅速升溫引發熱空氣上升形成海風。"
+          },
+          {
+            formula: "將 100 公克、80°C 的熱水與 100 公克、20°C 的冷水混合在絕熱容器中，若無熱量散失，達熱平衡時的混合水溫為何？",
+            options: ["50°C", "60°C", "40°C", "100°C"],
+            correct: "50°C",
+            hint: "兩杯水質量相同（100g），比熱相同，平衡水溫即為兩者的平均值：(80 + 20) / 2 = 50°C。",
+            misconceptions: {
+              "60°C": "【熱平衡方程】熱水放熱 = 冷水吸熱：$100 \\times 1 \\times (80 - T) = 100 \\times 1 \\times (T - 20) \\Rightarrow 80 - T = T - 20 \\Rightarrow 2T = 100 \\Rightarrow T = 50^\\circ\\text{C}$。"
+            },
+            explanation: "熱平衡公式：$m_1 s (T_1 - T) = m_2 s (T - T_2)$。因質量相同，平衡溫度 $T = \\frac{80 + 20}{2} = 50^\\circ\\text{C}$。"
+          },
+          {
+            formula: "將一鍋 0°C 的冰塊置於爐火上持續均勻加熱，在冰塊完全熔化成 0°C 水的『相變過程』中，溫度計的讀數會產生何種變化？",
+            options: ["溫度保持在 0°C 不變（吸收的熱量全用於破壞晶格進行三態變化潛熱）", "溫度持續線性上升至 100°C", "溫度突然急遽下降到 -10°C", "溫度隨機跳動"],
+            correct: "溫度保持在 0°C 不變（吸收的熱量全用於破壞晶格進行三態變化潛熱）",
+            hint: "純物質在固液共存熔化過程中，吸收的熱量為『熔化熱』，溫度恆定保持在熔點（0°C）。",
+            misconceptions: {
+              "溫度持續線性上升至 100°C": "【相變過程溫度恆定考點】純物質進行相變（熔化、沸騰）時，【溫度保持不變】！吸收的熱量全用於克服分子間作用力。"
+            },
+            explanation: "相變潛熱原理：在固液共存（熔化）或氣液共存（沸騰）期間，輸入之熱能轉化為位能改變分子排列，溫度維持恆定。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 熱傳播途徑與生活應用",
+        monsterName: "熱輻射炎魔",
+        monsterEmoji: "♨️",
+        questions: [
+          {
+            formula: "冬天使用金屬鐵匙與木匙攪拌同一碗熱湯時，鐵匙握柄很快變得非常燙手，而木匙卻幾乎不燙。這主要是因為兩者的何種熱傳播性質不同？",
+            options: ["鐵是熱的良導體（熱傳導速率極快）；木頭是熱的絕緣體（不良導體）", "鐵會主動進行熱對流", "木頭會吸收所有熱輻射", "鐵比木頭更能吸收冷氣"],
+            correct: "鐵是熱的良導體（熱傳導速率極快）；木頭是熱的絕緣體（不良導體）",
+            hint: "固體中熱的傳播主要靠『傳導（熱傳導）』，自由電子與晶格振動使金屬成為優良導熱體。",
+            misconceptions: {
+              "鐵會主動進行熱對流": "【傳播方式介質區分】固體內部【無法流動，不能進行對流】！固體傳熱完全靠【傳導】；金屬自由電子多，傳導極快。"
+            },
+            explanation: "熱傳導（Conduction）：熱能經由微觀粒子碰撞與自由電子傳遞，金屬導熱性最佳，非金屬與氣體為不良導體。"
+          },
+          {
+            formula: "家中安裝『冷氣機』時通常安裝在房間上方牆壁高處，而『電暖爐』通常放在地面低處。其主要依賴的熱傳播原理為何？",
+            options: ["熱對流（冷空氣密度大下沉，熱空氣密度小上升形成循環）", "熱傳導", "熱輻射", "熱昇華"],
+            correct: "熱對流（冷空氣密度大下沉，熱空氣密度小上升形成循環）",
+            hint: "熱空氣膨脹密度小往上升，冷空氣收縮密度大往下沉 ➔ 形成自然對流循環。",
+            misconceptions: {
+              "熱傳導": "【氣體與液體傳熱靠對流】流體（氣體與液體）的主要傳熱機制為【熱對流（密度差異循環）】；冷氣吹出冷風下沉，暖氣熱風上升。"
+            },
+            explanation: "熱對流（Convection）：流體受熱膨脹密度降低而上升，冷流體密度大而下沉，形成循環使整體溫度均勻化。"
+          },
+          {
+            formula: "地球與太陽之間隔著廣大浩瀚的『宇宙真空區域』，太陽的巨大熱能依然能順利傳遞到地球表面。這證實了太陽熱能是透過下列哪一種熱傳播方式傳遞的？",
+            options: ["熱輻射（以電磁波/紅外線形式傳遞，完全不需要任何介質，在真空中傳播速度最快）", "熱傳導", "熱對流", "分子碰撞"],
+            correct: "熱輻射（以電磁波/紅外線形式傳遞，完全不需要任何介質，在真空中傳播速度最快）",
+            hint: "唯一不需要物質介質就能在真空中傳遞熱量的方式只有『熱輻射』！",
+            misconceptions: {
+              "熱傳導": "【真空傳熱唯一方式】真空完全沒有任何分子介質，不能傳導也不能對流！【熱輻射以光速電磁波前進，不需介質】。"
+            },
+            explanation: "熱輻射（Radiation）：物體以電磁波形式向外發射能量，毋需物質介質即可在真空中以光速傳播。"
+          },
+          {
+            formula: "日常使用的『保溫瓶（或悶燒鍋）』其雙層不鏽鋼瓶身中間抽成『真空層』，且內壁通常『拋光鍍銀如鏡面』。這兩項設計的主要防散熱目的分別為何？",
+            options: ["真空層防止熱傳導與熱對流；鍍銀鏡面將熱輻射反射回瓶內以減少熱輻射散失", "真空層防止熱輻射；鍍銀鏡面防止熱傳導", "兩者皆是為了增加熱對流", "為了增加保溫瓶的總重量"],
+            correct: "真空層防止熱傳導與熱對流；鍍銀鏡面將熱輻射反射回瓶內以減少熱輻射散失",
+            hint: "真空無介質 ➔ 阻斷傳導與對流；銀白色鏡面 ➔ 反射熱輻射。",
+            misconceptions: {
+              "真空層防止熱輻射；鍍銀鏡面防止熱傳導": "【保溫瓶三大防線】真空無介質是【防止傳導與對流】；【鍍銀光滑面是反射熱輻射】！兩者不可混淆。"
+            },
+            explanation: "保溫瓶防護機制：真空隔絕傳導與對流、銀色反射面抑制輻射散熱、絕緣瓶塞阻斷瓶口對流與蒸發。"
+          },
+          {
+            formula: "在相同陽光日照下，下列哪一種物體表面在白天『吸熱最快』，而在夜晚『散熱降溫也最快』？",
+            options: ["黑色、表面粗糙的物體", "白色、表面光滑的物體", "銀色鏡面金屬板", "透明玻璃板"],
+            correct: "黑色、表面粗糙的物體",
+            hint: "深色粗糙面吸收輻射熱佳、發射輻射熱也佳（黑吸熱快散熱也快；白反熱佳散熱慢）。",
+            misconceptions: {
+              "白色、表面光滑的物體": "【輻射吸收與發射定律】黑色粗糙面為優良吸收體也是優良發射體，故【白天吸熱最快、夜晚散熱輻射也最快】！白色是反射熱佳。"
+            },
+            explanation: "基爾霍夫輻射定律：物體之吸收率等於發射率。深色粗糙表面對熱輻射吸收能力強，同時向外輻射散熱效率亦最高。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 元素週期表與原子結構",
+        monsterName: "原子核核融合獸",
+        monsterEmoji: "⚛️",
+        questions: [
+          {
+            formula: "關於碳-12 原子（$^{12}_{6}\\text{C}$）的原子結構，下列關於其『質子數、中子數、核外電子數』的數值，何者完全正確？",
+            options: ["質子數 = 6，中子數 = 6，電子數 = 6", "質子數 = 12，中子數 = 6，電子數 = 6", "質子數 = 6，中子數 = 12，電子數 = 6", "質子數 = 6，中子數 = 6，電子數 = 12"],
+            correct: "質子數 = 6，中子數 = 6，電子數 = 6",
+            hint: "左下角 6 是原子序 = 質子數 = 電子數。左上角 12 是質量數 = 質子 + 中子 ➔ 中子數 = 12 - 6 = 6。",
+            misconceptions: {
+              "質子數 = 12，中子數 = 6，電子數 = 6": "【質量數 vs 原子序】左下角數字 6 為【原子序（質子數）】；左上角 12 為【質量數（質子+中子）】，中子數 $= 12 - 6 = 6$！"
+            },
+            explanation: "電中性原子中：原子序 $Z = \\text{質子數} = \\text{電子數} = 6$；質量數 $A = \\text{質子數} + \\text{中子數} = 12 \\Rightarrow \\text{中子數} = 12 - 6 = 6$。"
+          },
+          {
+            formula: "在現代元素週期表中，決定元素在週期表中排列順序（原子序）的根本微觀物理量為何？具有相似化學性質的元素會排列在何處？",
+            options: ["原子核內的『質子數（原子序）』；化學性質相似的元素排列在『同一直行（同族）』", "原子量大小；同橫列", "電子總質量；隨機排列", "中子數大小；同週期"],
+            correct: "原子核內的『質子數（原子序）』；化學性質相似的元素排列在『同一直行（同族）』",
+            hint: "現代週期表按質子數（原子序）由小到大排列；同一直行（同族）具有相同價電子數，化學性質極相似。",
+            misconceptions: {
+              "原子量大小；同橫列": "【現代週期表 vs 門得列夫】門得列夫早期依原子量排；【現代週期表是依『質子數（原子序）』排列】，同一直行（同族）化學性質相似！"
+            },
+            explanation: "現代週期表依原子序（質子數）遞增排列，同族元素（同一直行）外層價電子數相同，具有相似之化學反應活性。"
+          },
+          {
+            formula: "下列關於週期表中第 1 族『鹼金屬（如鋰 Li、鈉 Na、鉀 K）』的物理與化學性質，何者敘述完全正確？",
+            options: ["質地柔軟可用小刀切開，化學活性極大，與水劇烈反應產生『氫氣（H₂）』且水溶液呈強鹼性，需儲存於礦物油中", "化學性質極安定不與任何物質反應", "密度極大比黃金重", "遇水會吸收氫氣變酸性"],
+            correct: "質地柔軟可用小刀切開，化學活性極大，與水劇烈反應產生『氫氣（H₂）』且水溶液呈強鹼性，需儲存於礦物油中",
+            hint: "第 1 族鹼金屬（Li, Na, K）最外層只有 1 個電子，極易失去電子，遇水劇烈放熱生 H2，水溶液呈鹼性（酚酞變紅），泡在礦物油中防潮防氧。",
+            misconceptions: {
+              "化學性質極安定不與任何物質反應": "【鹼金屬極高活性考點】鹼金屬是最活潑的金屬群！遇水即劇烈反應：$2\\text{Na} + 2\\text{H}_2\\text{O} \\rightarrow 2\\text{NaOH} + \\text{H}_2\\uparrow$！"
+            },
+            explanation: "鹼金屬（Alkali metals）：價電子為 1，易失去電子成 +1 價離子，活性極強，與水反應生成氫氣與強鹼，需隔絕空氣存於油中。"
+          },
+          {
+            formula: "碳-12（$^{12}_6\\text{C}$）與碳-14（$^{14}_6\\text{C}$）在化學上互稱為『同位素（Isotopes）』。下列關於兩者的比較，何者正確？",
+            options: ["質子數相同（皆為 6，化學性質相同），但中子數不同（分別為 6 與 8）", "質量數相同，質子數不同", "電子數不同，質子數不同", "完全屬於兩種不同的化學元素"],
+            correct: "質子數相同（皆為 6，化學性質相同），但中子數不同（分別為 6 與 8）",
+            hint: "同位素＝在週期表佔據同一位置（同質子數、同原子序），僅因中子數不同而質量數不同。",
+            misconceptions: {
+              "質量數相同，質子數不同": "【同位素定義】同位素是【質子數相同（同元素）、中子數不同】！碳-12 中子為 6，碳-14 中子為 8。"
+            },
+            explanation: "同位素（Isotopes）：同種元素具有相同質子數（原子序相同，化學性質相似）但中子數不同之核種。"
+          },
+          {
+            formula: "【會考化學式題】下列各常見物質的化學式書寫，何者完全正確？",
+            options: ["氯化鈉（食鹽 NaCl）、二氧化碳（CO₂）、碳酸鈣（大理石 CaCO₃）、硫酸（H₂SO₄）", "氯化鈉（Na₂Cl）、二氧化碳（C₂O）", "硫酸（HSO₄）、水（HO₂）", "碳酸鈣（Ca(CO₃)₂）"],
+            correct: "氯化鈉（食鹽 NaCl）、二氧化碳（CO₂）、碳酸鈣（大理石 CaCO₃）、硫酸（H₂SO₄）",
+            hint: "Na+ 與 Cl- 結合成 NaCl；Ca2+ 與 CO3 2- 結合成 CaCO3；H+ 與 SO4 2- 結合成 H2SO4。",
+            misconceptions: {
+              "氯化鈉（Na₂Cl）、二氧化碳（C₂O）": "【離子電荷價數配對】鈉為 +1 價、氯為 -1 價，化學式為 $\\text{NaCl}$；二氧化碳為 $\\text{CO}_2$；硫酸為 $\\text{H}_2\\text{SO}_4$！"
+            },
+            explanation: "化學式依化合價電中性原則書寫：$\\text{Na}^+ + \\text{Cl}^- \\rightarrow \\text{NaCl}$、$\\text{Ca}^{2+} + \\text{CO}_3^{2-} \\rightarrow \\text{CaCO}_3$、$\\text{H}_2\\text{SO}_4$。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('plasma-canvas');
+        this.visualizer = new PlasmaVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.plasma-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'plasma-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-gold);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-crimson);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.plasma-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "⚛️ 熱能元素診斷：觀念拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的熱量比熱公式H=msΔT、熱傳播方式或原子結構質子中子，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-emerald); font-size:15px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「包覆材料對熱水降溫速率的影響」。本實驗的操作變因為何？","options":["相同時間內水溫下降量","水量、初溫、容器大小與室溫","包覆材料","每組實驗重複次數"],"correct":"包覆材料","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「包覆材料」。"},{"formula":"【實驗探究】進行「包覆材料對熱水降溫速率的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["水量、初溫、容器大小與室溫","實驗器材品牌","相同時間內水溫下降量","包覆材料"],"correct":"相同時間內水溫下降量","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「相同時間內水溫下降量」。"},{"formula":"【實驗設計】為公平比較「包覆材料對熱水降溫速率的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","水量、初溫、容器大小與室溫","各組可使用不同測量方法"],"correct":"水量、初溫、容器大小與室溫","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：水量、初溫、容器大小與室溫。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","保溫效果較好的材料使水溫下降較少","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"保溫效果較好的材料使水溫下降較少","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：保溫效果較好的材料使水溫下降較少。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「包覆材料 對 水溫下降量 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：保溫較好的材料使水溫下降較少。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「包覆材料」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「包覆材料」與「水溫下降量」的關係，何者最合理？","options":["保溫較好的材料使水溫下降較少","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"保溫較好的材料使水溫下降較少","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：保溫較好的材料使水溫下降較少；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+</body>
+</html>
