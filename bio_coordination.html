@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>神經王國與激素總動員 | 國中生物會考第四章 協調作用 卡通風 Web 闖關遊戲</title>
+  <meta name="description" content="專為國中生物會考第四章協調作用打造的可愛卡通風 Web 闖關遊戲，精準涵蓋神經系統、內分泌激素、血糖平衡與植物向性膨壓運動。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800&family=Noto+Sans+TC:wght@500;700;900&display=swap">
+  <style>
+    :root {
+      --bg-cartoon: #fff7ed;
+      --bg-panel: #ffffff;
+      --bg-stage: #e0f2fe;
+      --color-primary: #ff6b6b;
+      --color-primary-dark: #ee5253;
+      --color-yellow: #feca57;
+      --color-green: #1dd1a1;
+      --color-blue: #48dbfb;
+      --color-purple: #9b59b6;
+      --color-text-main: #222f3e;
+      --color-text-sub: #576574;
+      --color-border: #222f3e;
+      --font-cartoon: 'Fredoka', cursive, 'Noto Sans TC', sans-serif;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, #fed7aa 0%, #fdba74 100%);
+      font-family: var(--font-chinese); color: var(--color-text-main);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: #ffffff; border: 5px solid var(--color-border); border-radius: 28px;
+      box-shadow: 10px 10px 0px var(--color-border); display: flex; flex-direction: column;
+      overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 75px; background-color: var(--color-yellow); border-bottom: 4px solid var(--color-border);
+      display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 50px; height: 50px; background: #ffffff; border: 3px solid var(--color-border); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-size: 26px; box-shadow: 2px 2px 0 var(--color-border);
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 900; font-family: var(--font-cartoon); }
+    .cartoon-bar { flex: 1; height: 14px; background: #ffffff; border: 3px solid var(--color-border); border-radius: 10px; position: relative; overflow: hidden; }
+    .cartoon-bar-fill { height: 100%; background: var(--color-primary); border-radius: 6px; transition: width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 16px; font-weight: 900; color: var(--color-text-main); margin-bottom: 4px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 8px; }
+    .progress-dot { width: 14px; height: 14px; background: #ffffff; border: 3px solid var(--color-border); border-radius: 50%; transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .progress-dot.active { background: var(--color-primary); transform: scale(1.3); box-shadow: 0 0 6px rgba(255,107,107,0.8); }
+    .progress-dot.cleared { background: var(--color-green); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: #ffffff; border: 3px solid var(--color-border); border-radius: 12px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; box-shadow: 2px 2px 0 var(--color-border); }
+    .stat-label { font-size: 12px; font-weight: 900; }
+    .stat-value { font-size: 18px; font-weight: 900; font-family: var(--font-cartoon); color: var(--color-primary); }
+    .btn-cartoon-icon { background: #ffffff; border: 3px solid var(--color-border); border-radius: 12px; padding: 6px 12px; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 2px 2px 0 var(--color-border); }
+    .btn-cartoon-icon:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; background: #f8fafc; }
+    .cartoon-arena {
+      flex: 1.1; background: linear-gradient(180deg, #bae6fd 0%, #e0f2fe 65%, #86efac 66%, #4ade80 100%);
+      border: 4px solid var(--color-border); border-radius: 20px; position: relative; overflow: hidden;
+      display: flex; justify-content: space-between; align-items: flex-end; padding: 16px 40px 20px 40px; box-shadow: inset 0 -4px 0 rgba(0,0,0,0.15);
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 90px; height: 90px; background: #ffffff; border: 4px solid var(--color-border); border-radius: 22px;
+      display: flex; align-items: center; justify-content: center; font-size: 48px; box-shadow: 4px 4px 0 var(--color-border); transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .char-nametag { background: #ffffff; border: 3px solid var(--color-border); border-radius: 12px; padding: 2px 12px; font-size: 12px; font-weight: 900; margin-top: 6px; box-shadow: 2px 2px 0 var(--color-border); }
+    .monster-hp-wrap { width: 90px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 20px; font-weight: 900; font-family: var(--font-cartoon); animation: floatPop 0.8s ease-out forwards; pointer-events: none; z-index: 20; text-shadow: 2px 2px 0 #fff; }
+    .cartoon-board-container { height: 80px; background: #ffffff; border: 3px solid var(--color-border); border-radius: 16px; padding: 6px 14px; display: flex; flex-direction: column; box-shadow: 3px 3px 0 var(--color-border); }
+    .cartoon-board-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: 900; color: var(--color-text-main); margin-bottom: 2px; }
+    .cartoon-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #coordination-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: #ffffff; border: 4px solid var(--color-border); border-radius: 20px; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 4px 4px 0 var(--color-border); }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: var(--color-yellow); border: 2px solid var(--color-border); border-radius: 8px; padding: 2px 10px; font-size: 12px; font-weight: 900; }
+    .question-box { background: #f1f5f9; border: 3px solid var(--color-border); border-radius: 14px; padding: 10px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #222f3e); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-muted, #576574); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .cartoon-btn {
+      background: #ffffff; color: var(--color-text-main); border: 3px solid var(--color-border); border-radius: 14px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px;
+      box-shadow: 3px 3px 0 var(--color-border); transition: transform 0.1s, background 0.15s; outline: none; text-align: left;
+    }
+    .cartoon-btn:hover { background: #fef08a; transform: translateY(-2px); box-shadow: 3px 5px 0 var(--color-border); }
+    .cartoon-btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0; }
+    .cartoon-btn .btn-key { width: 26px; height: 26px; background: var(--color-blue); border: 2px solid var(--color-border); border-radius: 8px; font-size: 13px; font-weight: 900; font-family: var(--font-cartoon); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+    .cartoon-btn.btn-correct { background: var(--color-green) !important; color: #fff !important; }
+    .cartoon-btn.btn-wrong { background: var(--color-primary) !important; color: #fff !important; animation: cartoonShake 0.3s ease; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(34, 47, 62, 0.7); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .cartoon-dialog { width: 90%; max-width: 580px; background: #ffffff; border: 5px solid var(--color-border); border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 8px 8px 0 var(--color-border); animation: cartoonBounceIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 3px dashed var(--color-border); padding-bottom: 8px; }
+    .dialog-title { font-size: 18px; font-weight: 900; color: var(--color-primary); }
+    .misconception-box { background: #fee2e2; border: 3px solid var(--color-primary); border-radius: 12px; padding: 10px 14px; font-size: 15px; color: #991b1b; line-height: 1.5; font-weight: 700; }
+    .step-by-step { background: #f1f5f9; border: 3px solid var(--color-border); border-radius: 12px; padding: 10px 14px; font-size: 15px; color: var(--color-text-main); line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: #fff7ed; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 28px; font-weight: 900; color: var(--color-text-main); margin-bottom: 4px; }
+    .game-subtitle { font-size: 15px; color: var(--color-primary); font-weight: 900; margin-bottom: 20px; }
+    .instructions-card { background: #ffffff; border: 4px solid var(--color-border); border-radius: 20px; padding: 16px 20px; max-width: 520px; margin-bottom: 24px; font-size: 13px; text-align: left; line-height: 1.8; box-shadow: 6px 6px 0 var(--color-border); }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-cartoon { background: var(--color-green); color: #ffffff; border: 4px solid var(--color-border); border-radius: 18px; padding: 14px 40px; font-size: 20px; font-weight: 900; cursor: pointer; box-shadow: 5px 5px 0 var(--color-border); }
+    .btn-start-cartoon:hover { transform: translateY(-3px); box-shadow: 5px 8px 0 var(--color-border); }
+    @keyframes floatPop { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-40px); opacity: 0; } }
+    @keyframes cartoonShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+    @keyframes cartoonBounceIn { 0% { transform: scale(0.7); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .anim-attack { animation: cartoonAttack 0.35s ease; }
+    .anim-hurt { animation: cartoonHurt 0.4s ease; }
+    @keyframes cartoonAttack { 0% { transform: translateX(0); } 40% { transform: translateX(45px); } 100% { transform: translateX(0); } }
+    @keyframes cartoonHurt { 0% { transform: scale(1); } 30% { transform: scale(0.85); } 100% { transform: scale(1); } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #222f3e); } .game-title-main { font-size: 22px; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>🧠</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span class="bar-label">HP</span>
+            <div class="cartoon-bar"><div id="player-hp-bar" class="cartoon-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:11px; color:#222f3e;">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:#d97706; font-size:12px;">BIO CH4</span>
+            <span style="font-size:11px; color:#576574;">協調作用</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 腦袋瓜總部</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div id="combo-pill" style="display:none; background:#ff6b6b; color:#fff; font-weight:900; padding:4px 8px; border-radius:10px; border:2px solid #222f3e; font-size:12px;">連對 x<span id="combo-count">2</span>!</div>
+        <div class="stat-box"><span class="stat-label">得分</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-cartoon-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="cartoon-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🧒</span></div>
+          <div class="char-nametag">神經探險家</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">⚡</span></div>
+          <div id="monster-name" class="char-nametag" style="color:#ff6b6b;">神經電波怪</div>
+          <div class="monster-hp-wrap">
+            <div class="cartoon-bar" style="height:10px;"><div id="monster-hp-bar" class="cartoon-bar-fill" style="width: 100%;"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="cartoon-board-container">
+        <div class="cartoon-board-header">
+          <span>🎮 反射路徑 / 內分泌 / 血糖天平 / 植物感應圖解</span>
+          <span style="color:#ff6b6b; font-size:11px;">★ 卡通互動學習板</span>
+        </div>
+        <div class="cartoon-canvas-wrap"><canvas id="coordination-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:12px; color:#576574; font-weight:800;">快速作答：按下鍵盤 [1] - [4] 鍵</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入會考核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="cartoon-dialog">
+        <div class="dialog-header">
+          <span style="font-size:28px;">🧠</span>
+          <div id="modal-title" class="dialog-title">博士實驗筆記：觀念解析與迷思診斷</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-cartoon" style="font-size:15px; padding:8px 24px;">弄懂了，繼續前進 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:68px; margin-bottom:12px;">🧠⚡</div>
+      <h1 class="game-title-main">神經王國與激素總動員</h1>
+      <h2 class="game-subtitle">★ 國中生物會考第四章 協調作用 卡通特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-primary);">【四大卡通挑戰單元】：</strong>
+        <ul>
+          <li>🧠 <strong>Level 1 腦袋瓜總部</strong>：大腦意識、小腦平衡、腦幹生命、脊髓反射弧路徑。</li>
+          <li>🦖 <strong>Level 2 荷爾蒙大作戰</strong>：內分泌由血液運輸、甲狀腺代謝、腎上腺應急、副甲狀腺調鈣。</li>
+          <li>🍬 <strong>Level 3 血糖平衡蹺蹺板</strong>：胰臟雙重身份、胰島素降血糖、升糖素升血糖。</li>
+          <li>🌿 <strong>Level 4 植物魔法森林</strong>：向性(生長素/慢/不可逆) vs 膨壓運動(水分/快/可逆)！</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-cartoon">開始卡通特訓 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:64px; margin-bottom:12px;">🎉🏆</div>
+      <h1 class="game-title-main" style="color:var(--color-green);">CONGRATULATIONS!</h1>
+      <h2 class="game-subtitle">你已經成功掌握第四章協調作用的所有會考考點！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:18px; margin-bottom:8px;">獲得榮譽勳章：<strong style="color:#d97706;">【生物協調總司令】</strong></p>
+        <p>最終總得分：<strong id="final-victory-score" style="color:var(--color-primary); font-size:28px; font-family:var(--font-cartoon);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-cartoon">再次遊玩 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:64px; margin-bottom:12px;">😵💦</div>
+      <h1 class="game-title-main" style="color:var(--color-primary);">哎呀，HP 耗盡了！</h1>
+      <h2 class="game-subtitle">複習一下觀念，重新再來挑戰吧！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:var(--color-text-main); font-size:22px; font-family:var(--font-cartoon);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-cartoon" style="background:var(--color-primary);">重整旗鼓 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class CartoonAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.18, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(659.25, 'sine', 0.1, 0); this.playTone(880.00, 'sine', 0.1, 0.08); this.playTone(1046.50, 'sine', 0.12, 0.16); this.playTone(1318.51, 'sine', 0.2, 0.24); }
+      playWrong() { this.playTone(300, 'triangle', 0.15, 0); this.playTone(200, 'triangle', 0.25, 0.12); }
+      playAttack() { this.playTone(400, 'sine', 0.08, 0); this.playTone(800, 'square', 0.1, 0.04); }
+      playLevelUp() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.12, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.18, i * 0.12)); }
+    }
+    const audio = new CartoonAudioEngine();
+
+    class CartoonCoordinationVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawReflexArc(ctx, w, h);
+        else if (level === 2) this.drawEndocrineGlands(ctx, w, h);
+        else if (level === 3) this.drawGlucoseSeesaw(ctx, w, h);
+        else this.drawPlantResponses(ctx, w, h);
+      }
+      drawReflexArc(ctx, w, h) {
+        const steps = ["受器 (眼/手)", "感覺神經", "中樞 (脊髓/大腦)", "運動神經", "動器 (肌肉)"];
+        const stepW = (w - 20) / steps.length;
+        steps.forEach((s, i) => {
+          const x = 10 + i * stepW + stepW / 2, y = h / 2;
+          ctx.fillStyle = (i === 2) ? "#ff6b6b" : "#48dbfb";
+          ctx.beginPath(); ctx.arc(x, y - 6, 8, 0, Math.PI * 2); ctx.fill();
+          ctx.strokeStyle = "#222f3e"; ctx.lineWidth = 2; ctx.stroke();
+          if (i < steps.length - 1) {
+            ctx.strokeStyle = "#222f3e"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x + 10, y - 6); ctx.lineTo(x + stepW - 10, y - 6); ctx.stroke();
+          }
+          ctx.fillStyle = "#222f3e"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center"; ctx.fillText(s, x, y + 18);
+        });
+      }
+      drawEndocrineGlands(ctx, w, h) {
+        const glands = [
+          { name: "腦垂腺", role: "生長激素 (總指揮)" },
+          { name: "甲狀腺", role: "調節代謝 (體重/活力)" },
+          { name: "腎上腺", role: "應對緊急 (心跳/血糖)" },
+          { name: "胰島", role: "胰島素 vs 升糖素" }
+        ];
+        const colW = (w - 20) / glands.length;
+        glands.forEach((g, i) => {
+          const x = 10 + i * colW;
+          ctx.fillStyle = "#fef08a"; ctx.strokeStyle = "#222f3e"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(x + 4, 8, colW - 8, h - 16, 8); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#ff6b6b"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center"; ctx.fillText(g.name, x + colW / 2, h / 2 - 2);
+          ctx.fillStyle = "#576574"; ctx.font = "9px sans-serif"; ctx.fillText(g.role, x + colW / 2, h / 2 + 12);
+        });
+      }
+      drawGlucoseSeesaw(ctx, w, h) {
+        const midX = w / 2, midY = h / 2 + 4;
+        ctx.fillStyle = "#222f3e"; ctx.beginPath(); ctx.moveTo(midX, midY - 10); ctx.lineTo(midX - 12, midY + 16); ctx.lineTo(midX + 12, midY + 16); ctx.fill();
+        ctx.strokeStyle = "#ff6b6b"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(midX - 100, midY - 6); ctx.lineTo(midX + 100, midY - 6); ctx.stroke();
+        ctx.fillStyle = "#1dd1a1"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center"; ctx.fillText("⬇ 胰島素 (降血糖/合成肝醣)", midX - 90, midY - 16);
+        ctx.fillStyle = "#d97706"; ctx.fillText("⬆ 升糖素 (升血糖/分解肝醣)", midX + 90, midY - 16);
+      }
+      drawPlantResponses(ctx, w, h) {
+        const colW = (w - 20) / 2;
+        ctx.fillStyle = "#dcfce7"; ctx.strokeStyle = "#222f3e"; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(10, 8, colW - 10, h - 16, 10); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#16a34a"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center"; ctx.fillText("🌱 向性 (生長素分布不均)", 10 + (colW - 10) / 2, h / 2 - 4);
+        ctx.fillStyle = "#576574"; ctx.font = "10px sans-serif"; ctx.fillText("反應緩慢、不可逆 (向光/向地)", 10 + (colW - 10) / 2, h / 2 + 12);
+
+        ctx.fillStyle = "#fef3c7"; ctx.beginPath(); ctx.roundRect(colW + 10, 8, colW - 10, h - 16, 10); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "#d97706"; ctx.font = "bold 11px sans-serif"; ctx.fillText("⚡ 膨壓運動 (水分進出增減壓力)", colW + 10 + (colW - 10) / 2, h / 2 - 4);
+        ctx.fillStyle = "#576574"; ctx.font = "10px sans-serif"; ctx.fillText("反應迅速、可逆 (含羞草/捕蠅草)", colW + 10 + (colW - 10) / 2, h / 2 + 12);
+      }
+    }
+
+    const CHAPTER4_STAGES = [
+      {
+        level: 1,
+        title: "Level 1: 腦袋瓜總部 (神經系統與反射弧)",
+        monsterName: "神經電波怪",
+        monsterEmoji: "⚡",
+        questions: [
+          {
+            formula: "小明在課堂上聽到鐘聲響起，立刻拿起筆記本走出教室。這個過程的『控制中樞』是下列何者？",
+            options: ["大腦（意識行為與隨意運動）", "脊髓（軀幹反射中樞）", "小腦（協調身體平衡）", "腦幹（生命維持反射）"],
+            correct: "大腦（意識行為與隨意運動）",
+            hint: "經過思考、判斷並發出意志指令的行為由哪裡掌管？",
+            misconceptions: {
+              "脊髓（軀幹反射中樞）": "【意識行為 vs 反射動作】聽到鐘聲收書包是經過學習與思考的【意識行為】，控制中樞一定是【大腦】！脊髓只負責不經大腦思考的軀幹反射（如縮手反射）。"
+            },
+            explanation: "大腦負責感覺、思考、記憶、語言及產生隨意運動；聽到鐘聲後走出教室為意識行為，中樞在大腦。"
+          },
+          {
+            formula: "如果不小心赤腳踩到地板上的尖銳圖釘，腳會『立刻本能縮回，隨後才感覺到劇烈疼痛』。此現象的正確解釋為何？",
+            options: ["縮腳是脊髓控制的反射動作（路徑短速度快）；痛覺則需傳遞到大腦皮質才形成", "痛覺是由脊髓直接產生，不需要大腦參與", "腳底受器先產生運動神經衝動，再傳給感覺神經", "大腦先命令腳縮回，之後才產生疼痛訊號"],
+            correct: "縮腳是脊髓控制的反射動作（路徑短速度快）；痛覺則需傳遞到大腦皮質才形成",
+            hint: "為什麼先縮腳保護身體，之後才覺得痛？痛覺在哪裡形成？",
+            misconceptions: {
+              "痛覺是由脊髓直接產生，不需要大腦參與": "【會考超高頻考點】所有的【感覺（痛、冷、熱、視覺、聽覺）都必須傳遞至大腦皮質才能感知】！縮腳是脊髓反射先發動以防受傷，訊號傳至大腦後才產生痛覺。"
+            },
+            explanation: "縮腳反射由脊髓發出指令使動器收縮（保護機制），感覺神經同時將訊號向上傳遞至大腦感覺區，才產生痛覺。"
+          },
+          {
+            formula: "在進行『接尺反應時間測定』實驗中，受試者看到尺掉落後立刻用手指夾住尺。此神經傳導路徑的正確順序為何？",
+            options: ["眼睛(受器) → 視神經(感覺) → 大腦(中樞) → 脊髓 → 手部運動神經 → 手指肌肉(動器)", "手指肌肉(受器) → 運動神經 → 大腦 → 眼睛(動器)", "眼睛(受器) → 脊髓(中樞) → 運動神經 → 手指肌肉(動器)", "眼睛(動器) → 感覺神經 → 腦幹(中樞) → 手指肌肉(受器)"],
+            correct: "眼睛(受器) → 視神經(感覺) → 大腦(中樞) → 脊髓 → 手部運動神經 → 手指肌肉(動器)",
+            hint: "受器接感覺神經，傳入大腦中樞思考，再經脊髓與運動神經傳至動器！",
+            misconceptions: {
+              "眼睛(受器) → 脊髓(中樞) → 運動神經 → 手指肌肉(動器)": "【接尺實驗路徑陷阱】接尺是【需要視覺判斷的意識行為】，必須經過【大腦】，不能跳過大腦直接由脊髓反射！"
+            },
+            explanation: "接尺神經路徑：眼睛受器 ➔ 視神經(感覺) ➔ 大腦(意識判斷) ➔ 脊髓 ➔ 手部運動神經 ➔ 手指肌肉動器。"
+          },
+          {
+            formula: "人體中負責維持『心跳、呼吸、血壓』等維持生命基本機能，並掌管咳嗽、打噴嚏、眨眼等生理反射的構造為下列何者？",
+            options: ["腦幹（生命中樞）", "小腦（平衡協調中樞）", "脊髓（反射中樞）", "下視丘（體溫調節）"],
+            correct: "腦幹（生命中樞）",
+            hint: "被稱為『生命中樞』的是腦部的哪一部分？",
+            misconceptions: {
+              "小腦（平衡協調中樞）": "【腦部構造功能混淆】小腦掌管【身體平衡與動作協調】；掌管呼吸心跳生命維持與頭面部反射的是【腦幹（生命中樞）】！"
+            },
+            explanation: "腦幹控制心跳、呼吸、血管舒縮等自主生理機能，並掌管吞嚥、咳嗽、打噴嚏、眨眼、唾液分泌等反射。"
+          },
+          {
+            formula: "體操選手在平衡木上能做出各種高難度的翻滾並保持身體平衡不摔落，主要仰賴哪一個腦部構造的高度協調？",
+            options: ["小腦", "大腦", "腦幹", "脊髓"],
+            correct: "小腦",
+            hint: "掌管肌肉張力、動作協調與身體平衡的是…？",
+            misconceptions: {
+              "大腦": "【平衡協調考點】大腦下達運動意圖，但細緻的【肌肉動作協調、姿勢調整與身體平衡】是由【小腦】精準負責！"
+            },
+            explanation: "小腦主要負責協調骨骼肌活動、維持身體平衡與姿勢穩定，鳥類與特技選手的小腦通常較發達。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 荷爾蒙大作戰 (內分泌腺體與激素)",
+        monsterName: "激素狂暴獸",
+        monsterEmoji: "🦖",
+        questions: [
+          {
+            formula: "下列關於人體『神經系統』與『內分泌系統』調節特性的比較，何者完全正確？",
+            options: ["神經系統以神經衝動傳導，反應迅速且作用範圍局限；內分泌系統由血液運輸激素，反應較慢但範圍廣且持久", "內分泌系統反應速度遠比神經系統快", "神經系統是透過淋巴管運輸，內分泌系統是透過導管分泌", "兩者的反應速度、作用範圍與持續時間完全相同"],
+            correct: "神經系統以神經衝動傳導，反應迅速且作用範圍局限；內分泌系統由血液運輸激素，反應較慢但範圍廣且持久",
+            hint: "神經如電線快速精準，內分泌如郵件隨血液廣泛且持久。",
+            misconceptions: {
+              "神經系統是透過淋巴管運輸，內分泌系統是透過導管分泌": "【激素運輸盲點】內分泌腺【沒有導管】（無管腺），分泌的激素直接釋入微血管由【血液】運送至全身受體細胞！"
+            },
+            explanation: "神經系統電訊號快速、短暫、精確；內分泌系統激素經血液運輸，反應較慢、作用範圍廣泛且持續時間長。"
+          },
+          {
+            formula: "若某人在幼年時期『甲狀腺素』分泌嚴重不足，最可能引發下列哪一種疾病？",
+            options: ["呆小症（身材矮小且智力發展受損）", "侏儒症（身材矮小但智力正常）", "巨人症（骨骼生長過度）", "甲狀腺機能亢進（眼球突出消瘦）"],
+            correct: "呆小症（身材矮小且智力發展受損）",
+            hint: "甲狀腺素影響生長與腦神經發育；生長激素缺乏才是侏儒症。",
+            misconceptions: {
+              "侏儒症（身材矮小但智力正常）": "【幼年缺乏症狀易混淆】幼年缺乏【生長激素】會得【侏儒症（身材矮小但智力正常）】；幼年缺乏【甲狀腺素】會得【呆小症（身材矮小且智力低下）】！"
+            },
+            explanation: "甲狀腺素對骨骼發育與神經系統成熟極重要，幼年缺乏會導致生長遲緩與智力障礙（呆小症）。"
+          },
+          {
+            formula: "當走在路上突然遇到一隻兇惡的大狗撲向你時，體內的『腎上腺素』會大量分泌，此時身體會出現下列哪種生理反應？",
+            options: ["心跳加快、呼吸加速、血糖上升、肌肉血管擴張以利逃跑或戰鬥", "胃腸蠕動加快以加速消化食物", "全身肌肉放鬆想睡覺", "血壓顯著下降以減少出血風險"],
+            correct: "心跳加快、呼吸加速、血糖上升、肌肉血管擴張以利逃跑或戰鬥",
+            hint: "應急反應（戰鬥或逃跑 Fight or Flight）需要更多的能量與氧氣！",
+            misconceptions: {
+              "胃腸蠕動加快以加速消化食物": "【應急生理調節盲點】緊急時能量集中供應心肺與骨骼肌，【腸胃消化系統會受到抑制（蠕動變慢）】，絕不會加速消化！"
+            },
+            explanation: "腎上腺素在緊急壓力下分泌，促使心跳呼吸加快、血糖升高、骨骼肌充血，以提供瞬間強大能量應對危機。"
+          },
+          {
+            formula: "被稱為人體『內分泌腺體的總指揮（主腺）』，能分泌多種促激素來調控甲狀腺、腎上腺皮質與性腺發育的構造為何？",
+            options: ["腦垂腺", "甲狀腺", "胰島", "胸腺"],
+            correct: "腦垂腺",
+            hint: "位於大腦下方，掌管生長激素並指揮其他腺體。",
+            misconceptions: {
+              "甲狀腺": "【腺體層級定位】甲狀腺受【腦垂腺分泌的促甲狀腺素】所調控；真正居於總指揮地位的是【腦垂腺】！"
+            },
+            explanation: "腦垂腺除分泌生長激素外，還能分泌促甲狀腺素、促腎上腺皮質素及促性腺素，協調整體內分泌網絡。"
+          },
+          {
+            formula: "人體的『副甲狀腺』主要分泌副甲狀腺素，其最核心的生理功能是調節血液中的何種離子濃度？",
+            options: ["鈣離子與磷酸根離子（維持骨骼與神經肌肉興奮性）", "鈉離子與氯離子（調節食鹽平衡）", "鐵離子（合成血紅素）", "鉀離子與碘離子（製造甲狀腺素）"],
+            correct: "鈣離子與磷酸根離子（維持骨骼與神經肌肉興奮性）",
+            hint: "血鈣過低會導致神經興奮引發抽搐痙攣，需要副甲狀腺素調控。",
+            misconceptions: {
+              "鉀離子與碘離子（製造甲狀腺素）": "【副甲狀腺功能考點】副甲狀腺與碘無關！其專門調控【血鈣（促使骨鈣釋入血液）與血磷】平衡。"
+            },
+            explanation: "副甲狀腺素促使骨骼釋放鈣質、增加小腸與腎臟對鈣的吸收，提升血液中鈣離子濃度。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 血糖平衡蹺蹺板 (胰島素 vs 升糖素)",
+        monsterName: "糖分失衡怪",
+        monsterEmoji: "🍬",
+        questions: [
+          {
+            formula: "吃完豐盛的午餐後 1 小時，人體血液中的血糖濃度上升，此時體內哪種激素會大量分泌以使血糖回復正常？",
+            options: ["胰島素（促進細胞吸收利用葡萄糖並合成肝醣）", "升糖素（分解肝醣為葡萄糖）", "腎上腺素（升高血糖）", "生長激素（促進骨骼生長）"],
+            correct: "胰島素（促進細胞吸收利用葡萄糖並合成肝醣）",
+            hint: "飯後高血糖時，唯一能有效『降血糖』的關鍵激素是…？",
+            misconceptions: {
+              "升糖素（分解肝醣為葡萄糖）": "【降血糖 vs 升血糖混淆】飯後血糖已經很高了，需要【胰島素】來【降低血糖】！【升糖素】是在飢餓/低血糖時才會分泌來升高血糖。"
+            },
+            explanation: "飯後高血糖刺激胰島 $\\beta$ 細胞分泌胰島素，加速細胞攝取葡萄糖並促使肝臟與肌肉合成肝醣儲存。"
+          },
+          {
+            formula: "人體的『胰臟』在生理學上被稱為兼具『外分泌腺』與『內分泌腺』的器官，主要原因為何？",
+            options: ["具有導管分泌胰液至小腸（外分泌）；同時胰島細胞分泌激素直接進入血液（內分泌）", "能分泌唾液（外分泌）又能分泌膽汁（內分泌）", "能分泌神經傳導物質又能分泌消化液", "在胚胎期為內分泌，成年後轉為外分泌"],
+            correct: "具有導管分泌胰液至小腸（外分泌）；同時胰島細胞分泌激素直接進入血液（內分泌）",
+            hint: "有導管排到消化腔是外分泌；無導管直接進血液是內分泌。",
+            misconceptions: {
+              "能分泌唾液（外分泌）又能分泌膽汁（內分泌）": "【外分泌與內分泌定義】胰臟分泌胰液經胰管注入小腸為【外分泌】；胰島分泌胰島素/升糖素進入微血管為【內分泌】。"
+            },
+            explanation: "外分泌腺有專用導管排出分泌物（如胰液）；內分泌腺無導管，激素直接擴散入微血管隨血液循環。"
+          },
+          {
+            formula: "當人體處於長時間未進食的『飢餓狀態』時，體內主要由何種激素促使肝臟分解肝醣為葡萄糖以維持血糖穩定？",
+            options: ["升糖素（與腎上腺素）", "胰島素", "生長激素", "副甲狀腺素"],
+            correct: "升糖素（與腎上腺素）",
+            hint: "飢餓低血糖時，需要把儲存在肝臟的肝醣釋放出來。",
+            misconceptions: {
+              "胰島素": "【激素作用相反】飢餓時血糖偏低，若再分泌胰島素會導致危險的嚴重低血糖！此時應分泌【升糖素】將肝醣分解為葡萄糖。"
+            },
+            explanation: "低血糖刺激胰島 $\\alpha$ 細胞釋放升糖素，促進肝臟中肝醣水解為葡萄糖釋入血液，維持大腦與身體所需。"
+          },
+          {
+            formula: "『糖尿病』患者因為體內胰島素分泌不足或細胞對胰島素不敏感，體內常會出現下列何種代謝異常現象？",
+            options: ["血液中葡萄糖無法有效進入細胞利用而濃度過高，最終隨尿液排出", "血液中蛋白質過多隨尿液排出", "胃酸分泌過多導致胃壁穿孔", "肝臟製造過多肝醣導致肝腫大"],
+            correct: "血液中葡萄糖無法有效進入細胞利用而濃度過高，最終隨尿液排出",
+            hint: "細胞吃不到糖，血液糖分爆表，腎臟無法完全重吸收。",
+            misconceptions: {
+              "肝臟製造過多肝醣導致肝腫大": "【糖尿病機轉盲點】糖尿病患因缺乏胰島素，細胞無法攝取糖，【肝臟無法正常合成肝醣】，葡萄糖滯留於血液中並溢入尿液。"
+            },
+            explanation: "缺乏胰島素使葡萄糖無法進入細胞，造成高血糖與細胞能量匱乏，超出腎臟負荷時便隨尿液排出（糖尿）。"
+          },
+          {
+            formula: "若將正常人一整天的『血糖濃度』與『胰島素濃度』繪製成曲線圖，會發現兩者隨三餐變化的關係為何？",
+            options: ["兩者變化趨勢大致同步：進食後血糖上升，胰島素濃度也隨之上升達到高峰", "血糖上升時，胰島素反而降到零", "胰島素全天保持固定數值，完全不受進食影響", "進食後血糖下降，胰島素大幅上升"],
+            correct: "兩者變化趨勢大致同步：進食後血糖上升，胰島素濃度也隨之上升達到高峰",
+            hint: "進食 ➔ 血糖高 ➔ 胰島素大量分泌以壓低血糖。",
+            misconceptions: {
+              "血糖上升時，胰島素反而降到零": "【曲線判讀盲點】血糖上升會【刺激】胰島素分泌，故進食後兩者曲線幾乎同時上升達到高峰！"
+            },
+            explanation: "進食後吸收葡萄糖使血糖升高，負回饋刺激胰島分泌胰島素，使細胞攝取糖分，隨後血糖與胰島素慢慢回落正常值。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 植物魔法森林 (植物向性與膨壓運動)",
+        monsterName: "生長素魔偶",
+        monsterEmoji: "🌿",
+        questions: [
+          {
+            formula: "將一盆綠豆幼苗放置在『單側光』照射的暗箱中，數天後幼苗的莖會朝向光源方向彎曲生長。造成此向光性彎曲的微觀原因為何？",
+            options: ["背光側生長素濃度較高，促進背光側細胞生長較快", "向光側細胞分裂速度比背光側快 10 倍", "向光側葉片太重導致莖部傾斜", "植物根部感受到重力向下推擠莖部"],
+            correct: "背光側生長素濃度較高，促進背光側細胞生長較快",
+            hint: "生長素會避光移動到背光側，導致背光側長得較長較快！",
+            misconceptions: {
+              "向光側細胞分裂速度比背光側快 10 倍": "【向光性原理易混淆】生長素會橫向移動到【背光側】！在莖部，生長素濃度高的【背光側細胞生長伸長較快】，因而將莖推向光源彎曲。"
+            },
+            explanation: "單側光使生長素分布不均（背光側 > 向光側）。莖部背光側細胞伸長較快，產生向光彎曲生長。"
+          },
+          {
+            formula: "下列植物的感應現象中，何者屬於『由細胞水分得失造成的膨壓運動』（反應迅速且可逆）？",
+            options: ["含羞草受觸碰時小葉迅速閉合下垂", "植物幼苗的莖朝向光源彎曲", "絲瓜卷鬚接觸棚架後產生向觸性纏繞生長", "植物根部順著重力方向朝地下深入生長"],
+            correct: "含羞草受觸碰時小葉迅速閉合下垂",
+            hint: "哪一個反應能在幾秒鐘內發生，且過一段時間會重新展開？",
+            misconceptions: {
+              "絲瓜卷鬚接觸棚架後產生向觸性纏繞生長": "【向性 vs 膨壓運動】向光性、向地性、向觸性都是生長素引起的【向性（反應慢、不可逆）】；含羞草閉合、捕蠅草、氣孔開閉屬於【膨壓運動（快速、可逆）】！"
+            },
+            explanation: "含羞草葉枕細胞受刺激時水分迅速流失，膨壓降低使葉片閉合；刺激解除後水分回流重新挺立，為可逆之膨壓運動。"
+          },
+          {
+            formula: "下列關於植物『向性』與『膨壓運動』的綜合比較，何者敘述完全正確？",
+            options: ["向性與生長素分布不均有關，反應緩慢且不可逆；膨壓運動與水分進出有關，反應迅速且可逆", "向性反應迅速且可逆；膨壓運動反應緩慢且不可逆", "兩者皆是由神經系統傳遞電訊號所控制", "植物的向光性屬於膨壓運動，含羞草閉合屬於向性"],
+            correct: "向性與生長素分布不均有關，反應緩慢且不可逆；膨壓運動與水分進出有關，反應迅速且可逆",
+            hint: "生長素造成的生長無法縮回去（不可逆）；水分進出可充水再恢復（可逆）。",
+            misconceptions: {
+              "兩者皆是由神經系統傳遞電訊號所控制": "【植物無神經系統考點】植物【沒有神經系統與肌肉組織】！植物的協調完全仰賴『植物激素（如生長素）』與『細胞水分壓力（膨壓）』。"
+            },
+            explanation: "向性為生長方向受環境刺激引導（生長素調控，慢、不可逆）；膨壓運動為水分快速進出細胞改變體積（快、可逆）。"
+          },
+          {
+            formula: "當飛蛾在夜間具有『趨光性』朝向路燈飛行，而植物的幼苗具有『向光性』朝向窗口彎曲。這兩者的主要差別為何？",
+            options: ["飛蛾具有神經與肌肉能進行整體位移（趨性）；植物無神經肌肉，是由生長素引導局部彎曲生長（向性）", "飛蛾是向性，植物是趨性", "兩者皆是由大腦發出運動指令", "植物能自由移動位置，飛蛾只能局部彎曲"],
+            correct: "飛蛾具有神經與肌肉能進行整體位移（趨性）；植物無神經肌肉，是由生長素引導局部彎曲生長（向性）",
+            hint: "動物能全身跑過去（趨性），植物只能歪頭生長（向性）。",
+            misconceptions: {
+              "飛蛾是向性，植物是趨性": "【趨性 vs 向性名詞界定】動物個體產生定向移動稱為【趨性】（如飛蛾趨光、蚯蚓負趨光）；植物生長器官定向彎曲生長稱為【向性】。"
+            },
+            explanation: "動物靠神經系統感受刺激並以肌肉運動產生位移（趨性）；植物靠激素分布差異改變局部細胞生長速度（向性）。"
+          },
+          {
+            formula: "【會考整合題】當小美在森林探險時突然看見一條毒蛇，她『瞬間驚跳退後（反應甲）』，隨後『心跳劇烈加速、呼吸急促、冒冷汗且長時間保持高度警覺奔跑（反應乙）』。下列關於甲、乙兩反應的調節機制，何者正確？",
+            options: ["甲主要由神經系統快速調節；乙主要由內分泌系統（腎上腺素）持續調節", "甲是由內分泌系統調節；乙是由神經系統調節", "甲與乙皆完全由植物神經獨立完成，與大腦和激素無關", "甲是由小腦負責；乙是由胃腺分泌消化液所致"],
+            correct: "甲主要由神經系統快速調節；乙主要由內分泌系統（腎上腺素）持續調節",
+            hint: "瞬間動作靠神經（快），後續持續緊繃靠激素（慢而持久）。",
+            misconceptions: {
+              "甲是由內分泌系統調節；乙是由神經系統調節": "【神經與內分泌協同運作】瞬間反射動作仰賴【神經系統（電訊號秒級反應）】；後續心跳加快、血糖升高的持久應急狀態由【腎上腺素等激素（血運分鐘級持久）】維持！"
+            },
+            explanation: "瞬間跳開為神經系統之反射與隨意運動（迅速短暫）；後續持久的心跳加速與能量釋放為腎上腺素之內分泌調控（持久廣泛）。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.combo = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elCombo = document.getElementById('combo-pill');
+        this.elComboCount = document.getElementById('combo-count');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.coordinationCanvas = document.getElementById('coordination-canvas');
+        this.visualizer = new CartoonCoordinationVisualizer(this.coordinationCanvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.cartoon-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.combo = 0;
+
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTER4_STAGES[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTER4_STAGES[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTER4_STAGES[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考重點提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'cartoon-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.combo++;
+          const gainedScore = Math.round(GAME_BALANCE.scorePerQuestion * (1 + (this.combo - 1) * 0.2));
+          this.score += gainedScore;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${gainedScore} 正確!`, this.elMonsterEmoji.parentElement, 'fx-crit');
+
+          setTimeout(() => this.nextQuestion(), 900);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.combo = 0;
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'fx-damage');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.cartoon-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 400);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 400);
+      }
+
+      spawnFloatingText(text, container, cssClass) {
+        const fx = document.createElement('div');
+        fx.className = `floating-fx ${cssClass}`;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "🧠 博士實驗筆記：觀念解析與迷思診斷";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的受器/中樞/動器路徑，或激素與向性的作用機制，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:900; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:#1dd1a1; font-size:15px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTER4_STAGES[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTER4_STAGES.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+
+        if (this.combo >= 2) {
+          this.elCombo.style.display = 'block';
+          this.elComboCount.textContent = this.combo;
+        } else {
+          this.elCombo.style.display = 'none';
+        }
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTER4_STAGES[CHAPTER4_STAGES.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「睡眠時間對反應時間的影響」。本實驗的操作變因為何？","options":["尺落下後被接住的距離","同一受試者、同一把尺與相同測試姿勢","前一晚睡眠時間","每組實驗重複次數"],"correct":"前一晚睡眠時間","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「前一晚睡眠時間」。"},{"formula":"【實驗探究】進行「睡眠時間對反應時間的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["同一受試者、同一把尺與相同測試姿勢","實驗器材品牌","尺落下後被接住的距離","前一晚睡眠時間"],"correct":"尺落下後被接住的距離","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「尺落下後被接住的距離」。"},{"formula":"【實驗設計】為公平比較「睡眠時間對反應時間的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","同一受試者、同一把尺與相同測試姿勢","各組可使用不同測量方法"],"correct":"同一受試者、同一把尺與相同測試姿勢","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：同一受試者、同一把尺與相同測試姿勢。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","睡眠不足時，接尺距離通常較長","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"睡眠不足時，接尺距離通常較長","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：睡眠不足時，接尺距離通常較長。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTER4_STAGES[CHAPTER4_STAGES.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「睡眠時間 對 接尺距離 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：睡眠時間不足時，反應通常較慢。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「睡眠時間」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「睡眠時間」與「接尺距離」的關係，何者最合理？","options":["睡眠時間不足時，反應通常較慢","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"睡眠時間不足時，反應通常較慢","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：睡眠時間不足時，反應通常較慢；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+<!-- BEGIN:MORE_BIO_VISUALS_V2 -->
+<script>
+CHAPTER4_STAGES[CHAPTER4_STAGES.length - 1].questions.push(...[{"formula":"【比例圖】神經傳導 的四類資料如下圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><circle cx=\"300\" cy=\"125\" r=\"92\" fill=\"#dbeafe\"/><path d=\"M300 125 L300 33 A92 92 0 0 1 392 125 Z\" fill=\"#60a5fa\"/><path d=\"M300 125 L392 125 A92 92 0 0 1 300 217 Z\" fill=\"#34d399\"/><path d=\"M300 125 L300 217 A92 92 0 0 1 208 125 Z\" fill=\"#fbbf24\"/><path d=\"M300 125 L208 125 A92 92 0 0 1 300 33 Z\" fill=\"#fca5a5\"/><g font-size=\"22\" fill=\"#111827\" font-weight=\"700\"><text x=\"336\" y=\"82\">A</text><text x=\"342\" y=\"177\">B</text><text x=\"245\" y=\"177\">C</text><text x=\"245\" y=\"82\">D</text></g></svg></div> 圖中四區面積相同，哪一敘述正確？","options":["四類比例相同","A類一定最多","D類一定最少","無法比較任何比例"],"correct":"四類比例相同","hint":"","misconceptions":{},"explanation":"圓被分成四個相同的四分之一，因此A、B、C、D所占比例相同。"},{"formula":"【流程圖】神經傳導 的歷程如圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><defs><marker id=\"a\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 z\" fill=\"#2f7d4a\"/></marker></defs><g fill=\"#e3f3e7\" stroke=\"#2f7d4a\" stroke-width=\"3\"><rect x=\"30\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"175\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"320\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"465\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/></g><g font-size=\"28\" fill=\"#183c27\" text-anchor=\"middle\" font-weight=\"700\"><text x=\"85\" y=\"130\">A</text><text x=\"230\" y=\"130\">B</text><text x=\"375\" y=\"130\">C</text><text x=\"520\" y=\"130\">D</text></g><g stroke=\"#2f7d4a\" stroke-width=\"4\" marker-end=\"url(#a)\"><line x1=\"140\" y1=\"120\" x2=\"170\" y2=\"120\"/><line x1=\"285\" y1=\"120\" x2=\"315\" y2=\"120\"/><line x1=\"430\" y1=\"120\" x2=\"460\" y2=\"120\"/></g></svg></div> 正確順序為何？","options":["A→B→C→D","D→C→B→A","A→C→B→D","B→A→D→C"],"correct":"A→B→C→D","hint":"","misconceptions":{},"explanation":"依箭頭方向由左至右判讀，順序為A、B、C、D。"},{"formula":"【雙折線圖】比較甲、乙兩組的 反應時間。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"555\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"90,180 200,145 310,105 420,70 530,45\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"5\"/><polyline points=\"90,185 200,172 310,158 420,146 530,135\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"5\"/><text x=\"480\" y=\"65\" font-size=\"20\" fill=\"#2563eb\">甲</text><text x=\"480\" y=\"130\" font-size=\"20\" fill=\"#dc2626\">乙</text></svg></div> 哪一組隨時間增加較快？","options":["甲組","乙組","兩組完全相同","無法判斷"],"correct":"甲組","hint":"","misconceptions":{},"explanation":"甲組折線斜率較大，表示相同時間內測量值增加較快。"},{"formula":"【視野圖】同一標本在兩種倍率下的視野如圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><circle cx=\"190\" cy=\"125\" r=\"95\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"5\"/><circle cx=\"420\" cy=\"125\" r=\"95\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"5\"/><g fill=\"#16a34a\"><circle cx=\"150\" cy=\"90\" r=\"12\"/><circle cx=\"205\" cy=\"82\" r=\"12\"/><circle cx=\"235\" cy=\"140\" r=\"12\"/><circle cx=\"165\" cy=\"165\" r=\"12\"/></g><g fill=\"#2563eb\"><circle cx=\"390\" cy=\"105\" r=\"22\"/><circle cx=\"445\" cy=\"145\" r=\"22\"/></g><text x=\"190\" y=\"235\" font-size=\"20\" text-anchor=\"middle\" fill=\"#111827\">視野甲</text><text x=\"420\" y=\"235\" font-size=\"20\" text-anchor=\"middle\" fill=\"#111827\">視野乙</text></svg></div> 哪一視野較可能使用較高倍率？","options":["視野甲","視野乙","兩者倍率一定相同","只看顏色判斷"],"correct":"視野乙","hint":"","misconceptions":{},"explanation":"高倍率視野範圍較小、可見物體數較少但影像較大，因此視野乙較符合。"},{"formula":"【分類矩陣】四組資料依兩項特徵分在矩陣中。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"120\" y=\"35\" width=\"360\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"120\" y1=\"120\" x2=\"480\" y2=\"120\" stroke=\"#334155\" stroke-width=\"3\"/><g font-size=\"28\" fill=\"#111827\" font-weight=\"700\" text-anchor=\"middle\"><text x=\"210\" y=\"88\">A</text><text x=\"390\" y=\"88\">B</text><text x=\"210\" y=\"173\">C</text><text x=\"390\" y=\"173\">D</text></g></svg></div> 位於右下區的是哪一組？","options":["A組","B組","C組","D組"],"correct":"D組","hint":"","misconceptions":{},"explanation":"依圖中位置判讀，右下方格標示為D。"}]);
+</script>
+<!-- END:MORE_BIO_VISUALS_V2 -->
+</body>
+</html>
