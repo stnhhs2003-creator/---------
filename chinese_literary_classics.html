@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中會考國文：國學常識與古典小說 | 文史經緯閣</title>
+  <meta name="description" content="先秦諸子百家、四書五經與十三經、史書體裁、四大奇書（三國水滸西遊金瓶梅/紅樓夢）">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Orbitron:wght@800;900&family=JetBrains+Mono:wght@700;800&display=swap">
+  <style>
+    :root {
+      --bg-theme: #170f24;
+      --bg-card: #26193b;
+      --bg-surface: #3d285e;
+      --color-primary: #c084fc;
+      --color-accent: #a855f7;
+      --color-gold: #facc15;
+      --color-danger: #f43f5e;
+      --color-success: #10b981;
+      --color-text: #f8fafc;
+      --color-border: #7e22ce;
+      --btn-hover: #6b21a8;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-orbitron: 'Orbitron', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #7e22ce 0%, #0a0612 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-primary);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(56, 189, 248, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(10, 14, 23, 0.95);
+      border-bottom: 2px solid var(--color-primary); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-primary); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .theme-bar { flex: 1; height: 12px; background: #030712; border: 1px solid var(--color-primary); border-radius: 3px; position: relative; overflow: hidden; }
+    .theme-bar-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-accent)); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-gold); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-primary); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-gold); box-shadow: 0 0 8px var(--color-gold); }
+    .progress-dot.cleared { background: var(--color-success); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-primary); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #bae6fd; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-gold); }
+    .btn-theme-icon { background: var(--bg-surface); border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .theme-arena {
+      flex: 1.1; background: linear-gradient(180deg, #020617 0%, var(--bg-card) 100%);
+      border: 1.5px solid var(--color-border); border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-primary);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(10, 14, 23, 0.9); border: 1px solid var(--color-primary); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatTheme 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .theme-board-container { height: 75px; background: var(--bg-surface); border: 1px solid var(--color-border); border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .theme-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-primary); margin-bottom: 2px; }
+    .theme-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #theme-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid var(--color-border); border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(56, 189, 248, 0.2); color: var(--color-primary); border: 1px solid var(--color-primary); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #0a0e17; border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 21px; font-weight: 900; line-height: 1.5; color: #fff; font-family: var(--font-mono), var(--font-chinese); }
+    .question-hint-text { margin-top: 4px; font-size: 15px; color: var(--color-primary); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .theme-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid var(--color-border); border-radius: 10px;
+      padding: 13px 18px; font-size: 17px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left; font-family: var(--font-mono), var(--font-chinese);
+    }
+    .theme-btn:hover { background: var(--btn-hover); border-color: var(--color-gold); transform: translateY(-1px); }
+    .theme-btn .btn-key { width: 26px; height: 26px; background: #0a0e17; color: var(--color-gold); border: 1px solid var(--color-primary); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .theme-btn.btn-correct { background: rgba(16, 185, 129, 0.25) !important; border-color: var(--color-success) !important; color: #86efac !important; }
+    .theme-btn.btn-wrong { background: rgba(244, 63, 94, 0.25) !important; border-color: var(--color-danger) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(2, 6, 23, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .theme-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-primary); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-primary); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-gold); }
+    .misconception-box { background: rgba(244, 63, 94, 0.15); border-left: 4px solid var(--color-danger); border-radius: 4px; padding: 10px 14px; font-size: 16px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #0a0e17; border: 1px solid var(--color-border); border-radius: 6px; padding: 12px 14px; font-size: 16px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-gold); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-primary); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-primary); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-theme { background: var(--color-gold); color: #0a0e17; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-orbitron); cursor: pointer; box-shadow: 0 0 20px rgba(245, 158, 11, 0.4); }
+    @keyframes floatTheme { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>📚</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-gold); font-size:10px;">QUEST</span>
+            <div class="theme-bar"><div id="player-hp-bar" class="theme-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-gold);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-primary); font-size:10px;">CHINESE LITERACY</span>
+            <span style="font-size:10px; color:#bae6fd;">MOD 5: LITERARY CLASSICS</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">關卡載入中...</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-theme-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="theme-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🛡️</span></div>
+          <div class="char-nametag">會考特訓官</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">👾</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-accent);">考點守護獸</div>
+          <div class="monster-hp-wrap">
+            <div class="theme-bar" style="height:8px;"><div id="monster-hp-bar" class="theme-bar-fill" style="width: 100%; background:var(--color-danger);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="theme-board-container">
+        <div class="theme-board-header">
+          <span>📚 四書(論語/孟子/大學/中庸) ｜ 諸子(儒仁政/道無為/墨兼愛非攻/法嚴刑) ｜ 史書體裁(紀傳體史記/編年體左傳資治通鑑) ｜ 四大古典名著</span>
+          <span style="color:var(--color-gold); font-size:10px;">★ 會考核心指標</span>
+        </div>
+        <div class="theme-canvas-wrap"><canvas id="theme-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">關卡載入中...</span>
+        <span style="font-size:11px; color:#bae6fd;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入會考核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="theme-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">💡</span>
+          <div id="modal-title" class="dialog-title">會考觀念診斷：盲點剖析</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-theme" style="font-size:13px; padding:6px 20px;">掌握觀念，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">📚✨</div>
+      <h1 class="game-title-main">國中會考國文：國學常識與古典小說 | 文史經緯閣</h1>
+      <h2 class="game-subtitle">★ 先秦諸子百家、四書五經與十三經、史書體裁、四大奇書（三國水滸西遊金瓶梅/紅樓夢） ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-gold);">【三大核心領域重點關卡】：</strong>
+        <ul>
+          <li>🔹 <strong>Level 1</strong>：Level 1: 先秦諸子百家核心學說辨析 (5-1)</li>
+          <li>🔹 <strong>Level 2</strong>：Level 2: 四書五經與史書體裁常識 (5-2)</li>
+          <li>🔹 <strong>Level 3</strong>：Level 3: 中國四大古典小說名著賞析 (5-3)</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-theme">開始會考挑戰 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆👑</div>
+      <h1 class="game-title-main" style="color:var(--color-success);">CHALLENGE COMPLETED!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通本單元所有會考必考關鍵概念！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-gold);">【會考精通首席大師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-success); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-theme">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥⚠️</div>
+      <h1 class="game-title-main" style="color:var(--color-danger);">挑戰中斷！</h1>
+      <h2 class="game-subtitle">考點混淆或觀念理解有誤，重新複習後再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-theme" style="background:var(--color-danger); color:#fff;">重新聚能 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 3 };
+
+    class ThemeAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'triangle', 0.08, 0); this.playTone(659.25, 'triangle', 0.1, 0.06); this.playTone(1046.50, 'triangle', 0.2, 0.12); }
+      playWrong() { this.playTone(220, 'sawtooth', 0.15, 0); this.playTone(146.83, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(440, 'square', 0.08, 0); this.playTone(880, 'sine', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new ThemeAudioEngine();
+
+    class ThemeVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        const midX = w / 2;
+        ctx.fillStyle = "#c084fc"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("⚡ 會考核心觀念突破 ｜ 第 " + level + " 階段特訓", midX, h / 2 - 4);
+        ctx.fillStyle = "#facc15";
+        ctx.fillText("掌握題幹關鍵字 ｜ 排除干擾選項 ｜ 提升答題準確率", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+            "level": 1,
+            "title": "Level 1: 先秦諸子百家核心學說辨析 (5-1)",
+            "monsterName": "百家爭鳴哲人",
+            "monsterEmoji": "📜",
+            "questions": [
+                  {
+                        "formula": "【會考必考諸子思想】春秋戰國百家爭鳴，下列各家思想與核心主張的配對，何者完全正確？",
+                        "options": [
+                              "『墨家（墨子）：兼愛（無差別之愛）、非攻（反對不義侵略戰爭）、節用節葬』 ； 『道家（老莊）：順應自然、無為而治、逍遙齊物』 ； 『法家（韓非子）：以法為教、法術勢結合、嚴刑峻法』 ； 『儒家（孔孟）：仁政、禮樂教化、克己復禮』",
+                              "墨家主張嚴刑峻法",
+                              "法家主張兼愛非攻",
+                              "道家主張獨尊儒術"
+                        ],
+                        "correct": "『墨家（墨子）：兼愛（無差別之愛）、非攻（反對不義侵略戰爭）、節用節葬』 ； 『道家（老莊）：順應自然、無為而治、逍遙齊物』 ； 『法家（韓非子）：以法為教、法術勢結合、嚴刑峻法』 ； 『儒家（孔孟）：仁政、禮樂教化、克己復禮』",
+                        "hint": "先秦四大顯學：1. 儒家（孔仁孟義荀禮，有差等之愛）；2. 墨家（兼愛無等差、非攻、尚同尚賢、非樂節用）；3. 道家（老子清靜無為、莊子齊物逍遙）；4. 法家（商鞅韓非李斯，法治集權）。",
+                        "explanation": "先秦諸子核心主張：儒主仁禮、墨主兼愛非攻、道主無為、法主刑名法術。"
+                  },
+                  {
+                        "formula": "孟子主張『人性本善』，認為人皆有惻隱、羞惡、辭讓、是非四端之心；而荀子則主張下列何者？主張透過後天禮樂教化來『化性起偽』。",
+                        "options": [
+                              "『人性本惡』",
+                              "人性本善",
+                              "人性無善無惡（告子）",
+                              "人性有善有惡"
+                        ],
+                        "correct": "『人性本惡』",
+                        "hint": "儒家性論：孟子主性善說（四端擴充仁義禮智）；荀子主性惡說（偽者人為也，透過師法禮義改變惡性，化性起偽）。告子主性無善無惡。",
+                        "explanation": "荀子持性惡論，強調後天教育與禮法規範之重要性。"
+                  },
+                  {
+                        "formula": "「揠苗助長」與「濫竽充數」這兩個著名寓言故事，分別出自先秦哪兩部典籍？",
+                        "options": [
+                              "「揠苗助長」出自《孟子》；「濫竽充數」出自《韓非子》",
+                              "揠苗助長出自《莊子》",
+                              "濫竽充數出自《論語》",
+                              "兩者皆出自《列子》"
+                        ],
+                        "correct": "「揠苗助長」出自《孟子》；「濫竽充數」出自《韓非子》",
+                        "hint": "揠苗助長（拔苗助長，急功近利反而害之）出自《孟子·公孫丑》；濫竽充數（南郭先生裝模作樣）出自《韓非子·內儲說上》。",
+                        "explanation": "揠苗助長為孟子養氣寓言，濫竽充數為韓非子法治寓言。"
+                  },
+                  {
+                        "formula": "莊子善用寓言闡發深奧哲理。「庖丁解牛」以神乎其技的宰牛技藝，主要在闡述何種處世養生之道？",
+                        "options": [
+                              "『順應自然法則與客觀規律，避開矛盾骨骼，遊刃有餘的養生處世智慧』",
+                              "刻苦練習刀工成為名廚",
+                              "批判殘酷宰殺牲畜",
+                              "提倡嚴格法律管理"
+                        ],
+                        "correct": "『順應自然法則與客觀規律，避開矛盾骨骼，遊刃有餘的養生處世智慧』",
+                        "hint": "《莊子·養生主》藉庖丁解牛依乎天理、批大郤導大窾、以無厚入有間，說明在複雜險惡的社會中應順應自然、保身全生。",
+                        "explanation": "「庖丁解牛」闡釋順應客觀規律、游刃有餘的道家養生哲理。"
+                  },
+                  {
+                        "formula": "「鷸蚌相爭，漁翁得利」出自《戰國策》，蘇代用此寓言成功勸阻了趙王進攻燕國。這屬於先秦諸子散文中的何種流派風格？",
+                        "options": [
+                              "『縱橫家（謀略辯士善於辭令與形勢分析）』",
+                              "墨家",
+                              "法家",
+                              "農家"
+                        ],
+                        "correct": "『縱橫家（謀略辯士善於辭令與形勢分析）』",
+                        "hint": "《戰國策》記載戰國時代縱橫家（蘇秦、張儀、蘇代）遊說各國君王之謀略與雄辯辭令。",
+                        "explanation": "《戰國策》為縱橫家遊說謀略之經典記錄。"
+                  }
+            ]
+      },
+      {
+            "level": 2,
+            "title": "Level 2: 四書五經與史書體裁常識 (5-2)",
+            "monsterName": "史學體裁魔像",
+            "monsterEmoji": "📖",
+            "questions": [
+                  {
+                        "formula": "【會考必考史書體裁】司馬遷所著的《史記》為中國歷史上第一部『紀傳體通史』。下列關於史書體裁的分類，何者完全正確？",
+                        "options": [
+                              "『《史記》為第一部紀傳體通史（以人物傳記為中心）』； 『《漢書》（班固）為第一部紀傳體斷代史』； 『《資治通鑑》（司馬光）為編年體通史（以時間年月為經緯）』； 『《春秋》為第一部編年體史書』",
+                              "《史記》為編年體史書",
+                              "《資治通鑑》為紀傳體",
+                              "《漢書》為通史"
+                        ],
+                        "correct": "『《史記》為第一部紀傳體通史（以人物傳記為中心）』； 『《漢書》（班固）為第一部紀傳體斷代史』； 『《資治通鑑》（司馬光）為編年體通史（以時間年月為經緯）』； 『《春秋》為第一部編年體史書』",
+                        "hint": "史書體裁四大分類：1. 紀傳體（本紀/列傳/世家/表/書，以人為主：史記、漢書、二十四史）；2. 編年體（依年日記月，以時為主：春秋、左傳、資治通鑑）；3. 紀事本末體（以事件為主題：通鑑紀事本末）；4. 通史（黃帝貫通至當代）vs 斷代史（單一朝代）。",
+                        "explanation": "史記為紀傳體通史之祖，漢書為紀傳體斷代史之祖，資治通鑑為編年體通史代表。"
+                  },
+                  {
+                        "formula": "南宋朱熹將《禮記》中的兩篇文章抽繹出來，與《論語》、《孟子》合編成『四書』，成為後世科舉考試的核心必讀經典。『四書』包含哪四部著作？",
+                        "options": [
+                              "『《大學》、《中庸》、《論語》、《孟子》』",
+                              "《詩經》、《尚書》、《禮記》、《易經》",
+                              "《春秋》、《左傳》、《公羊傳》、《穀梁傳》",
+                              "《史記》、《漢書》、《後漢書》、《三國志》"
+                        ],
+                        "correct": "『《大學》、《中庸》、《論語》、《孟子》』",
+                        "hint": "四書：大學、中庸、論語、孟子（朱熹著《四書章句集注》）。五經：詩、書、易、禮、春秋。",
+                        "explanation": "宋代理學家朱熹合編《四書》，確立儒學入門經典體系。"
+                  },
+                  {
+                        "formula": "清代乾隆時期編纂的《四庫全書》將天下圖書分為哪『四大部類』？",
+                        "options": [
+                              "『經、史、子、集』",
+                              "詩、詞、曲、賦",
+                              "語、數、英、社",
+                              "儒、釋、道、法"
+                        ],
+                        "correct": "『經、史、子、集』",
+                        "hint": "四庫分部：1. 經部（儒家經典/小學字典）；2. 史部（歷史地理官制）；3. 子部（諸子百家科技農醫）；4. 集部（文學作品詩詞散文個人文集）。",
+                        "explanation": "《四庫全書》依「經史子集」四部分類典藏中國古代書籍。"
+                  },
+                  {
+                        "formula": "被魯迅在《漢文學史綱要》中高度評價為『史家之絕唱，無韻之離騷』的偉大史學與文學巨著為：",
+                        "options": [
+                              "司馬遷《史記》",
+                              "司馬光《資治通鑑》",
+                              "班固《漢書》",
+                              "陳壽《三國志》"
+                        ],
+                        "correct": "司馬遷《史記》",
+                        "hint": "司馬遷忍辱負重撰寫《史記》，兼具嚴謹求實之史學價值與慷慨悲壯之極高文學價值，故得此絕讚。",
+                        "explanation": "司馬遷《史記》融歷史真實與文學藝術於一爐，獲「史家之絕唱，無韻之離騷」之美譽。"
+                  },
+                  {
+                        "formula": "儒家『十三經』中，主要記載古代祭祀、禮節、生活規範與政治制度的經典為：",
+                        "options": [
+                              "《周禮》、《儀禮》、《禮記》（三禮）",
+                              "《詩經》",
+                              "《易經》",
+                              "《爾雅》"
+                        ],
+                        "correct": "《周禮》、《儀禮》、《禮記》（三禮）",
+                        "hint": "三禮：《周禮》（官制理想）、《儀禮》（禮儀規範細節）、《禮記》（禮儀哲學與儒家心法，含〈大學〉、〈中庸〉、〈禮運大同篇〉）。",
+                        "explanation": "三禮為儒家探討禮樂典章制度與倫理規範之核心經典。"
+                  }
+            ]
+      },
+      {
+            "level": 3,
+            "title": "Level 3: 中國四大古典小說名著賞析 (5-3)",
+            "monsterName": "古典名著大主宰",
+            "monsterEmoji": "👑",
+            "questions": [
+                  {
+                        "formula": "【會考必考古典小說】中國古典四大名著（古典小說代表作）與其作者、主要題材的配對，下列何者完全正確？",
+                        "options": [
+                              "《三國演義》（羅貫中，歷史章回小說） ； 《水滸傳》（施耐庵，宋江等梁山泊一百單八將俠義小說） ； 《西遊記》（吳承恩，孫悟空取經神魔小說） ； 《紅樓夢》（曹雪芹，賈寶玉林黛玉世家興衰愛情小說）",
+                              "《西遊記》為羅貫中所著",
+                              "《三國演義》為施耐庵所著",
+                              "《水滸傳》描寫三國鼎立"
+                        ],
+                        "correct": "《三國演義》（羅貫中，歷史章回小說） ； 《水滸傳》（施耐庵，宋江等梁山泊一百單八將俠義小說） ； 《西遊記》（吳承恩，孫悟空取經神魔小說） ； 《紅樓夢》（曹雪芹，賈寶玉林黛玉世家興衰愛情小說）",
+                        "hint": "四大名著：1. 三國演義（羅貫中/歷史/七分實三分虛）；2. 水滸傳（施耐庵/綠林好漢逼上梁山）；3. 西遊記（吳承恩/神魔玄幻）；4. 紅樓夢（曹雪芹/清代世情小說巔峰）。",
+                        "explanation": "四大古典名著涵蓋歷史、俠義、神魔與世情小說之最高成就。"
+                  },
+                  {
+                        "formula": "清代蒲松齡所著的《聊齋志異》，在古典小說體裁上屬於下列哪一種？",
+                        "options": [
+                              "『文言短篇志怪傳奇小說』",
+                              "白話長篇章回小說",
+                              "歷史演義小說",
+                              "諷刺官場小說"
+                        ],
+                        "correct": "『文言短篇志怪傳奇小說』",
+                        "hint": "《聊齋志異》為文言短篇小說集，藉狐仙鬼怪故事「寫鬼寫妖高人一等，刺貪刺虐入木三分」，諷刺清代科舉腐敗與社會黑暗。清代白話諷刺小說代表為吳敬梓《儒林外史》（范進中舉）。",
+                        "explanation": "《聊齋志異》為清代文言文短篇志怪小說之代表傑作。"
+                  },
+                  {
+                        "formula": "清代吳敬梓所著的《儒林外史》中，『范進中舉』一篇以生動諷刺的筆觸，主要在揭露與批判何種社會制度的弊端？",
+                        "options": [
+                              "『科舉制度對讀書人心靈的嚴重毒害與世態炎涼的勢利嘴臉』",
+                              "封建包辦婚姻制度",
+                              "九品中正制",
+                              "八旗軍事制度"
+                        ],
+                        "correct": "『科舉制度對讀書人心靈的嚴重毒害與世態炎涼的勢利嘴臉』",
+                        "hint": "范進考中舉人喜極發瘋，岳父胡屠戶前後態度天差地別，深刻諷刺科舉制度下士人對功名的病態迷戀與人情冷暖。",
+                        "explanation": "《儒林外史》為著名諷刺小說，深刻揭露科舉體制對士人性靈之摧殘。"
+                  },
+                  {
+                        "formula": "劉鶚所著的《老殘遊記》以遊醫老殘的見聞為主線，名篇〈明湖居聽書〉生動描寫白妞王小玉說書技藝，將無形的聲音化為具體視覺形象（如「大珠小珠落玉盤」、「飛彈入霄」）。該小說在清末屬於何種流派？",
+                        "options": [
+                              "『晚清四大譴責小說之一』",
+                              "歷史章回小說",
+                              "志怪小說",
+                              "神魔小說"
+                        ],
+                        "correct": "『晚清四大譴責小說之一』",
+                        "hint": "晚清四大譴責小說：李寶嘉《官場現形記》、吳沃堯《二十年目睹之怪現狀》、劉鶚《老殘遊記》、曾樸《孽海花》。",
+                        "explanation": "《老殘遊記》為晚清四大譴責小說之一，文字描摹功力極深。"
+                  },
+                  {
+                        "formula": "【會考精選】《三國演義》中「草船借箭」、「借東風」、「火燒赤壁」等家喻戶曉的情節，主要在塑造哪一位歷史人物神機妙算的智者形象？",
+                        "options": [
+                              "『諸葛亮（孔明）』",
+                              "周瑜",
+                              "曹操",
+                              "司馬懿"
+                        ],
+                        "correct": "『諸葛亮（孔明）』",
+                        "hint": "小說將諸葛亮塑造成智絕之化身（魯迅評：狀諸葛之多智而近妖）。",
+                        "explanation": "《三國演義》赤壁之戰情節極力刻畫諸葛亮知天文地理、足智多謀之形象。"
+                  }
+            ]
+      }
+];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('theme-canvas');
+        this.visualizer = new ThemeVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.theme-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.textContent = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'theme-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-gold);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-danger);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.theme-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "💡 會考觀念診斷：盲點剖析";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題目核心觀念與會考常見關鍵字陷阱，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-success); font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+</body>
+</html>
