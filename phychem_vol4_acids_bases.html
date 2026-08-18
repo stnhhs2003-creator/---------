@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>國中理化第四冊：電解質、酸鹼鹽與反應平衡 | 霓虹化學實驗室</title>
+  <meta name="description" content="國中理化會考第四冊（八下第三、四章）：解離說、強弱酸鹼、指示劑與pH值、酸鹼中和滴定、反應速率四因子與化學平衡移動。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Orbitron:wght@800;900&family=JetBrains+Mono:wght@700&display=swap">
+  <style>
+    :root {
+      --bg-lab: #080f1e;
+      --bg-card: #0e1c36;
+      --bg-surface: #172d54;
+      --color-acid-pink: #ff2a85;
+      --color-base-blue: #00d2ff;
+      --color-neon-yellow: #fcee0a;
+      --color-neon-green: #00ff88;
+      --color-text: #f0fdf4;
+      --font-orbitron: 'Orbitron', monospace;
+      --font-mono: 'JetBrains Mono', monospace;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #15264a 0%, #050811 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 2.5px solid var(--color-base-blue);
+      border-radius: 20px; box-shadow: 0 0 35px rgba(0, 210, 255, 0.25), inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(8, 15, 30, 0.95);
+      border-bottom: 2px solid var(--color-base-blue); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-base-blue); border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-family: var(--font-mono); }
+    .lab-bar { flex: 1; height: 12px; background: #03060d; border: 1px solid var(--color-base-blue); border-radius: 3px; position: relative; overflow: hidden; }
+    .lab-bar-fill { height: 100%; background: linear-gradient(90deg, #ff2a85, #00d2ff); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-base-blue); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-base-blue); border-radius: 2px; }
+    .progress-dot.active { background: var(--color-base-blue); box-shadow: 0 0 8px var(--color-base-blue); }
+    .progress-dot.cleared { background: var(--color-neon-green); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-base-blue); border-radius: 8px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #bae6fd; font-family: var(--font-mono); }
+    .stat-value { font-size: 15px; font-weight: 800; font-family: var(--font-mono); color: var(--color-base-blue); }
+    .btn-lab-icon { background: var(--bg-surface); border: 1px solid var(--color-base-blue); color: var(--color-base-blue); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .lab-arena {
+      flex: 1.1; background: linear-gradient(180deg, #050811 0%, #0e1c36 100%);
+      border: 1.5px solid #1e3e6b; border-radius: 12px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-base-blue);
+      border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.25); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(8, 15, 30, 0.9); border: 1px solid var(--color-base-blue); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; font-family: var(--font-mono); animation: floatLab 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .lab-board-container { height: 75px; background: var(--bg-surface); border: 1px solid #1e3e6b; border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .lab-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-base-blue); margin-bottom: 2px; }
+    .lab-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #lab-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 1.5px solid #1e3e6b; border-radius: 14px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(0, 210, 255, 0.15); color: var(--color-base-blue); border: 1px solid var(--color-base-blue); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #080f1e; border: 1px solid #1e3e6b; border-radius: 8px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .lab-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid #1e3e6b; border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      transition: all 0.15s ease; outline: none; text-align: left;
+    }
+    .lab-btn:hover { background: #1c3664; border-color: var(--color-base-blue); transform: translateY(-1px); }
+    .lab-btn .btn-key { width: 26px; height: 26px; background: #080f1e; color: var(--color-base-blue); border: 1px solid var(--color-base-blue); border-radius: 4px; font-size: 13px; font-family: var(--font-mono); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .lab-btn.btn-correct { background: rgba(0, 255, 136, 0.25) !important; border-color: var(--color-neon-green) !important; color: #86efac !important; }
+    .lab-btn.btn-wrong { background: rgba(255, 42, 133, 0.25) !important; border-color: var(--color-acid-pink) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(5, 8, 17, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .lab-dialog { width: 90%; max-width: 580px; background: var(--bg-card); border: 2px solid var(--color-base-blue); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-base-blue); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-base-blue); }
+    .misconception-box { background: rgba(255, 42, 133, 0.15); border-left: 4px solid var(--color-acid-pink); border-radius: 4px; padding: 10px 14px; font-size: 15px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #080f1e; border: 1px solid #1e3e6b; border-radius: 6px; padding: 12px 14px; font-size: 15px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-base-blue); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-acid-pink); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-base-blue); border-radius: 12px; padding: 14px 18px; max-width: 540px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-lab { background: var(--color-base-blue); color: #080f1e; border: none; border-radius: 8px; padding: 12px 36px; font-size: 16px; font-weight: 900; font-family: var(--font-orbitron); cursor: pointer; box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }
+    @keyframes floatLab { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>🧪</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-base-blue); font-size:10px;">pH LEVEL</span>
+            <div class="lab-bar"><div id="player-hp-bar" class="lab-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-base-blue);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-acid-pink); font-size:10px;">PHYCHEM VOL.4</span>
+            <span style="font-size:10px; color:#bae6fd;">ACIDS, BASES & EQUILIBRIUM</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 電解質與解離說</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-lab-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="lab-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🧬</span></div>
+          <div class="char-nametag">酸鹼滴定分析官</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">🫧</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-acid-pink);">強酸腐蝕巨獸</div>
+          <div class="monster-hp-wrap">
+            <div class="lab-bar" style="height:8px;"><div id="monster-hp-bar" class="lab-bar-fill" style="width: 100%; background:var(--color-acid-pink);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="lab-board-container">
+        <div class="lab-board-header">
+          <span>⚗️ 阿瑞尼斯解離說・pH 指標・酸鹼中和放熱・化學平衡移動(鉻酸根黃 vs 二鉻酸根橘)圖解</span>
+          <span style="color:var(--color-base-blue); font-size:10px;">★ 霓虹生化動態監測</span>
+        </div>
+        <div class="lab-canvas-wrap"><canvas id="lab-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#bae6fd;">快捷鍵：按下 [1] - [4] 鍵作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入電解質酸鹼核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="lab-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">🧪</span>
+          <div id="modal-title" class="dialog-title">生化滴定診斷：觀念拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-lab" style="font-size:13px; padding:6px 20px;">中和平衡，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">🧪🌈</div>
+      <h1 class="game-title-main">國中理化第四冊：電解質、酸鹼鹽與反應平衡</h1>
+      <h2 class="game-subtitle">★ 國中會考理化第四冊（八下第三、四章）生化實驗室特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-base-blue);">【四大酸鹼平衡核心領域】：</strong>
+        <ul>
+          <li>⚡ <strong>Level 1 電解質與解離說</strong>：化合物溶於水能導電、水溶液電中性(正負總電量相等)、強弱電解質判定。</li>
+          <li>🩸 <strong>Level 2 酸鹼性質、指示劑與 pH 值</strong>：常見強酸強鹼特性、石蕊/酚酞/廣用試紙顏色變化、pH 與 [H+] 關係。</li>
+          <li>🧂 <strong>Level 3 酸鹼中和與常見鹽類</strong>：酸 + 鹼 ➔ 鹽 + 水 + 放熱、滴定管與錐形瓶操作、CaCO3/NaHCO3/NaCl。</li>
+          <li>⚖️ <strong>Level 4 反應速率與化學平衡</strong>：碰撞學說、四因子(濃度/溫度/表面積/催化劑)、動態平衡與勒沙特列原理。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-lab">啟動生化實驗室 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆✨</div>
+      <h1 class="game-title-main" style="color:var(--color-neon-green);">TITRATION PERFECT!</h1>
+      <h2 class="game-subtitle">恭喜你全數精通八下酸鹼鹽與化學反應平衡全考點！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得榮銜：<strong style="color:var(--color-base-blue);">【八下酸鹼平衡首席特級化學師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-neon-green); font-size:24px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-lab">再次挑戰 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">💥⚡</div>
+      <h1 class="game-title-main" style="color:var(--color-acid-pink);">滴定過量！</h1>
+      <h2 class="game-subtitle">酸鹼值或平衡移動判定有誤，校正後重新再來！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px; font-family:var(--font-mono);">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-lab" style="background:var(--color-acid-pink); color:#fff;">重新配置 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class LabAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(587.33, 'sine', 0.08, 0); this.playTone(880.00, 'sine', 0.1, 0.06); this.playTone(1174.66, 'sine', 0.2, 0.12); }
+      playWrong() { this.playTone(250, 'sawtooth', 0.15, 0); this.playTone(180, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(440, 'triangle', 0.08, 0); this.playTone(880, 'square', 0.1, 0.04); }
+      playLevelUp() { [523.25, 659.25, 783.99, 1046.50].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50, 1318.51].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new LabAudioEngine();
+
+    class LabVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawElectrolyte(ctx, w, h);
+        else if (level === 2) this.drawPHIndicator(ctx, w, h);
+        else if (level === 3) this.drawNeutralization(ctx, w, h);
+        else this.drawEquilibrium(ctx, w, h);
+      }
+      drawElectrolyte(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00d2ff"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("⚡ 電解質解離說： 溶於水解離出自由游動離子 ｜ 【水溶液必呈電中性】(正離子總電量 ＝ 負離子總電量)", midX, h / 2 - 4);
+        ctx.fillStyle = "#ff2a85";
+        ctx.fillText("非電解質： 蔗糖、葡萄糖、酒精 (以電中性分子存在水中，不導電)", midX, h / 2 + 12);
+      }
+      drawPHIndicator(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#fcee0a"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🌈 指示劑變色： 石蕊 (酸紅/鹼藍) ｜ 酚酞 (酸性無色/中性無色/鹼性呈紅色！) ｜ 廣用試紙 (紅橙黃綠藍靛紫)", midX, h / 2 - 4);
+        ctx.fillStyle = "#00d2ff";
+        ctx.fillText("pH 值意義： 25°C 下，pH < 7 為酸性 ([H⁺] > 10⁻⁷M) ｜ pH = 7 中性 ｜ pH > 7 為鹼性", midX, h / 2 + 12);
+      }
+      drawNeutralization(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#ff2a85"; ctx.font = "bold 11px monospace"; ctx.textAlign = "center";
+        ctx.fillText("🧂 酸鹼中和反應本質： H⁺ + OH⁻ ➔ H₂O ＋ 熱量 (放熱反應，水溶液溫度上升！)", midX, h / 2 - 4);
+        ctx.fillStyle = "#00ff88";
+        ctx.fillText("常見鹽類： 碳酸氫鈉 (NaHCO₃ 小蘇打/加熱生CO₂) ｜ 碳酸鈉 (Na₂CO₃ 洗滌鹼) ｜ 碳酸鈣 (CaCO₃ 不溶於水)", midX, h / 2 + 12);
+      }
+      drawEquilibrium(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#00d2ff"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("⚖️ 鉻酸根平衡： 2 CrO₄²⁻ (黃色) ＋ 2 H⁺ (加酸) ⇄ Cr₂O₇²⁻ (橘紅色) ＋ H₂O", midX, h / 2 - 4);
+        ctx.fillStyle = "#fcee0a";
+        ctx.fillText("勒沙特列原理： 加酸 [H⁺] 增加 ➔ 反應向右進行變【橘紅】 ｜ 加鹼消耗 H⁺ ➔ 反應向左進行變【黃色】", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 電解質與阿瑞尼斯解離說",
+        monsterName: "游離離子怪",
+        monsterEmoji: "⚡",
+        questions: [
+          {
+            formula: "下列關於『電解質（Electrolyte）』的定義與特徵敘述，何者完全正確？",
+            options: ["必須是『化合物』，且其『水溶液（或熔融態）』能夠導電者", "只要能導電的物質都是電解質（如銅線與石墨）", "電解質溶於水解離出的正離子總個數必定等於負離子總個數", "純水是導電性極強的強電解質"],
+            correct: "必須是『化合物』，且其『水溶液（或熔融態）』能夠導電者",
+            hint: "電解質必須是化合物（金屬銅是元素不是電解質）；水溶液導電是因為解離出帶電離子。",
+            misconceptions: {
+              "只要能導電的物質都是電解質（如銅線與石墨）": "【電解質必須是化合物】銅線與石墨是『元素導體』不是電解質！電解質定義必須是【化合物，且溶於水或熔融態能導電】。"
+            },
+            explanation: "電解質定義：溶於水能解離出離子而導電的「化合物」（酸、鹼、鹽）。銅、鐵等金屬為單質導體，非電解質。"
+          },
+          {
+            formula: "將氯化鈣（CaCl₂）固體溶於水中，解離出鈣離子（Ca²⁺）與氯離子（Cl⁻）。關於該水溶液的電性與離子數目關係，何者正確？",
+            options: ["水溶液必定呈『電中性』，因為所有正離子帶的正總電量必定等於所有負離子帶的負總電量（$1 \\times (+2) + 2 \\times (-1) = 0$）", "鈣離子數目等於氯離子數目", "溶液帶正電，因為鈣離子帶 2 個正電荷", "水溶液不帶任何電荷是因為水分子把離子中和了"],
+            correct: "水溶液必定呈『電中性』，因為所有正離子帶的正總電量必定等於所有負離子帶的負總電量（$1 \\times (+2) + 2 \\times (-1) = 0$）",
+            hint: "記住黃金法則：任何電解質水溶液『正負總電量必相等（電中性）』，但『正負離子個數不一定相等』！",
+            misconceptions: {
+              "鈣離子數目等於氯離子數目": "【離子數目 vs 總電量陷阱】$CaCl_2 \\rightarrow Ca^{2+} + 2Cl^-$。氯離子個數是鈣離子的【2 倍】！但正總電量 (+2) 等於負總電量 (-2)，溶液恆呈【電中性】！"
+            },
+            explanation: "解離反應：$\\text{CaCl}_2 \\rightarrow \\text{Ca}^{2+} + 2\\text{Cl}^-$。正負離子數目比為 $1:2$，但總正電量等於總負電量，水溶液恆為電中性。"
+          },
+          {
+            formula: "下列各組常見物質中，溶於水後『完全不能導電（非電解質）』的一組為何？",
+            options: ["蔗糖（C₁₂H₂₂O₁₁）、葡萄糖（C₆H₁₂O₆）、乙醇酒精（C₂H₅OH）", "食鹽（NaCl）、鹽酸（HCl）、氫氧化鈉（NaOH）", "醋酸（CH₃COOH）、小蘇打（NaHCO₃）", "硫酸銅（CuSO₄）、硝酸鉀（KNO₃）"],
+            correct: "蔗糖（C₁₂H₂₂O₁₁）、葡萄糖（C₆H₁₂O₆）、乙醇酒精（C₂H₅OH）",
+            hint: "有機醣類與酒精溶於水以中性分子形式分散，不解離出離子，為非電解質。",
+            misconceptions: {
+              "醋酸（CH₃COOH）、小蘇打（NaHCO₃）": "【弱電解質也是電解質】醋酸雖是弱酸（弱電解質）但仍會部分解離導電！【醣類（蔗糖、葡萄糖）與醇類（酒精）】才是完全不導電的非電解質。"
+            },
+            explanation: "非電解質分子（如蔗糖、葡萄糖、酒精）溶於水以中性分子分散於水中，不產生自由游動離子，故無法導電。"
+          },
+          {
+            formula: "阿瑞尼斯（Arrhenius）在 1887 年提出的『電離說（解離說）』，其最核心的觀點為何？",
+            options: ["電解質在水中溶解時，會自發解離成帶正電的陽離子與帶負電的陰離子", "通電之後分子才會被打碎成離子", "只有金屬原子才能導電", "所有化學反應都是電子在水面上跳躍"],
+            correct: "電解質在水中溶解時，會自發解離成帶正電的陽離子與帶負電的陰離子",
+            hint: "溶於水時就『已經自動解離』成離子了，並非通電後才解離。",
+            misconceptions: {
+              "通電之後分子才會被打碎成離子": "【解離時機盲點】解離是【溶解於水時即自發發生】，通電只是促使陽離子往負極移動、陰離子往正極移動產生電流！"
+            },
+            explanation: "阿瑞尼斯電離學說指出：電解質溶於水受水分子極性吸引即自發解離為離子，通電時離子定向移動形成電流。"
+          },
+          {
+            formula: "將硫酸銅（CuSO₄）晶體溶於水進行導電實驗。接通直流電源後，下列敘述何者完全正確？",
+            options: ["藍色的銅離子（Cu²⁺）向『負極』移動並在負極析出紅色的金屬銅；無色的硫酸根離子（SO₄²⁻）向『正極』移動", "銅離子向正極移動", "溶液中的水分子全部變成氫氣與氧氣", "燈泡完全不會發亮"],
+            correct: "藍色的銅離子（Cu²⁺）向『負極』移動並在負極析出紅色的金屬銅；無色的硫酸根離子（SO₄²⁻）向『正極』移動",
+            hint: "異性相吸：帶正電的陽離子（Cu2+）往負極跑，得到電子還原成紅色的銅單質（Cu）。",
+            misconceptions: {
+              "銅離子向正極移動": "【異性相吸移動方向】帶正電的陽離子（$Cu^{2+}$）會被【負極】吸引，在負極獲得電子析出紅色的金屬銅！"
+            },
+            explanation: "電解導電機制：帶正電之陽離子（$Cu^{2+}$）受負極吸引並獲電子還原（$Cu^{2+} + 2e^- \\rightarrow Cu$）；陰離子（$SO_4^{2-}$）向正極移動。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 酸鹼性質、指示劑與 pH 值",
+        monsterName: "腐蝕酸鹼龍",
+        monsterEmoji: "🩸",
+        questions: [
+          {
+            formula: "在 25°C 下，某水溶液測得其氫離子濃度 $[\\text{H}^+] = 10^{-4}\\text{ M}$。試問該水溶液的 $\\text{pH}$ 值為何？該水溶液呈酸性、中性或鹼性？",
+            options: ["pH = 4，呈酸性", "pH = 10，呈鹼性", "pH = 4，呈鹼性", "pH = 7，呈中性"],
+            correct: "pH = 4，呈酸性",
+            hint: "pH = -log[H+] = 4。25°C 下 pH < 7 為酸性，pH = 7 為中性，pH > 7 為鹼性。",
+            misconceptions: {
+              "pH = 10，呈鹼性": "【pH 與指數對應】$[H^+] = 10^{-4}$ M，其 pH 值直接對應指數的負值為【4】；因 $\\text{pH} < 7$ 故呈【酸性】！"
+            },
+            explanation: "$\\text{pH}$ 定義：$\\text{pH} = -\\log[H^+]$。當 $[H^+] = 10^{-4}\\text{ M} \\Rightarrow \\text{pH} = 4$。25°C 時 $\\text{pH} < 7$ 為酸性。"
+          },
+          {
+            formula: "下列關於常見『酸（如硫酸、鹽酸、硝酸、醋酸）』的性質與用途敘述，何者『錯誤』？",
+            options: ["濃硝酸具有強烈腐蝕性與吸水性，常用於食品乾燥劑", "濃硫酸稀釋時會釋放巨大熱量，操作時必須將『濃硫酸緩慢沿玻璃棒倒入水中』，絕不可將水倒入濃硫酸中", "濃鹽酸具揮發性，打開瓶蓋會冒出白霧（氯化氫氣體與空氣中水氣結合）", "王水是由濃鹽酸與濃硝酸按體積比 3 : 1 配製而成，能溶解黃金與白金"],
+            correct: "濃硝酸具有強烈腐蝕性與吸水性，常用於食品乾燥劑",
+            hint: "錯誤的是第一項：具有極強脫水性吸水性的是『濃硫酸』，但具強腐蝕性絕不可用於食品！食品乾燥劑常用生石灰或矽膠。",
+            misconceptions: {
+              "濃硫酸稀釋時會釋放巨大熱量，操作時必須將『濃硫酸緩慢沿玻璃棒倒入水中』，絕不可將水倒入濃硫酸中": "【硫酸稀釋安全守則】這是完全正確的守則（酸入水，防噴濺）！錯誤選項是第一項，硝酸具強氧化性會照光分解成紅棕色 NO₂，絕非食品乾燥劑。"
+            },
+            explanation: "濃硝酸（$HNO_3$）見光易分解生成紅棕色有毒 $NO_2$ 氣體，需儲於深色玻璃瓶中；具強脫水性的是濃硫酸，兩者皆為強腐蝕性危險品。"
+          },
+          {
+            formula: "將酚酞指示劑分別滴入三支裝有『未知液體甲（pH=3）、乙（pH=7）、丙（pH=11）』的試管中。試管中溶液的顏色變化何者正確？",
+            options: ["甲（無色）、乙（無色）、丙（紅色）", "甲（紅色）、乙（無色）、丙（藍色）", "甲（黃色）、乙（綠色）、丙（藍色）", "三支試管皆呈紅色"],
+            correct: "甲（無色）、乙（無色）、丙（紅色）",
+            hint: "記住酚酞變色口訣：遇酸無色、遇中性無色、遇鹼才變紅色！",
+            misconceptions: {
+              "甲（紅色）、乙（無色）、丙（藍色）": "【酚酞變色區間陷阱】石蕊試紙才是遇酸變紅！【酚酞指示劑在酸性 (pH<7) 與中性 (pH=7) 皆為『無色』，只有在鹼性 (pH>8.2) 才呈『紅色』】！"
+            },
+            explanation: "酚酞指示劑變色範圍：$\\text{pH} < 8.2$ 呈無色；$\\text{pH} > 10.0$ 呈鮮紅色。故酸性與中性呈無色，鹼性（丙）呈紅色。"
+          },
+          {
+            formula: "工業上常用『氫氧化鈉（NaOH，俗稱燒鹼、苛性鈉）』製造肥皂。下列關於氫氧化鈉固體的保存與性質，何者正確？",
+            options: ["易吸收空氣中的水氣而潮解，且會吸收二氧化碳變質，故必須密封保存；溶於水劇烈放熱呈強鹼性", "具有揮發性會冒出濃烈白煙", "水溶液能使石蕊試紙變紅色", "固體易燃遇火爆炸"],
+            correct: "易吸收空氣中的水氣而潮解，且會吸收二氧化碳變質，故必須密封保存；溶於水劇烈放熱呈強鹼性",
+            hint: "NaOH 易潮解吸收水與 CO2 生成 Na2CO3，溶於水放熱呈強鹼性（摸起來有滑膩感並腐蝕皮膚）。",
+            misconceptions: {
+              "水溶液能使石蕊試紙變紅色": "【鹼性指示劑顏色】氫氧化鈉是強鹼，能使紅色石蕊試紙變【藍色】！"
+            },
+            explanation: "$NaOH$ 為強鹼性白色固體，極易吸收大氣水氣潮解並與 $CO_2$ 反應生成 $Na_2CO_3$，溶於水劇烈放熱，具強腐蝕性。"
+          },
+          {
+            formula: "將純水由 25°C 加熱至 60°C（此時水解離度增大，水的離子積 $K_w = 10^{-13}$）。下列關於 60°C 純水的酸鹼性與 pH 值的敘述，何者正確？（會考超高鑑別度題）",
+            options: ["pH 值變為 6.5（小於 7），但因 $[\\text{H}^+] = [\\text{OH}^-] = 10^{-6.5}\\text{ M}$，故水質依然恆為『中性』", "pH 變為 6.5 變成酸性溶液", "pH 值保持為 7 永遠不變", "pH 變為 13 變成強鹼性"],
+            correct: "pH 值變為 6.5（小於 7），但因 $[\\text{H}^+] = [\\text{OH}^-] = 10^{-6.5}\\text{ M}$，故水質依然恆為『中性』",
+            hint: "判定中性的唯一根本標準是：[H+] = [OH-]！加熱純水解離出等量的 H+ 與 OH-，水依然是中性，只是 pH 數值降為 6.5。",
+            misconceptions: {
+              "pH 變為 6.5 變成酸性溶液": "【中性定義是 [H+]=[OH-]】判定中性不是死背 pH=7！純水加熱後 $[H^+] = [OH^-]$ 依然相等，【水質依然是中性】，只是 60°C 下的中性點 pH 是 6.5！"
+            },
+            explanation: "水的自解離為吸熱反應，升溫使 $K_w$ 增至 $10^{-13}$，$[H^+] = [OH^-] = 10^{-6.5}\\text{ M}$，$\\text{pH} = 6.5$。因兩者濃度相等，仍為純中性。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 酸鹼中和反應與常見鹽類",
+        monsterName: "鹽類結晶泰坦",
+        monsterEmoji: "🧂",
+        questions: [
+          {
+            formula: "將 1 M 的鹽酸（HCl）與 1 M 的氫氧化鈉（NaOH）等體積混合進行酸鹼中和反應。下列關於該反應的敘述，何者完全正確？",
+            options: ["反應為『放熱反應』使溶液溫度上升，淨反應式為 $\\text{H}^+ + \\text{OH}^- \\rightarrow \\text{H}_2\\text{O}$，蒸乾水分可得到氯化鈉（NaCl）結晶", "反應為吸熱反應溶液結冰", "反應後 pH 值必定降為 0", "中和後不會生成任何鹽類"],
+            correct: "反應為『放熱反應』使溶液溫度上升，淨反應式為 $\\text{H}^+ + \\text{OH}^- \\rightarrow \\text{H}_2\\text{O}$，蒸乾水分可得到氯化鈉（NaCl）結晶",
+            hint: "酸 + 鹼 ➔ 鹽 + 水 + 熱量。中和反應必定放熱！",
+            misconceptions: {
+              "反應為吸熱反應溶液結冰": "【酸鹼中和熱】所有酸鹼中和反應皆為【放熱反應（$\\Delta H < 0$）】，反應後混合液溫度必定上升！"
+            },
+            explanation: "酸鹼中和實質為氫離子與氫氧根離子結合生成水分子並釋放中和熱（約 57.3 kJ/mol），生成物為水與相應鹽類。"
+          },
+          {
+            formula: "日常生活中烘焙麵包蛋糕所使用的『小蘇打粉（或發粉）』以及胃藥制酸劑的主要成分為下列何者？其化學式為何？",
+            options: ["碳酸氫鈉（NaHCO₃，加熱或遇酸會釋放 CO₂ 氣體使麵團膨脹）", "碳酸鈉（Na₂CO₃，洗滌鹼）", "碳酸鈣（CaCO₃，大理石）", "氫氧化鈉（NaOH）"],
+            correct: "碳酸氫鈉（NaHCO₃，加熱或遇酸會釋放 CO₂ 氣體使麵團膨脹）",
+            hint: "小蘇打 = 碳酸氫鈉（NaHCO3，弱鹼性可中和胃酸，加熱分解產生 CO2 氣泡膨脹蛋糕）。大蘇打是硫代硫酸鈉，洗滌鹼是碳酸鈉。",
+            misconceptions: {
+              "碳酸鈉（Na₂CO₃，洗滌鹼）": "【小蘇打 vs 蘇打】碳酸鈉（$Na_2CO_3$）是『洗滌鹼/蘇打』，鹼性過強不可食用；烘焙與胃藥使用的是弱鹼性的【碳酸氫鈉（$NaHCO_3$ 小蘇打）】！"
+            },
+            explanation: "碳酸氫鈉（$NaHCO_3$）：受熱分解 $2\\text{NaHCO}_3 \\xrightarrow{\\Delta} \\text{Na}_2\\text{CO}_3 + \\text{H}_2\\text{O} + \\text{CO}_2\\uparrow$，產生之二氧化碳使糕點鬆軟。"
+          },
+          {
+            formula: "進行『酸鹼滴定實驗』時，將未知濃度的氫氧化鈉溶液置於錐形瓶中，並加入酚酞指示劑。用已知濃度的鹽酸裝於滴定管中逐滴滴入。當滴定達到『滴定終點』時，錐形瓶內溶液顏色會產生何種瞬間變化？",
+            options: ["由『紅色』恰好褪色變為『無色』（且維持 30 秒不變紅）", "由無色變為藍色", "由紅色變為黃色", "由無色變為黑色"],
+            correct: "由『紅色』恰好褪色變為『無色』（且維持 30 秒不變紅）",
+            hint: "錐形瓶內原本是 NaOH（鹼性+酚酞呈紅色）。酸液滴入中和掉鹼，恰好中和時由紅色變為無色。",
+            misconceptions: {
+              "由無色變為藍色": "【滴定顏色變化方向】錐形瓶一開始是鹼性 NaOH（酚酞呈紅色）！滴定至終點（完全中和）時酚酞變為【無色】。"
+            },
+            explanation: "滴定前錐形瓶中 NaOH 呈鹼性使酚酞顯紅色；隨滴定管中 HCl 滴入中和 $OH^-$，達終點時溶液呈中性，酚酞由紅色轉變為無色。"
+          },
+          {
+            formula: "農夫在農田土壤因長期施肥過度酸化時，常在田地裡撒入下列何種廉價且呈鹼性的物質來中和土壤酸性？",
+            options: ["熟石灰（氫氧化鈣 Ca(OH)₂）或生石灰（氧化鈣 CaO）", "硫酸銅（CuSO₄）", "氯化鈉（NaCl）", "濃硫酸（H₂SO₄）"],
+            correct: "熟石灰（氫氧化鈣 Ca(OH)₂）或生石灰（氧化鈣 CaO）",
+            hint: "農業中和酸性土壤常用石灰（生石灰 CaO 或熟石灰 Ca(OH)2），便宜且能改善土壤酸鹼值。",
+            misconceptions: {
+              "硫酸銅（CuSO₄）": "【中和酸性土壤材料】硫酸銅具有重金屬毒性！農業改良酸性土壤標準使用的是鹼性的【生石灰（CaO）或熟石灰（Ca(OH)₂）】。"
+            },
+            explanation: "熟石灰（$Ca(OH)_2$）為微溶性中強鹼，能有效中和土壤中多餘酸性，並提供植物生長所需之鈣離子。"
+          },
+          {
+            formula: "下列關於常見鹽類水溶性與特性的敘述，何者完全正確？",
+            options: ["氯化鈉（NaCl 易溶於水/食鹽）；硫酸鋇（BaSO₄ 難溶於水/X光顯影劑）；碳酸鈣（CaCO₃ 難溶於水/遇酸產生 CO₂）", "所有鹽類在水中溶解度皆完全相同且皆易溶於水", "碳酸鈣溶於水呈強酸性", "硫酸鋇易溶於水且有劇毒"],
+            correct: "氯化鈉（NaCl 易溶於水/食鹽）；硫酸鋇（BaSO₄ 難溶於水/X光顯影劑）；碳酸鈣（CaCO₃ 難溶於水/遇酸產生 CO₂）",
+            hint: "鹽類水溶性各異：NaCl 易溶；BaSO4 不溶無毒可作鋇餐顯影；CaCO3 大理石不溶於水遇酸冒 CO2 氣泡。",
+            misconceptions: {
+              "所有鹽類在水中溶解度皆完全相同且皆易溶於水": "【鹽類溶解度差異】鹽類有的極易溶（NaCl、KNO₃），有的極難溶（$CaCO_3$、$BaSO_4$ 沉澱）！"
+            },
+            explanation: "常見鹽類性質：$NaCl$ 易溶；$CaCO_3$（石灰石/貝殼）難溶於水易溶於酸；$BaSO_4$ 極難溶於水與酸，用作消化道 X 光鋇餐造影劑。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 反應速率四因子與化學平衡移動",
+        monsterName: "化學平衡混沌魔",
+        monsterEmoji: "⚖️",
+        questions: [
+          {
+            formula: "在化學反應速率理論中，『碰撞學說』指出反應物粒子要發生化學反應轉變為生成物，必須同時滿足哪『兩大必要條件』？",
+            options: ["具有足夠的能量（大於或等於活化能）以及正確的碰撞方位（方向）", "粒子個數必須大於 1 莫耳以及必須在真空中", "必須加入催化劑以及必須降溫到 0°C", "只要互相接觸即可立即反應"],
+            correct: "具有足夠的能量（大於或等於活化能）以及正確的碰撞方位（方向）",
+            hint: "有效碰撞兩要素：能量足夠（克服活化能） + 方向正確（有效接觸反應位點）。",
+            misconceptions: {
+              "只要互相接觸即可立即反應": "【有效碰撞條件】不是每次碰撞都會反應！必須滿足【能量 $\\ge$ 活化能】且【碰撞方向（幾何方位）正確】的『有效碰撞』才能反應！"
+            },
+            explanation: "碰撞學說核心：反應物分子必須發生「有效碰撞」，即碰撞動能需克服活化能能障，且分子具備有利之立體化學空間位向。"
+          },
+          {
+            formula: "將相同質量的鋅塊分別製成『一整大塊鋅塊』與『極細鋅粉』，分別加入相同濃度與體積的稀鹽酸中。極細鋅粉反應產生氫氣的速率遠快於大鋅塊，其主要原因為何？",
+            options: ["鋅粉的『總表面積』大幅增加，使反應物粒子間的有效碰撞頻率急遽提升", "鋅粉改變了化學反應的活化能", "鋅粉的化學活性大於大塊鋅", "鋅粉的溫度比較高"],
+            correct: "鋅粉的『總表面積』大幅增加，使反應物粒子間的有效碰撞頻率急遽提升",
+            hint: "粉末顆粒小 ➔ 總接觸表面積大 ➔ 碰撞機會大增 ➔ 反應速率大幅加快。",
+            misconceptions: {
+              "鋅粉改變了化學反應的活化能": "【表面積 vs 催化劑效應】改變活化能的是『催化劑』！粉末化只是【增加接觸表面積】，提高單位時間碰撞次數！"
+            },
+            explanation: "反應速率四因子中之接觸表面積：固體細碎化大幅提升接觸界面面積，增加單位時間內分子碰撞機率，反應速率顯著加快。"
+          },
+          {
+            formula: "在密閉容器中進行鉻酸根與二鉻酸根的平衡反應：$2 \\text{ CrO}_4^{2-} (\\text{黃色}) + 2 \\text{ H}^+ \\rightleftharpoons \\text{Cr}_2\\text{O}_7^{2-} (\\text{橘紅色}) + \\text{H}_2\\text{O}$。若向此平衡系統中滴入『數滴濃鹽酸（加酸）』，試管中溶液顏色會產生何種變化？（勒沙特列原理）",
+            options: ["由黃色轉變為『橘紅色』（加酸增加 $[\\text{H}^+]$，促使平衡向右移動）", "由橘紅色轉變為黃色", "由黃色轉變為無色", "顏色完全保持不變"],
+            correct: "由黃色轉變為『橘紅色』（加酸增加 $[\\text{H}^+]$，促使平衡向右移動）",
+            hint: "勒沙特列原理：加酸使 H+ 增加，系統為了消耗多餘的 H+ 會將反應向右推進，生成橘紅色的二鉻酸根 (Cr2O7 2-)！",
+            misconceptions: {
+              "由橘紅色轉變為黃色": "【勒沙特列平衡移動方向】加酸（$[H^+]$ 增多）促使平衡【向右（產物端）移動】，因此黃色轉為【橘紅色（$Cr_2O_7^{2-}$）】！若加鹼消耗 $H^+$ 才會向左變黃。"
+            },
+            explanation: "平衡移動原理（勒沙特列）：向系統加入反應物（$H^+$），平衡往消耗該物質之方向移動（向右生成 $Cr_2O_7^{2-}$ 橘紅色）。"
+          },
+          {
+            formula: "在化學反應中加入『催化劑（觸媒）』，下列關於催化劑對反應影響的敘述，何者完全正確？",
+            options: ["催化劑能改變反應途徑以『降低反應所需的活化能』，同時加快正反應與逆反應速率，但『無法改變化學平衡狀態與最終生成物質量』", "催化劑能增加生成物的最終平衡總產量", "催化劑會被反應消耗殆盡", "催化劑只能加快正反應不能加快逆反應"],
+            correct: "催化劑能改變反應途徑以『降低反應所需的活化能』，同時加快正反應與逆反應速率，但『無法改變化學平衡狀態與最終生成物質量』",
+            hint: "催化劑只負責『縮短達到平衡的時間』，不能改變平衡點，也不能增加生成物產量！",
+            misconceptions: {
+              "催化劑能增加生成物的最終平衡總產量": "【催化劑不能改變平衡產量】催化劑【降低活化能、加快速率】，使反應提早達平衡，但【絕不改變平衡常數與產量上限】！"
+            },
+            explanation: "催化劑提供低活化能途徑，同等倍數提升正逆反應速率，加速達到平衡，但不改變反應熱（$\\Delta H$）、平衡常數與產率。"
+          },
+          {
+            formula: "【會考生活題】麵粉工廠或地下煤礦坑常嚴禁明火，甚至需要安裝防爆通風設備，主要是為了預防下列哪一種危險現象發生？",
+            options: ["懸浮粉塵與空氣接觸表面積極巨大，遇微小火花即引發劇烈的『粉塵爆炸』", "麵粉會自發產生核裂變", "煤粉會吸收空氣中所有氧氣窒息", "粉塵會產生劇毒氰化物"],
+            correct: "懸浮粉塵與空氣接觸表面積極巨大，遇微小火花即引發劇烈的『粉塵爆炸』",
+            hint: "微細粉塵（如麵粉、玉米粉、煤粉）懸浮在空中具有極大接觸面積，極易引發瞬間連鎖超速燃燒爆炸（粉塵爆炸）。",
+            misconceptions: {
+              "煤粉會吸收空氣中所有氧氣窒息": "【粉塵爆炸原理】可燃性固體粉末散布空中時，【接觸表面積無限放大】，遇到點火源瞬間引發劇烈放熱爆炸，稱為【粉塵爆炸】！"
+            },
+            explanation: "粉塵爆炸（Dust explosion）：可燃微粒懸浮於空氣中形成氣溶膠，超高比表面積使氧化速率極高，引發瞬間能量釋放與衝擊波。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('lab-canvas');
+        this.visualizer = new LabVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.lab-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'lab-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 命中!`, this.elMonsterEmoji.parentElement, 'color:var(--color-base-blue);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-acid-pink);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.lab-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "🧪 生化滴定診斷：觀念拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的電解質定義、pH值計算、指示劑變色或勒沙特列平衡移動，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:#00ff88; font-size:16px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「加水稀釋對酸性溶液pH值的影響」。本實驗的操作變因為何？","options":["溶液pH值","原酸液種類、原體積與溫度","加水體積","每組實驗重複次數"],"correct":"加水體積","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「加水體積」。"},{"formula":"【實驗探究】進行「加水稀釋對酸性溶液pH值的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["原酸液種類、原體積與溫度","實驗器材品牌","溶液pH值","加水體積"],"correct":"溶液pH值","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「溶液pH值」。"},{"formula":"【實驗設計】為公平比較「加水稀釋對酸性溶液pH值的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","原酸液種類、原體積與溫度","各組可使用不同測量方法"],"correct":"原酸液種類、原體積與溫度","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：原酸液種類、原體積與溫度。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","酸液逐漸稀釋時pH值上升並接近7","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"酸液逐漸稀釋時pH值上升並接近7","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：酸液逐漸稀釋時pH值上升並接近7。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「加水體積 對 溶液pH值 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：酸液加水稀釋後pH值上升並接近7。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「加水體積」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「加水體積」與「溶液pH值」的關係，何者最合理？","options":["酸液加水稀釋後pH值上升並接近7","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"酸液加水稀釋後pH值上升並接近7","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：酸液加水稀釋後pH值上升並接近7；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+</body>
+</html>
