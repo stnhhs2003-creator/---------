@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生物第二冊：生態系網絡與地球守護者 | 國中會考特訓</title>
+  <meta name="description" content="國中生物會考第二冊生態系專題：族群群集、食物網與能量流動、生物交互作用、生物多樣性與環境永續。">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Comfortaa:wght@700&display=swap">
+  <style>
+    :root {
+      --bg-jungle: #062b1b;
+      --bg-card: #0a3d27;
+      --bg-surface: #0f5436;
+      --color-emerald: #10b981;
+      --color-lime: #a3e635;
+      --color-sun: #facc15;
+      --color-danger: #f43f5e;
+      --color-cyan: #22d3ee;
+      --color-text: #f0fdf4;
+      --font-chinese: 'Noto Sans TC', sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: radial-gradient(circle at 50% 30%, #0d4a30 0%, #031c11 100%);
+      font-family: var(--font-chinese); color: var(--color-text);
+      display: flex; justify-content: center; align-items: center;
+    }
+    #app-container {
+      width: 100vw; height: 100vh; max-width: 1100px; max-height: 780px;
+      background: var(--bg-card); border: 3px solid var(--color-lime);
+      border-radius: 24px; box-shadow: 0 0 35px rgba(163, 230, 53, 0.25);
+      display: flex; flex-direction: column; overflow: hidden; position: relative;
+    }
+    #hud-bar {
+      height: 72px; background: rgba(6, 43, 27, 0.95);
+      border-bottom: 2px solid var(--color-lime); display: flex;
+      align-items: center; justify-content: space-between; padding: 0 22px; z-index: 10;
+    }
+    .hud-player-info { display: flex; align-items: center; gap: 12px; }
+    .hud-avatar {
+      width: 48px; height: 48px; background: var(--bg-surface);
+      border: 2px solid var(--color-lime); border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 24px;
+    }
+    .hud-bars { display: flex; flex-direction: column; gap: 4px; min-width: 130px; }
+    .bar-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; }
+    .jungle-bar { flex: 1; height: 12px; background: #02130b; border: 1px solid var(--color-lime); border-radius: 4px; position: relative; overflow: hidden; }
+    .jungle-bar-fill { height: 100%; background: linear-gradient(90deg, #10b981, #a3e635); transition: width 0.3s ease; }
+    .hud-center-stage { text-align: center; }
+    .stage-title { font-size: 14px; font-weight: 900; color: var(--color-lime); margin-bottom: 3px; }
+    .stage-progress-pills { display: flex; justify-content: center; gap: 6px; }
+    .progress-dot { width: 12px; height: 10px; background: var(--bg-surface); border: 1px solid var(--color-lime); border-radius: 3px; }
+    .progress-dot.active { background: var(--color-lime); box-shadow: 0 0 8px var(--color-lime); }
+    .progress-dot.cleared { background: var(--color-sun); }
+    .hud-stats { display: flex; align-items: center; gap: 14px; }
+    .stat-box { background: var(--bg-surface); border: 1px solid var(--color-lime); border-radius: 10px; padding: 4px 12px; display: flex; align-items: center; gap: 6px; }
+    .stat-label { font-size: 10px; color: #bbf7d0; }
+    .stat-value { font-size: 15px; font-weight: 800; color: var(--color-lime); }
+    .btn-jungle-icon { background: var(--bg-surface); border: 1px solid var(--color-lime); color: var(--color-lime); border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    #main-stage { flex: 1; display: flex; flex-direction: column; padding: 12px 20px; gap: 10px; min-height: 0; }
+    .jungle-arena {
+      flex: 1.1; background: linear-gradient(180deg, #031c11 0%, #0d4a30 100%);
+      border: 2px solid #15803d; border-radius: 14px; position: relative;
+      overflow: hidden; display: flex; justify-content: space-between; align-items: flex-end; padding: 14px 40px 16px 40px;
+    }
+    .hero-wrapper, .monster-wrapper { display: flex; flex-direction: column; align-items: center; z-index: 2; position: relative; }
+    .hero-avatar-box, .monster-avatar-box {
+      width: 85px; height: 85px; background: var(--bg-surface); border: 2px solid var(--color-lime);
+      border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 44px;
+      box-shadow: 0 0 18px rgba(163, 230, 53, 0.3); transition: transform 0.2s ease;
+    }
+    .char-nametag { background: rgba(6, 43, 27, 0.9); border: 1px solid var(--color-lime); border-radius: 6px; padding: 2px 10px; font-size: 11px; font-weight: 700; color: #fff; margin-top: 6px; }
+    .monster-hp-wrap { width: 85px; margin-top: 4px; }
+    .floating-fx { position: absolute; font-size: 18px; font-weight: 900; animation: floatJungle 0.8s ease-out forwards; pointer-events: none; z-index: 20; }
+    .jungle-board-container { height: 75px; background: var(--bg-surface); border: 1.5px solid #15803d; border-radius: 12px; padding: 6px 14px; display: flex; flex-direction: column; }
+    .jungle-board-header { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: var(--color-lime); margin-bottom: 2px; }
+    .jungle-canvas-wrap { flex: 1; position: relative; width: 100%; }
+    #jungle-canvas { width: 100%; height: 100%; display: block; }
+    #question-panel { background: var(--bg-surface); border: 2px solid #15803d; border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .question-header { display: flex; align-items: center; justify-content: space-between; }
+    .quest-badge { background: rgba(163, 230, 53, 0.15); color: var(--color-lime); border: 1px solid var(--color-lime); border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+    .question-box { background: #062b1b; border: 1px solid #15803d; border-radius: 10px; padding: 8px 14px; text-align: center; }
+    .question-title-text { font-size: 20px; font-weight: 900; line-height: 1.5; color: var(--color-text-main, #f8fafc); }
+    .question-hint-text { margin-top: 4px; font-size: 14px; color: var(--color-text-dim, #93c5fd); }
+    .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .jungle-btn {
+      background: var(--bg-card); color: var(--color-text); border: 1.5px solid #15803d; border-radius: 10px;
+      padding: 12px 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px;
+      transition: all 0.15s ease; outline: none; text-align: left;
+    }
+    .jungle-btn:hover { background: #136a44; border-color: var(--color-lime); transform: translateY(-1px); }
+    .jungle-btn .btn-key { width: 26px; height: 26px; background: #062b1b; color: var(--color-lime); border: 1px solid var(--color-lime); border-radius: 4px; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .jungle-btn.btn-correct { background: rgba(34, 197, 94, 0.3) !important; border-color: #22c55e !important; color: #86efac !important; }
+    .jungle-btn.btn-wrong { background: rgba(244, 63, 94, 0.3) !important; border-color: var(--color-danger) !important; color: #fecdd3 !important; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(3, 28, 17, 0.88); display: none; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
+    .jungle-dialog { width: 90%; max-width: 560px; background: var(--bg-card); border: 2px solid var(--color-lime); border-radius: 18px; padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .dialog-header { display: flex; align-items: center; gap: 10px; border-bottom: 1px dashed var(--color-lime); padding-bottom: 8px; }
+    .dialog-title { font-size: 16px; font-weight: 800; color: var(--color-lime); }
+    .misconception-box { background: rgba(244, 63, 94, 0.15); border-left: 4px solid var(--color-danger); border-radius: 4px; padding: 8px 12px; font-size: 15px; color: #fecdd3; line-height: 1.5; }
+    .step-by-step { background: #062b1b; border: 1px solid #15803d; border-radius: 6px; padding: 10px 12px; font-size: 15px; color: #fff; line-height: 1.6; }
+    .dialog-footer { display: flex; justify-content: flex-end; }
+    .overlay-screen { position: absolute; inset: 0; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; padding: 24px; text-align: center; }
+    .game-title-main { font-size: 24px; font-weight: 900; color: var(--color-lime); margin-bottom: 4px; }
+    .game-subtitle { font-size: 13px; color: var(--color-cyan); font-weight: 700; margin-bottom: 18px; }
+    .instructions-card { background: var(--bg-surface); border: 1.5px solid var(--color-lime); border-radius: 14px; padding: 14px 18px; max-width: 520px; margin-bottom: 20px; font-size: 13px; text-align: left; line-height: 1.8; }
+    .instructions-card ul { padding-left: 20px; }
+    .btn-start-jungle { background: var(--color-lime); color: #062b1b; border: none; border-radius: 10px; padding: 12px 36px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 0 20px rgba(163, 230, 53, 0.4); }
+    @keyframes floatJungle { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-30px); opacity: 0; } }
+    @media (max-width: 768px) { #app-container { max-height: 100vh; border: none; border-radius: 0; } .options-grid { grid-template-columns: 1fr; } }
+  </style>
+<!-- BEGIN:SIMPLE_HINT_LAYOUT_FIX -->
+<style>
+html, body { min-height:100% !important; height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
+#app-container, .app-container, #game-container, .game-container { min-height:100vh !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+#main-stage, .main-stage, #question-panel, .question-panel, .question-box { min-height:0 !important; height:auto !important; max-height:none !important; overflow:visible !important; }
+.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint { display:none !important; }
+</style>
+<!-- END:SIMPLE_HINT_LAYOUT_FIX -->
+<!-- BEGIN:CLEAN_STUDY_LAYOUT_V1 -->
+<style>
+body { background:#f3f6fa !important; color:#172033 !important; align-items:flex-start !important; justify-content:center !important; }
+#app-container, .app-container, #game-container, .game-container { width:min(960px, 100%) !important; margin:18px auto !important; background:#ffffff !important; border:1px solid #dfe6ee !important; border-radius:16px !important; box-shadow:0 8px 28px rgba(15,23,42,.08) !important; }
+#hud-bar, .hud-bar, header { min-height:62px !important; height:auto !important; padding:10px 18px !important; background:#ffffff !important; color:#172033 !important; border-bottom:1px solid #e5eaf0 !important; box-shadow:none !important; }
+#main-stage, .main-stage, main { padding:18px !important; gap:14px !important; }
+.theme-arena, .battle-arena, .nature-arena, .pixel-arena, [class$="-arena"], [class*="board-container"], .theme-board-container { display:none !important; }
+#question-panel, .question-panel { background:#ffffff !important; color:#172033 !important; border:0 !important; border-radius:12px !important; padding:4px !important; box-shadow:none !important; }
+.question-box { background:#f8fafc !important; color:#111827 !important; border:1px solid #dfe6ee !important; border-radius:12px !important; padding:16px 18px !important; box-shadow:none !important; }
+.question-title-text, .formula-text, #formula-text, #question-text, [class*="question-title"] { color:#111827 !important; text-shadow:none !important; font-size:clamp(18px,2.6vw,24px) !important; line-height:1.55 !important; }
+#options-grid, .options-grid { gap:10px !important; }
+#options-grid button, .options-grid button { background:#ffffff !important; color:#172033 !important; border:1px solid #cfd8e3 !important; border-radius:10px !important; box-shadow:none !important; min-height:52px !important; padding:12px 14px !important; text-shadow:none !important; transform:none !important; }
+#options-grid button:hover, .options-grid button:hover { background:#eef6ff !important; border-color:#4b93d1 !important; }
+#options-grid button.btn-correct, .options-grid button.correct { background:#e9f9ef !important; border-color:#22a35a !important; color:#126b3a !important; }
+#options-grid button.btn-wrong, .options-grid button.wrong { background:#fff0f1 !important; border-color:#e25762 !important; color:#9f2530 !important; }
+.btn-key { background:#edf2f7 !important; color:#334155 !important; border:0 !important; box-shadow:none !important; }
+.floating-fx, canvas, .particle, .particles { display:none !important; }
+@media (max-width:700px) { #app-container, .app-container, #game-container, .game-container { margin:0 !important; border:0 !important; border-radius:0 !important; } #hud-bar, .hud-bar, header { padding:8px 10px !important; } #main-stage, .main-stage, main { padding:10px !important; } #options-grid, .options-grid { grid-template-columns:1fr !important; } }
+</style>
+<!-- END:CLEAN_STUDY_LAYOUT_V1 -->
+<!-- BEGIN:UNIFIED_READABLE_THEME_V2 -->
+<style>
+:root{--ui-bg:#eef2f6;--ui-card:#ffffff;--ui-soft:#f7f9fc;--ui-text:#182230;--ui-muted:#526172;--ui-border:#cbd5e1;--ui-primary:#1d4ed8;--ui-primary-soft:#eff6ff;--ui-success:#166534;--ui-success-bg:#dcfce7;--ui-danger:#991b1b;--ui-danger-bg:#fee2e2}
+html,body{background:var(--ui-bg)!important;color:var(--ui-text)!important;font-family:"Segoe UI","Microsoft JhengHei",sans-serif!important}
+body *{text-shadow:none!important}
+#app-container,.app-container,#game-container,.game-container{background:var(--ui-card)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar,.hud-bar,header{background:#ffffff!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+#hud-bar *, .hud-bar *, header *{color:var(--ui-text)!important}
+.nature-bar,.health-bar,.progress-bar{background:#dbe3ec!important;border-color:#aebccc!important}
+.nature-bar-fill,.health-bar-fill,.progress-bar-fill{background:#2563eb!important}
+#main-stage,.main-stage,main,#question-panel,.question-panel,footer{background:#ffffff!important;color:var(--ui-text)!important}
+.question-header,.question-box,.question-card,.quiz-card{background:var(--ui-soft)!important;color:var(--ui-text)!important;border-color:var(--ui-border)!important}
+.question-header *, .question-box *, .question-card *, .quiz-card *,#formula-text,#question-text,.question-title-text,.formula-text{color:var(--ui-text)!important}
+.quest-badge,.question-badge,.stage-title,.stat-value{background:var(--ui-primary-soft)!important;color:#1e3a8a!important;border-color:#93b4ed!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important;opacity:1!important}
+#options-grid button *,.options-grid button *,.nature-btn *,.option-btn *,.answer-btn *{color:inherit!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:var(--ui-primary-soft)!important;color:#172554!important;border-color:#2563eb!important}
+.btn-key,.option-key{background:#dbeafe!important;color:#1e3a8a!important}
+#options-grid button.btn-correct,.options-grid button.btn-correct,.btn-correct,.correct{background:var(--ui-success-bg)!important;color:var(--ui-success)!important;border-color:#16a34a!important}
+#options-grid button.btn-wrong,.options-grid button.btn-wrong,.btn-wrong,.wrong{background:var(--ui-danger-bg)!important;color:var(--ui-danger)!important;border-color:#dc2626!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#f8fafc!important;color:var(--ui-text)!important}
+.overlay-screen h1,.overlay-screen h2,.overlay-screen p,.overlay-screen li,.overlay-screen strong,.start-screen *{color:var(--ui-text)!important}
+.instructions-card,.instruction-card{background:#ffffff!important;color:var(--ui-text)!important;border:1px solid var(--ui-border)!important}
+.btn-start-nature,.btn-start,.start-btn,#btn-modal-continue{background:#1d4ed8!important;color:#ffffff!important;border:2px solid #1e40af!important}
+.btn-start-nature *,.btn-start *,.start-btn *{color:#ffffff!important}
+.modal-backdrop,[class*="modal-backdrop"]{background:rgba(15,23,42,.72)!important}
+.nature-dialog,.modal-dialog,.dialog,.modal-content{background:#ffffff!important;color:var(--ui-text)!important;border:2px solid var(--ui-border)!important}
+.nature-dialog *,.modal-dialog *,.dialog *,.modal-content *{color:var(--ui-text)!important}
+.dialog-header,.dialog-footer,.modal-header,.modal-footer{background:#f8fafc!important;border-color:var(--ui-border)!important}
+.question-hint-text,.formula-hint,.question-hint,#formula-hint,#question-hint{display:none!important}
+</style>
+<!-- END:UNIFIED_READABLE_THEME_V2 -->
+<!-- BEGIN:QUESTION_POSITION_V3 -->
+<style>
+#main-stage,.main-stage{display:none!important;flex:none!important;height:0!important;min-height:0!important;padding:0!important;margin:0!important;overflow:hidden!important}
+#question-panel,.question-panel{margin-top:-8px!important;padding-top:8px!important}
+main:not(#main-stage):not(.main-stage){padding-top:8px!important}
+@media(max-width:700px){#question-panel,.question-panel{margin-top:-4px!important;padding-top:6px!important}main:not(#main-stage):not(.main-stage){padding-top:6px!important}}
+</style>
+<!-- END:QUESTION_POSITION_V3 -->
+<!-- BEGIN:QUESTION_CONTRAST_FIX_V4 -->
+<style>
+#question-panel .question-formula-box,#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel [class*="question-box"]{background:#ffffff!important;background-image:none!important;color:#111827!important;border:2px solid #cbd5e1!important;box-shadow:none!important;opacity:1!important}
+#question-panel .question-formula-box *,#question-panel [class*="formula-box"] *,#question-panel .question-box *,#question-panel [class*="question-box"] *,#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important;opacity:1!important;filter:none!important}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{const applyReadableQuestion=()=>{const panel=document.getElementById('question-panel');if(!panel)return;panel.querySelectorAll('.question-formula-box,[class*="formula-box"],.question-box,[class*="question-box"]').forEach(el=>{el.style.setProperty('background','#ffffff','important');el.style.setProperty('background-image','none','important');el.style.setProperty('color','#111827','important')});panel.querySelectorAll('#formula-text,.formula-text,#question-text,.question-text').forEach(el=>{el.style.setProperty('color','#111827','important');el.style.setProperty('-webkit-text-fill-color','#111827','important');el.style.setProperty('text-shadow','none','important')})};applyReadableQuestion();new MutationObserver(applyReadableQuestion).observe(document.body,{subtree:true,childList:true,characterData:true})});
+</script>
+<!-- END:QUESTION_CONTRAST_FIX_V4 -->
+<!-- BEGIN:SCIENCE_FORMULA_RENDER_V1 -->
+<script>
+window.MathJax={tex:{inlineMath:[['$','$'],['\\(','\\)']]},svg:{fontCache:'global'}};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{let t;const draw=()=>{clearTimeout(t);t=setTimeout(()=>{if(window.MathJax&&MathJax.typesetPromise){MathJax.typesetClear();MathJax.typesetPromise().catch(()=>{})}},60)};new MutationObserver(draw).observe(document.body,{subtree:true,childList:true,characterData:true});draw()});
+</script>
+<style>
+#question-panel [class*="formula-box"],#question-panel .question-box{background:#fff!important;border:2px solid #94a3b8!important;border-left:6px solid #2563eb!important;border-radius:12px!important;padding:18px 20px!important;overflow-x:auto!important}
+#formula-text,.formula-text,#question-text,.question-text{font-family:"Cambria Math","STIX Two Math","Times New Roman","Microsoft JhengHei",serif!important;font-size:clamp(19px,2.2vw,25px)!important;line-height:1.7!important;color:#111827!important;-webkit-text-fill-color:#111827!important;text-align:left!important}
+mjx-container{color:#111827!important;font-size:106%!important;max-width:100%!important}mjx-container[display="true"]{overflow-x:auto!important;overflow-y:hidden!important}
+</style>
+<!-- END:SCIENCE_FORMULA_RENDER_V1 -->
+<!-- BEGIN:LARGE_WRONG_EXPLANATION_V1 -->
+<style>
+.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{width:min(760px,94vw)!important;max-width:760px!important;padding:24px!important;background:#fff!important;color:#111827!important}
+#modal-title,.dialog-title,.modal-title{font-size:clamp(21px,2.5vw,27px)!important;line-height:1.45!important;font-weight:800!important;color:#111827!important}
+#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:clamp(18px,2vw,21px)!important;line-height:1.8!important;color:#111827!important}
+#modal-content *,#modal-content p,#modal-content div,.dialog-content *,.explanation-content *{font-size:inherit!important;line-height:1.8!important;color:#111827!important}
+.misconception-box,.step-by-step,.explanation-box,.answer-explanation{font-size:clamp(17px,1.9vw,20px)!important;line-height:1.75!important;padding:14px 16px!important;background:#f8fafc!important;color:#111827!important}
+#btn-modal-continue,.dialog-footer button,.modal-footer button{font-size:18px!important;line-height:1.4!important;padding:12px 24px!important;min-height:48px!important;color:#fff!important;background:#1d4ed8!important}
+@media(max-width:700px){.modal-backdrop .nature-dialog,.modal-backdrop .pixel-dialog,.modal-backdrop .modal-dialog,.modal-backdrop .dialog{padding:18px!important;max-height:90vh!important;overflow-y:auto!important}#modal-content,.dialog-content,.modal-content,.explanation-content{font-size:18px!important;line-height:1.7!important}}
+</style>
+<!-- END:LARGE_WRONG_EXPLANATION_V1 -->
+<!-- BEGIN:SOFT_GREEN_THEME_V1 -->
+<style>
+:root{--soft-green-bg:#d6eadb;--soft-green-panel:#eaf5ed;--soft-green-border:#b9d8c0;--soft-green-accent:#2f7d4a;--soft-green-accent-light:#e3f3e7}
+html,body{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+#app-container,.app-container,#game-container,.game-container{background:#ffffff!important;border-color:#b9d8c0!important}
+#hud-bar,.hud-bar,header{background:#eaf5ed!important;border-color:#b9d8c0!important}
+#question-panel,.question-panel,footer{background:#ffffff!important;color:#182230!important}
+.question-header{background:#eef7f0!important;border-color:#b9d8c0!important}
+.quest-badge,.question-badge,.stage-title{background:#e3f3e7!important;color:#205c36!important;border-color:#7fb68c!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#edf7ef!important;border-color:#2f7d4a!important;color:#183c27!important}
+.btn-key,.option-key{background:#e3f3e7!important;color:#205c36!important}
+.overlay-screen,.start-screen,#screen-title,[class*="start-screen"]{background:#d6eadb!important;background-image:none!important;color:#182230!important}
+.instructions-card,.instruction-card,.card,.game-card{background:#ffffff!important;color:#182230!important;border-color:#b9d8c0!important}
+.modal-backdrop{background:rgba(27,62,40,.68)!important}
+</style>
+<!-- END:SOFT_GREEN_THEME_V1 -->
+<!-- BEGIN:HIGH_CONTRAST_GREEN_V2 -->
+<style>
+html,body{background:#c5ddca!important;background-image:none!important;color:#17221b!important}
+#app-container,.app-container,#game-container,.game-container{background:#fff!important;border:2px solid #6c9b78!important}
+#hud-bar,.hud-bar,body>header{background:#285b3c!important;color:#fff!important;border-color:#1d432c!important}
+#hud-bar *, .hud-bar *,body>header *{color:#fff!important;-webkit-text-fill-color:currentColor!important}
+#hud-bar button,.hud-bar button{background:#fff7d6!important;color:#4a3700!important;border-color:#d5a900!important}
+.stage-title,.stat-value{background:#fff3bf!important;color:#3d2e00!important;-webkit-text-fill-color:#3d2e00!important;border-color:#d6a800!important}
+#question-panel,.question-panel,footer{background:#fff!important;color:#111827!important}
+.question-header{background:#eaf4ec!important;color:#183c27!important;border-color:#7fa98a!important}
+.question-header *{color:#183c27!important;-webkit-text-fill-color:#183c27!important}
+.quest-badge,.question-badge{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important;border-color:#173b26!important}
+#question-panel [class*="formula-box"],#question-panel .question-box,#question-panel .question-card{background:#fff!important;background-image:none!important;color:#111827!important;border-color:#558566!important}
+#formula-text,.formula-text,#question-text,.question-text{color:#111827!important;-webkit-text-fill-color:#111827!important;text-shadow:none!important}
+#options-grid button,.options-grid button,.nature-btn,.option-btn,.answer-btn{background:#fff!important;color:#111827!important;border:2px solid #6b9275!important}
+#options-grid button:hover,.options-grid button:hover,.nature-btn:hover,.option-btn:hover,.answer-btn:hover{background:#e7f4ea!important;color:#153620!important;border-color:#285b3c!important}
+.btn-key,.option-key{background:#285b3c!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.visual-question{background:#fff!important;border-color:#558566!important}
+.modal-backdrop{background:rgba(13,45,27,.78)!important}.modal-backdrop [class*="dialog"]{background:#fff!important;color:#111827!important}
+</style>
+<!-- END:HIGH_CONTRAST_GREEN_V2 -->
+<!-- BEGIN:DARK_START_SCREEN_V1 -->
+<style>
+#screen-title.overlay-screen,#screen-title,.overlay-screen.start-screen,.start-screen,[class*="start-screen"]{background:#173b2a!important;background-image:linear-gradient(145deg,#173b2a 0%,#244f38 55%,#102c1e 100%)!important;color:#fff!important}
+#screen-title *,.overlay-screen.start-screen *,.start-screen *{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important}
+#screen-title h1,#screen-title h2,.game-title-main,.game-subtitle{color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 3px rgba(0,0,0,.28)!important}
+#screen-title .instructions-card,.start-screen .instructions-card,#screen-title .instruction-card{background:#214f38!important;color:#fff!important;border:2px solid #87b895!important;box-shadow:0 8px 24px rgba(0,0,0,.22)!important}
+#screen-title .instructions-card *,#screen-title .instruction-card *{color:#fff!important;-webkit-text-fill-color:#fff!important}
+#screen-title button,#screen-title .btn-start-nature,#screen-title .pixel-btn,.start-screen button{background:#f4c542!important;color:#2d2500!important;-webkit-text-fill-color:#2d2500!important;border:2px solid #fff0a6!important;box-shadow:0 5px 0 #9a7600!important;font-weight:800!important}
+#screen-title button:hover,.start-screen button:hover{background:#ffe27a!important;color:#241d00!important;transform:translateY(-1px)!important}
+</style>
+<!-- END:DARK_START_SCREEN_V1 -->
+</head>
+<body>
+  <div id="app-container">
+    <header id="hud-bar">
+      <div class="hud-player-info">
+        <div class="hud-avatar"><span>🌿</span></div>
+        <div class="hud-bars">
+          <div class="bar-wrap">
+            <span style="color:var(--color-lime); font-size:10px;">ECO</span>
+            <div class="jungle-bar"><div id="player-hp-bar" class="jungle-bar-fill" style="width: 100%;"></div></div>
+            <span id="player-hp-text" style="font-size:10px; color:var(--color-lime);">100/100</span>
+          </div>
+          <div class="bar-wrap">
+            <span style="color:var(--color-cyan); font-size:10px;">BIO VOL.2</span>
+            <span style="font-size:10px; color:#bbf7d0;">ECOSYSTEM & CONSERVATION</span>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center-stage">
+        <div id="stage-title" class="stage-title">Level 1: 族群與群集調查</div>
+        <div id="stage-pills" class="stage-progress-pills"></div>
+      </div>
+      <div class="hud-stats">
+        <div class="stat-box"><span class="stat-label">SCORE</span><span id="score-val" class="stat-value">00000</span></div>
+        <button id="btn-sound-toggle" class="btn-jungle-icon">🔊 音效: 開</button>
+      </div>
+    </header>
+
+    <main id="main-stage">
+      <section class="jungle-arena">
+        <div class="hero-wrapper">
+          <div class="hero-avatar-box"><span>🧝‍♀️</span></div>
+          <div class="char-nametag">森林生態守護者</div>
+        </div>
+        <div class="monster-wrapper">
+          <div class="monster-avatar-box"><span id="monster-emoji">🦎</span></div>
+          <div id="monster-name" class="char-nametag" style="color:var(--color-danger);">外來入侵綠鬣蜥</div>
+          <div class="monster-hp-wrap">
+            <div class="jungle-bar" style="height:8px;"><div id="monster-hp-bar" class="jungle-bar-fill" style="width: 100%; background:var(--color-danger);"></div></div>
+          </div>
+        </div>
+      </section>
+      <section class="jungle-board-container">
+        <div class="jungle-board-header">
+          <span>🍃 標幟再捕法 / 能量金字塔(10%定律) / 生物放大作用 / 碳循環圖解</span>
+          <span style="color:var(--color-lime); font-size:10px;">★ 生態平衡即時監測</span>
+        </div>
+        <div class="jungle-canvas-wrap"><canvas id="jungle-canvas"></canvas></div>
+      </section>
+    </main>
+
+    <footer id="question-panel">
+      <div class="question-header">
+        <span id="quest-badge" class="quest-badge">第 1 關 - 題 1/5</span>
+        <span style="font-size:11px; color:#bbf7d0;">按鍵：[1] - [4] 鍵直接作答</span>
+      </div>
+      <div class="question-box">
+        <div id="formula-text" class="question-title-text">題目載入中...</div>
+        <div id="formula-hint" class="question-hint-text">💡 提示：正在載入生態系核心考點...</div>
+      </div>
+      <div id="options-grid" class="options-grid"></div>
+    </footer>
+
+    <div id="modal-explanation" class="modal-backdrop">
+      <div class="jungle-dialog">
+        <div class="dialog-header">
+          <span style="font-size:24px;">🌳</span>
+          <div id="modal-title" class="dialog-title">生態診斷：核心解析與盲點拆解</div>
+        </div>
+        <div id="modal-content" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="dialog-footer">
+          <button id="btn-modal-continue" class="btn-start-jungle" style="font-size:13px; padding:6px 20px;">理解守護，下一題 ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-title" class="overlay-screen">
+      <div style="font-size:60px; margin-bottom:10px;">🌴🦊</div>
+      <h1 class="game-title-main">生物第二冊：生態系網絡與地球守護者</h1>
+      <h2 class="game-subtitle">★ 國中生物會考第二冊 生態與環境保護 特訓 ★</h2>
+      <div class="instructions-card">
+        <strong style="color:var(--color-lime);">【四大生態系試煉領域】：</strong>
+        <ul>
+          <li>📊 <strong>Level 1 族群估算與群集演替</strong>：標幟再捕法公式 ($N = \frac{M \times C}{R}$)、出生/死亡/遷入/遷出。</li>
+          <li>⚡ <strong>Level 2 能量流動與物質循環</strong>：能量 10% 傳遞定律、食物鏈/食物網、碳氮循環、生物放大作用。</li>
+          <li>🤝 <strong>Level 3 生物交互作用大比拼</strong>：互利共生(小丑魚海葵)、片利共生(鮣魚鯊魚)、寄生、競爭、捕食。</li>
+          <li>🌍 <strong>Level 4 生物多樣性與環境危機</strong>：遺傳/物種/生態多樣性、外來種入侵(福壽螺/布袋蓮)、優養化與溫室效應。</li>
+        </ul>
+      </div>
+      <button id="btn-start-game" class="btn-start-jungle">守護生態 (START) ➔</button>
+    </div>
+
+    <div id="screen-victory" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">🏆🌏</div>
+      <h1 class="game-title-main" style="color:var(--color-lime);">PLANET RESTORED!</h1>
+      <h2 class="game-subtitle">恭喜你完美守護了生態系平衡與生物多樣性！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p style="font-size:16px; margin-bottom:8px;">獲得認證：<strong style="color:var(--color-lime);">【地球生態守護首席大師】</strong></p>
+        <p>最終得分：<strong id="final-victory-score" style="color:var(--color-sun); font-size:24px;">00000</strong></p>
+      </div>
+      <button id="btn-restart-victory" class="btn-start-jungle">再次巡護 (RETRY)</button>
+    </div>
+
+    <div id="screen-gameover" class="overlay-screen" style="display:none;">
+      <div style="font-size:60px; margin-bottom:10px;">⚠️🔥</div>
+      <h1 class="game-title-main" style="color:var(--color-danger);">生態失衡！</h1>
+      <h2 class="game-subtitle">環境遭受污染破壞，重整旗鼓重新守護吧！</h2>
+      <div class="instructions-card" style="text-align:center;">
+        <p>本次得分：<strong id="final-gameover-score" style="color:#fff; font-size:20px;">00000</strong></p>
+      </div>
+      <button id="btn-restart-gameover" class="btn-start-jungle" style="background:var(--color-danger); color:#fff;">生態復育 (RETRY)</button>
+    </div>
+  </div>
+
+  <script>
+    const GAME_BALANCE = { playerMaxHp: 100, damageToPlayer: 20, damageToMonster: 35, scorePerQuestion: 100, questionsPerLevel: 5, maxLevels: 4 };
+
+    class JungleAudioEngine {
+      constructor() { this.ctx = null; this.muted = false; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, type, duration, startTime = 0) {
+        if (this.muted) return;
+        this.init();
+        const now = this.ctx.currentTime + startTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type; osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+        osc.connect(gain); gain.connect(this.ctx.destination);
+        osc.start(now); osc.stop(now + duration);
+      }
+      playCorrect() { this.playTone(523.25, 'sine', 0.1, 0); this.playTone(659.25, 'sine', 0.12, 0.08); this.playTone(1046.50, 'sine', 0.2, 0.16); }
+      playWrong() { this.playTone(200, 'sawtooth', 0.15, 0); this.playTone(150, 'sawtooth', 0.25, 0.1); }
+      playAttack() { this.playTone(350, 'triangle', 0.08, 0); this.playTone(700, 'sine', 0.1, 0.04); }
+      playLevelUp() { [440, 554.37, 659.25, 880].forEach((n, i) => this.playTone(n, 'sine', 0.15, i * 0.08)); }
+      playVictory() { [523.25, 659.25, 783.99, 1046.50].forEach((n, i) => this.playTone(n, 'sine', 0.2, i * 0.1)); }
+    }
+    const audio = new JungleAudioEngine();
+
+    class JungleVisualizer {
+      constructor(canvas) { this.canvas = canvas; this.ctx = canvas.getContext('2d'); }
+      render(level = 1) {
+        const ctx = this.ctx;
+        const w = this.canvas.width = this.canvas.parentElement.clientWidth;
+        const h = this.canvas.height = this.canvas.parentElement.clientHeight;
+        ctx.clearRect(0, 0, w, h);
+        if (level === 1) this.drawMarkRecapture(ctx, w, h);
+        else if (level === 2) this.drawEnergyPyramid(ctx, w, h);
+        else if (level === 3) this.drawSymbiosis(ctx, w, h);
+        else this.drawDiversity(ctx, w, h);
+      }
+      drawMarkRecapture(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#a3e635"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("📊 標幟再捕法公式：【總個體數 N】 = (初次標記數 M × 再捕獲總數 C) ÷ 再捕獲中具標記數 R", midX, h / 2 - 4);
+        ctx.fillStyle = "#22d3ee";
+        ctx.fillText("族群變動：(出生 + 遷入) > (死亡 + 遷出) ➔ 族群增大 ｜ 樣區法適用於植物或移動緩慢動物", midX, h / 2 + 12);
+      }
+      drawEnergyPyramid(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#facc15"; ctx.font = "bold 11px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("⚡ 能量金字塔：生產者(100%) ➔ 初級消費者(10%) ➔ 次級消費者(1%) ➔ 高級(0.1%) [傳遞效率約 10%]", midX, h / 2 - 4);
+        ctx.fillStyle = "#f43f5e";
+        ctx.fillText("☠️ 生物放大作用：難分解毒素(DDT/重金屬)隨食物鏈向上遞增，【最高級消費者體內累積濃度最高】！", midX, h / 2 + 12);
+      }
+      drawSymbiosis(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#10b981"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🤝 互利共生 (+,+)：小丑魚與海葵、地衣(真菌與藻類) ｜ 片利共生 (+,0)：鮣魚與鯊魚、山蘇著生大樹", midX, h / 2 - 4);
+        ctx.fillStyle = "#a3e635";
+        ctx.fillText("⚔️ 競爭 (-,-)：生活習性與棲地相似 ｜ 掠食 (+,-)：捕食者與獵物 ｜ 寄生 (+,-)：蛔蟲與人體", midX, h / 2 + 12);
+      }
+      drawDiversity(ctx, w, h) {
+        const midX = w / 2;
+        ctx.fillStyle = "#22d3ee"; ctx.font = "bold 10px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🌍 生物多樣性三層次：【遺傳多樣性】(個體基因不同) ➔ 【物種多樣性】 ➔ 【生態系多樣性】", midX, h / 2 - 4);
+        ctx.fillStyle = "#facc15";
+        ctx.fillText("⚠️ 環境危機：溫室效應(CO2升溫)・優養化(氮磷過多藻華缺氧)・外來種破壞本土生態(福壽螺/綠鬣蜥)", midX, h / 2 + 12);
+      }
+    }
+
+    const CHAPTERS = [
+      {
+        level: 1,
+        title: "Level 1: 族群與群集調查 (族群估算與動態)",
+        monsterName: "族群爆棚怪",
+        monsterEmoji: "📊",
+        questions: [
+          {
+            formula: "研究人員欲估算某池塘中吳郭魚的總數量，先捕撈出 50 隻吳郭魚作上記號後放回池塘。一週後再次捕撈 60 隻吳郭魚，發現其中有 10 隻帶有記號。試問該池塘中吳郭魚的總數約為多少隻？",
+            options: ["300 隻", "500 隻", "120 隻", "60 隻"],
+            correct: "300 隻",
+            hint: "標幟再捕法：總數 N = (50 × 60) ÷ 10 = 300 隻。",
+            misconceptions: {
+              "500 隻": "【標幟再捕法計算公式】總數 N = (第一次標記數 × 第二次捕獲總數) ÷ 第二次有標記數 = (50 × 60) ÷ 10 = 300 隻！"
+            },
+            explanation: "依比例關係：50 / N = 10 / 60 $\\Rightarrow$ N = (50 × 60) / 10 = 300 隻。"
+          },
+          {
+            formula: "在生物學定義中，下列何者屬於一個『族群（Population）』？",
+            options: ["七股潟湖中生活的所有『黑面琵鷺』", "阿里山森林中所有的『植物』", "墾丁珊瑚礁中所有的『魚類與蝦類』", "一間教室內所有的『細菌與病毒』"],
+            correct: "七股潟湖中生活的所有『黑面琵鷺』",
+            hint: "族群三大要素：同一時間、同一地點、同種生物個體的集合。",
+            misconceptions: {
+              "阿里山森林中所有的『植物』": "【族群 vs 群集】族群必須是【同一種生物】！所有植物或所有魚類包含多種物種，屬於【群集（群落）】而非族群。"
+            },
+            explanation: "族群（Population）：在特定時間內生活在特定空間的「同種」生物個體集合。黑面琵鷺為單一物種，符合族群定義。"
+          },
+          {
+            formula: "若某森林中台灣獼猴族群在一年之內的統計數據如下：出生 25 隻、死亡 10 隻、遷入 5 隻、遷出 8 隻。試問該獼猴族群的個體數量在該年呈現何種變化趨勢？",
+            options: ["增加了 12 隻（族群擴大）", "減少了 12 隻", "數量完全沒有改變", "增加了 30 隻"],
+            correct: "增加了 12 隻（族群擴大）",
+            hint: "族群增長量 = (出生 + 遷入) - (死亡 + 遷出) = (25 + 5) - (10 + 8) = 30 - 18 = +12。",
+            misconceptions: {
+              "增加了 30 隻": "【族群動態四因子】族群變動量 = (出生+遷入) - (死亡+遷出) = (25+5) - (10+8) = 30 - 18 = +12 隻！"
+            },
+            explanation: "增長因子（出生+遷入=30）大於減少因子（死亡+遷出=18），族群淨增 12 隻，規模擴大。"
+          },
+          {
+            formula: "若要調查墾丁國家公園某大草原上『車前草（一種野生草本植物）』的分布數量，最適合採用下列哪一種族群調查方法？",
+            options: ["樣區法（劃分固定面積樣區進行抽樣計數）", "標幟再捕法", "空拍紅外線雷達追蹤法", "誘捕籠誘捕法"],
+            correct: "樣區法（劃分固定面積樣區進行抽樣計數）",
+            hint: "植物與移動緩慢的動物（如蝸牛）無法放回再捕，適合使用劃分樣區抽樣統計（樣區法）。",
+            misconceptions: {
+              "標幟再捕法": "【調查方法適用對象】標幟再捕法適用於『活動力強、會自由移動的動物（如鳥、魚、昆蟲）』；植物固定不動適用【樣區法】！"
+            },
+            explanation: "植物或活動力低之生物（如貝類、珊瑚）適用樣區法，隨機劃設多個固定大小樣區進行平均密度估算。"
+          },
+          {
+            formula: "某棄耕農田經過數十年的自然演化，地面植被由『一年生雜草 ➔ 多年生高草 ➔ 灌木叢 ➔ 喬木森林』，這種群集隨時間依序更替的過程在生態學上稱為何者？",
+            options: ["群集演替（消長）", "生物突變", "天擇分化", "優養化"],
+            correct: "群集演替（消長）",
+            hint: "群落隨環境變遷與時間演進，逐漸由先驅種演替為穩定的極相森林。",
+            misconceptions: {
+              "天擇分化": "【群集演替概念】群落組成隨時間發生的規律性更替稱為【演替（消長，Succession）】，最終達到動態平衡的巔峰群集。"
+            },
+            explanation: "群集演替（Succession）：隨土壤生成與微氣候改變，群集優勢種依序由耐旱先驅植物演替至穩定成熟森林群集。"
+          }
+        ]
+      },
+      {
+        level: 2,
+        title: "Level 2: 能量流動與物質循環",
+        monsterName: "毒素累積巨獸",
+        monsterEmoji: "⚡",
+        questions: [
+          {
+            formula: "在生態系的食物鏈中，能量在不同營養階層之間的傳遞效率大約只有多少？其餘大部分能量在傳遞過程中轉化為何種形式散失？",
+            options: ["傳遞效率約 10%；其餘約 90% 能量轉化為『熱能』散失於環境中（無法被循環回收）", "傳遞效率 100%，能量完全不會散失", "傳遞效率約 50%，能量可無限循環利用", "傳遞效率約 1%，其餘能量被分解者完全吸收化為光能"],
+            correct: "傳遞效率約 10%；其餘約 90% 能量轉化為『熱能』散失於環境中（無法被循環回收）",
+            hint: "能量流動是單向的（不可循環），每上一階只有約 10% 能儲存為自身組織生物量。",
+            misconceptions: {
+              "傳遞效率 100%，能量完全不會散失": "【能量流動 10% 定律】能量在轉移時因呼吸消耗與排泄，僅約【10%】能傳遞至下一營養階，且最終以【熱能】散失，【能量無法循環】！"
+            },
+            explanation: "生態系能量流動遵循十分之一定律（10% rule），單向流動且沿食物鏈遞減，故食物鏈階層通常不超過 4~5 階。"
+          },
+          {
+            formula: "若某水域生態系遭受農藥 DDT 或重金屬汞的嚴重污染，經過食物鏈：『微藻 ➔ 浮游水蚤 ➔ 小魚 ➔ 大魚 ➔ 魚鷹（頂級掠食者）』。試問體內累積『毒素濃度最高』的生物為何？（生物放大作用）",
+            options: ["魚鷹（最高階消費者）", "微藻（生產者）", "浮游水蚤", "小魚"],
+            correct: "魚鷹（最高階消費者）",
+            hint: "難以分解與排出的脂溶性毒物，隨食物鏈向上層層濃縮富集（生物放大作用）。",
+            misconceptions: {
+              "微藻（生產者）": "【生物放大作用富集規律】水中的 DDT 雖先被微藻吸收，但因毒素無法被分解排出，高階消費者吃下大量低階獵物，【最高階掠食者體內濃度最高】！"
+            },
+            explanation: "生物放大作用（Biomagnification）：脂溶性難降解毒物在體內不易代謝，沿營養階層逐級放大濃縮，頂級消費者累積濃度最高。"
+          },
+          {
+            formula: "地球大氣中的二氧化碳（CO2）主要是透過生態系中生產者的哪一種生理作用被『固定轉化為有機碳（葡萄糖）』進入生物圈食物鏈？",
+            options: ["光合作用", "呼吸作用", "發酵作用", "蒸散作用"],
+            correct: "光合作用",
+            hint: "光合作用吸收二氧化碳釋放氧氣；呼吸作用則釋放二氧化碳。",
+            misconceptions: {
+              "呼吸作用": "【碳循環路徑】呼吸作用是將有機碳氧化『釋放 CO2 回大氣』；唯一能將大氣無機 CO2 捕捉並『固定為有機物』的是【光合作用】！"
+            },
+            explanation: "綠色植物、藻類及藍綠菌透過光合作用固定大氣 CO2 合成醣類，為地球生態系碳循環與能量輸入之基礎。"
+          },
+          {
+            formula: "大氣中含有約 78% 的氮氣（N2），但動植物無法直接吸收利用。土壤中的哪一類微生物能將大氣中的氮氣轉化為植物可吸收的含氮化合物（如硝酸鹽）？",
+            options: ["固氮菌（如根瘤菌）", "酵母菌", "黑黴菌", "乳酸菌"],
+            correct: "固氮菌（如根瘤菌）",
+            hint: "豆科植物根部的根瘤菌能進行『固氮作用』。",
+            misconceptions: {
+              "酵母菌": "【氮循環固氮生物】能打破 N2 三鍵進行固氮作用的微生物是【固氮菌（如根瘤菌、藍綠菌）】，能將氮氣轉化為銨鹽供植物利用。"
+            },
+            explanation: "氮循環中，固氮菌（如豆科植物共生之根瘤菌）將 N2 固定為植物可利用之氮化物，為蛋白質與核酸合成提供原料。"
+          },
+          {
+            formula: "生態系中的『分解者（如細菌與腐生真菌）』在物質循環中扮演不可或缺的關鍵角色，其最主要功能為何？",
+            options: ["將動植物遺體與排泄物分解為無機鹽類與無機物，重新回歸環境供生產者再次循環利用", "行光合作用為食物網提供所有能量", "捕食草食動物以控制族群數量", "直接製造氧氣供動物呼吸"],
+            correct: "將動植物遺體與排泄物分解為無機鹽類與無機物，重新回歸環境供生產者再次循環利用",
+            hint: "生態系的清道夫兼資源回收大師，使物質得以永續循環。",
+            misconceptions: {
+              "行光合作用為食物網提供所有能量": "【分解者核心功能】分解者不是生產者！其任務是【分解有機遺體釋放無機養分】，若無分解者，地球將堆滿屍體且物質循環中斷。"
+            },
+            explanation: "分解者透過腐生分解有機碎屑，釋放礦物質與無機養分至土壤與水體，維持物質在生物群落與非生物環境間之閉環循環。"
+          }
+        ]
+      },
+      {
+        level: 3,
+        title: "Level 3: 生物交互作用大比拼",
+        monsterName: "生態競爭魔",
+        monsterEmoji: "🤝",
+        questions: [
+          {
+            formula: "『小丑魚躲藏在海葵帶毒的觸手間獲得保護，同時小丑魚會吸引其他魚類靠近並為海葵清理碎屑』，這種兩者皆獲利的互動關係在生態學上屬於何者？",
+            options: ["互利共生 (+ , +)", "片利共生 (+ , 0)", "寄生 (+ , -)", "捕食 (+ , -)"],
+            correct: "互利共生 (+ , +)",
+            hint: "雙方都有好處（雙贏）。",
+            misconceptions: {
+              "片利共生 (+ , 0)": "【互利 vs 片利共生】片利共生是一方得利、另一方無害也無利；小丑魚與海葵【雙方皆獲得好處】，屬於【互利共生 (+,+)】！"
+            },
+            explanation: "互利共生（Mutualism）：兩種生物生活在一起且雙方皆獲益（如小丑魚與海葵、地衣中的真菌與藻類、白蟻與腸道鞭毛蟲）。"
+          },
+          {
+            formula: "『鮣魚用頭部的吸盤吸附在鯊魚腹部，隨著鯊魚游動搭便車並撿食鯊魚吃剩的食物碎渣，但對鯊魚本身並無顯著害處也無顯著好處』，此關係屬於何者？",
+            options: ["片利共生 (+ , 0)", "互利共生 (+ , +)", "寄生 (+ , -)", "競爭 (- , -)"],
+            correct: "片利共生 (+ , 0)",
+            hint: "一方得利（鮣魚），另一方既沒得到好處也沒受害（鯊魚無所謂）。",
+            misconceptions: {
+              "互利共生 (+ , +)": "【片利共生特徵】鯊魚並沒有從小魚身上得到額外利益，故為【一方獲益、一方無害無利的片利共生 (+, 0)】。"
+            },
+            explanation: "片利共生（Commensalism）：共生關係中一方受益，另一方不受影響（如鮣魚與鯊魚、山蘇鳥巢蕨著生於大樹樹幹）。"
+          },
+          {
+            formula: "人體腸道中的『蛔蟲』或寵物身上的『跳蚤』，長期吸取宿主體內的養分導致宿主消瘦生病，這種交互關係屬於下列何者？",
+            options: ["寄生 (+ , -)", "捕食 (+ , -)", "競爭 (- , -)", "互利共生 (+ , +)"],
+            correct: "寄生 (+ , -)",
+            hint: "寄生者從宿主身上汲取營養（宿主受害但通常不會立即死亡）。",
+            misconceptions: {
+              "捕食 (+ , -)": "【寄生 vs 捕食】捕食是獵殺並立即吞食獵物；【寄生】是寄生者生活在宿主體內或體表長期吸取養分，通常不致立即殺死宿主。"
+            },
+            explanation: "寄生（Parasitism）：寄生者生活於宿主體表或體內，奪取宿主養分獲利，導致宿主健康受損受害。"
+          },
+          {
+            formula: "在同一個森林底層，兩種不同種的草本植物因為生長空間重疊，互相爭奪陽光、土壤水分與無機鹽養分，導致兩者的生長皆受到抑制。此現象稱為何者？",
+            options: ["種間競爭 (- , -)", "互利共生", "片利共生", "生物放大"],
+            correct: "種間競爭 (- , -)",
+            hint: "競爭關係中，雙方都需要消耗資源，對兩者皆造成消耗與負面影響 (-,-)。",
+            misconceptions: {
+              "互利共生": "【競爭關係代價】競爭爭奪有限資源（陽光、空間、食物），雙方族群增長皆受到相互壓制，效益標記為【(-, -)】。"
+            },
+            explanation: "種間競爭（Competition）：不同物種因生態棲位重疊而競爭有限資源，導致雙方個體生長率或繁殖力下降。"
+          },
+          {
+            formula: "【會考族群曲線題】在沒有天敵干擾的封閉環境中，將草履蟲 A 與草履蟲 B 放在同一個培養皿中飼養，數週後草履蟲 A 數量大增，而草履蟲 B 數量逐漸降為 0 完全滅絕。這證實了生態學上的何種原則？",
+            options: ["競爭排除原則（生態棲位相同時，競爭力弱者會被淘汰）", "互利共生平衡", "生物放大富集", "物質循環閉環"],
+            correct: "競爭排除原則（生態棲位相同時，競爭力弱者會被淘汰）",
+            hint: "高斯實驗：利用相同資源的兩種生物在同一環境中無法長期共存。",
+            misconceptions: {
+              "互利共生平衡": "【競爭排除原則經典考點】兩物種生態需求完全相同時，競爭優勢種會排擠劣勢種致其滅絕，稱為【競爭排除原則（Competitive exclusion principle）】。"
+            },
+            explanation: "高斯競爭排除法則：兩個對同一限制性資源具有相同需求的物種不能在同一棲地長期共存，弱者將被排除或迫使改變生態位。"
+          }
+        ]
+      },
+      {
+        level: 4,
+        title: "Level 4: 生物多樣性與環境危機",
+        monsterName: "生態浩劫終結者",
+        monsterEmoji: "🌍",
+        questions: [
+          {
+            formula: "生物多樣性（Biodiversity）包含三個核心層次：『遺傳多樣性、物種多樣性、生態系多樣性』。下列何者屬於『遺傳（基因）多樣性』的範例？",
+            options: ["同一個池塘中的台灣鬥魚，每一隻身上的斑紋與抗病力基因都不盡相同", "熱帶雨林中有成千上萬種不同的樹木與昆蟲", "台灣具有高山寒原、溫帶針葉林、熱帶雨林與珊瑚礁多種棲地", "農田裡只種植基因完全複製的單一品種香蕉"],
+            correct: "同一個池塘中的台灣鬥魚，每一隻身上的斑紋與抗病力基因都不盡相同",
+            hint: "遺傳多樣性指『同種生物』個體之間的基因變異差異。",
+            misconceptions: {
+              "熱帶雨林中有成千上萬種不同的樹木與昆蟲": "【層次區分陷阱】樹木與昆蟲包含許多不同物種，這是【物種多樣性】！【遺傳多樣性】是指『同種個體間』的基因多樣性（如台灣鬥魚斑紋個體差異）。"
+            },
+            explanation: "生物多樣性三層次：遺傳多樣性（同種基因差異）、物種多樣性（群集內物種豐富度）、生態系多樣性（棲地與環境型態多樣性）。"
+          },
+          {
+            formula: "引進外來物種（如福壽螺、布袋蓮、綠鬣蜥、小花蔓澤蘭）往往對台灣本土生態環境造成毀滅性衝擊，其主要原因為何？",
+            options: ["外來種在本地缺乏天敵制衡、適應力與繁殖力極強，迅速佔據本土生物的棲地與食物資源", "外來種必定會釋放劇毒直接殺死所有本土生物", "外來種會促使本地氣候溫度上升 10°C", "外來種完全不需要攝取食物就能生存"],
+            correct: "外來種在本地缺乏天敵制衡、適應力與繁殖力極強，迅速佔據本土生物的棲地與食物資源",
+            hint: "沒有天敵壓制 + 繁殖超快 = 強勢排擠本土物種。",
+            misconceptions: {
+              "外來種必定會釋放劇毒直接殺死所有本土生物": "【外來入侵種危害機制】外來種造成危害的主因是【缺乏天敵且繁殖力強，強勢競爭排擠本土生物】導致本土物種瀕危與生態失衡，而非單純放毒。"
+            },
+            explanation: "外來入侵種因適應力強、繁殖快速且缺乏原產地之天敵與病原體制約，容易暴發性擴散並造成本土生態崩潰與經濟損失。"
+          },
+          {
+            formula: "大量未經處理的含氮、磷家庭廢水與農田肥料流入封閉湖泊水庫時，常引發『優養化（Eutrophication）』。優養化導致湖泊中魚蝦大量暴斃窒息的最關鍵過程為何？",
+            options: ["藻類藻華暴增後大量死亡，好氧性細菌分解藻類遺體時急遽消耗水中的溶氧量，導致水體缺氧窒息", "水溫突然沸騰升高至 100°C", "水中水分完全蒸發乾涸", "氮與磷直接將魚鱗溶解"],
+            correct: "藻類藻華暴增後大量死亡，好氧性細菌分解藻類遺體時急遽消耗水中的溶氧量，導致水體缺氧窒息",
+            hint: "優養化五部曲：氮磷過多 ➔ 藻類暴生（藻華） ➔ 藻類死亡 ➔ 細菌分解耗盡氧氣 ➔ 水體缺氧發臭魚蝦死亡。",
+            misconceptions: {
+              "氮與磷直接將魚鱗溶解": "【優養化致死機制】優養化並非肥料毒死魚類！而是藻類死亡後【分解者好氧細菌消耗了水中所有溶解氧（DO 降至 0）】，造成魚蝦缺氧窒息！"
+            },
+            explanation: "優養化水體中藻類快速繁殖遮蔽陽光，藻類死亡後好氧細菌劇烈分解有機物，水中溶氧量被耗盡導致水生生物窒息死亡。"
+          },
+          {
+            formula: "人類大量燃燒煤炭、石油等化石燃料，釋放大量『二氧化碳、甲烷』等溫室氣體至大氣層中，最直接導致的全球性環境問題為何？",
+            options: ["溫室效應加劇，導致全球氣候暖化、兩極冰層融化與海平面上升", "臭氧層破洞擴大使紫外線直射", "地心引力逐漸減弱", "地球自轉速度停止"],
+            correct: "溫室效應加劇，導致全球氣候暖化、兩極冰層融化與海平面上升",
+            hint: "二氧化碳吸收地表長波輻射熱能，加劇溫室效應。",
+            misconceptions: {
+              "臭氧層破洞擴大使紫外線直射": "【溫室效應 vs 臭氧層破洞混淆】破壞臭氧層的是『氟氯碳化物（CFCs）』；燃燒化石燃料排放二氧化碳導致的是【全球暖化溫室效應】！"
+            },
+            explanation: "溫室氣體吸收地表反射之紅外線熱輻射，使地表熱量不易散逸，引發極端氣候、冰川融化與生態棲地改變。"
+          },
+          {
+            formula: "【會考情境題】為了保護台灣國寶魚『櫻花鉤吻鮭』與『石虎』等瀕臨絕種保育類野生動物，下列哪一項措施最符合現代生態永續與就地保育原則？",
+            options: ["劃設國家公園與野生動物重要棲息環境，保護其天然原始棲地不受人為開發干擾", "將野生石虎全部捕捉關進動物園鐵籠中展示", "引進國外大型肉食野獸以增加物種豐富度", "大量砍伐森林開闢觀光農場以吸引遊客投資保育"],
+            correct: "劃設國家公園與野生動物重要棲息環境，保護其天然原始棲地不受人為開發干擾",
+            hint: "棲地保護（就地保育）是保護生物多樣性最根本且有效的手段。",
+            misconceptions: {
+              "將野生石虎全部捕捉關進動物園鐵籠中展示": "【就地保育 vs 遷地保育】保育的最核心原則是【就地保育（保護原始天然棲地）】！動物園圈養為最後手段，唯有完整棲地才能維繫整個生態網絡。"
+            },
+            explanation: "就地保育（In-situ Conservation）透過建立保護區保留完整棲地與生態網絡，為維護生物多樣性最自然且有效之途徑。"
+          }
+        ]
+      }
+    ];
+
+    class GameManager {
+      constructor() {
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.monsterHp = 100;
+        this.score = 0;
+        this.isAnswering = false;
+
+        this.elPlayerHp = document.getElementById('player-hp-bar');
+        this.elPlayerHpText = document.getElementById('player-hp-text');
+        this.elScore = document.getElementById('score-val');
+        this.elStageTitle = document.getElementById('stage-title');
+        this.elMonsterName = document.getElementById('monster-name');
+        this.elMonsterEmoji = document.getElementById('monster-emoji');
+        this.elMonsterHp = document.getElementById('monster-hp-bar');
+        this.elFormula = document.getElementById('formula-text');
+        this.elHint = document.getElementById('formula-hint');
+        this.elOptionsGrid = document.getElementById('options-grid');
+        this.elQuestBadge = document.getElementById('quest-badge');
+        this.elPillsContainer = document.getElementById('stage-pills');
+
+        this.modalExplanation = document.getElementById('modal-explanation');
+        this.elModalTitle = document.getElementById('modal-title');
+        this.elModalContent = document.getElementById('modal-content');
+        this.btnModalContinue = document.getElementById('btn-modal-continue');
+
+        this.screenTitle = document.getElementById('screen-title');
+        this.screenVictory = document.getElementById('screen-victory');
+        this.screenGameOver = document.getElementById('screen-gameover');
+
+        this.canvas = document.getElementById('jungle-canvas');
+        this.visualizer = new JungleVisualizer(this.canvas);
+
+        this.bindEvents();
+      }
+
+      bindEvents() {
+        document.getElementById('btn-start-game').addEventListener('click', () => {
+          audio.init();
+          this.startGame();
+        });
+
+        document.getElementById('btn-restart-victory').addEventListener('click', () => this.restartGame());
+        document.getElementById('btn-restart-gameover').addEventListener('click', () => this.restartGame());
+
+        this.btnModalContinue.addEventListener('click', () => {
+          this.closeExplanation();
+          this.nextQuestion();
+        });
+
+        window.addEventListener('keydown', (e) => {
+          if (this.isAnswering) return;
+          if (['1', '2', '3', '4'].includes(e.key)) {
+            const idx = parseInt(e.key, 10) - 1;
+            const btns = this.elOptionsGrid.querySelectorAll('.jungle-btn');
+            if (btns[idx]) btns[idx].click();
+          }
+        });
+
+        const btnSound = document.getElementById('btn-sound-toggle');
+        if (btnSound) {
+          btnSound.addEventListener('click', () => {
+            audio.muted = !audio.muted;
+            btnSound.textContent = audio.muted ? '🔇 音效: 關' : '🔊 音效: 開';
+          });
+        }
+
+        window.addEventListener('resize', () => this.updateVisual());
+      }
+
+      startGame() {
+        this.screenTitle.style.display = 'none';
+        this.screenVictory.style.display = 'none';
+        this.screenGameOver.style.display = 'none';
+        this.currentLevelIndex = 0;
+        this.currentQuestionIndex = 0;
+        this.playerHp = GAME_BALANCE.playerMaxHp;
+        this.score = 0;
+        this.loadLevel(0);
+      }
+
+      restartGame() { this.startGame(); }
+
+      loadLevel(levelIndex) {
+        this.currentLevelIndex = levelIndex;
+        this.currentQuestionIndex = 0;
+        this.monsterHp = 100;
+        const stage = CHAPTERS[levelIndex];
+
+        this.elStageTitle.textContent = stage.title;
+        this.elMonsterName.textContent = stage.monsterName;
+        this.elMonsterEmoji.textContent = stage.monsterEmoji;
+
+        this.updateHUD();
+        this.renderStagePills();
+        this.loadQuestion();
+        audio.playLevelUp();
+      }
+
+      renderStagePills() {
+        this.elPillsContainer.innerHTML = '';
+        const stage = CHAPTERS[this.currentLevelIndex];
+        for (let i = 0; i < stage.questions.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'progress-dot' + (i === this.currentQuestionIndex ? ' active' : '') + (i < this.currentQuestionIndex ? ' cleared' : '');
+          this.elPillsContainer.appendChild(dot);
+        }
+      }
+
+      loadQuestion() {
+        this.isAnswering = false;
+        const stage = CHAPTERS[this.currentLevelIndex];
+        const q = stage.questions[this.currentQuestionIndex];
+
+        this.elQuestBadge.textContent = `第 ${this.currentLevelIndex + 1} 關 - 題 ${this.currentQuestionIndex + 1}/${stage.questions.length}`;
+        this.elFormula.innerHTML = q.formula;
+        this.elHint.textContent = `💡 會考核心提示：${q.hint}`;
+
+        this.elOptionsGrid.innerHTML = '';
+        (() => {
+          const displayedOptions = [...q.options];
+          const correctOptionIndex = displayedOptions.indexOf(q.correct);
+          if (correctOptionIndex >= 0 && displayedOptions.length > 1) {
+            const [correctOption] = displayedOptions.splice(correctOptionIndex, 1);
+            const targetPosition = (this.currentLevelIndex + this.currentQuestionIndex + 1) % (displayedOptions.length + 1);
+            displayedOptions.splice(targetPosition, 0, correctOption);
+          }
+          return displayedOptions;
+        })().forEach((opt, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'jungle-btn';
+          btn.innerHTML = `<span class="btn-key">${idx + 1}</span> <span>${opt}</span>`;
+          btn.setAttribute('aria-label', `選項 ${idx + 1}: ${opt}`);
+          btn.addEventListener('click', () => this.handleAnswer(opt, btn, q));
+          this.elOptionsGrid.appendChild(btn);
+        });
+
+        this.renderStagePills();
+        this.updateVisual();
+      }
+
+      updateVisual() {
+        this.visualizer.render(this.currentLevelIndex + 1);
+      }
+
+      handleAnswer(selectedOption, btnElement, question) {
+        if (this.isAnswering) return;
+        this.isAnswering = true;
+
+        const isCorrect = selectedOption === question.correct;
+
+        if (isCorrect) {
+          btnElement.classList.add('btn-correct');
+          audio.playCorrect();
+          audio.playAttack();
+          this.score += GAME_BALANCE.scorePerQuestion;
+
+          this.monsterHp = Math.max(0, this.monsterHp - GAME_BALANCE.damageToMonster);
+          this.triggerAttackAnim();
+          this.spawnFloatingText(`+${GAME_BALANCE.scorePerQuestion} 守護!`, this.elMonsterEmoji.parentElement, 'color:var(--color-lime);');
+
+          setTimeout(() => this.nextQuestion(), 850);
+        } else {
+          btnElement.classList.add('btn-wrong');
+          audio.playWrong();
+          this.playerHp = Math.max(0, this.playerHp - GAME_BALANCE.damageToPlayer);
+          this.triggerHurtAnim();
+          this.spawnFloatingText(`-${GAME_BALANCE.damageToPlayer} HP`, document.querySelector('.hero-avatar-box'), 'color:var(--color-danger);');
+
+          const btns = this.elOptionsGrid.querySelectorAll('.jungle-btn');
+          btns.forEach(b => {
+            if (b.innerText.includes(question.correct)) b.classList.add('btn-correct');
+          });
+
+          setTimeout(() => {
+            if (this.playerHp <= 0) this.gameOver();
+            else this.showExplanation(selectedOption, question);
+          }, 750);
+        }
+        this.updateHUD();
+      }
+
+      triggerAttackAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        const monster = document.querySelector('.monster-avatar-box');
+        if (hero) hero.classList.add('anim-attack');
+        if (monster) monster.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-attack');
+          if (monster) monster.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      triggerHurtAnim() {
+        const hero = document.querySelector('.hero-avatar-box');
+        if (hero) hero.classList.add('anim-hurt');
+        setTimeout(() => {
+          if (hero) hero.classList.remove('anim-hurt');
+        }, 350);
+      }
+
+      spawnFloatingText(text, container, style) {
+        const fx = document.createElement('div');
+        fx.className = 'floating-fx';
+        fx.style.cssText = style;
+        fx.textContent = text;
+        fx.style.left = '20px'; fx.style.top = '10px';
+        container.parentElement.appendChild(fx);
+        setTimeout(() => fx.remove(), 800);
+      }
+
+      showExplanation(selectedOption, question) {
+        this.elModalTitle.textContent = "🌳 生態診斷：核心解析與盲點拆解";
+        const misconceptionText = question.misconceptions && question.misconceptions[selectedOption]
+          ? question.misconceptions[selectedOption]
+          : "注意題幹所問的能量流動10%、食物網生物放大、共生交互作用或環境優養化，細心再思考一次！";
+
+        this.elModalContent.innerHTML = `
+          <div class="misconception-box">
+            <div style="font-weight:800; margin-bottom:4px;">⚠️ 會考易錯盲點陷阱：</div>
+            <div>${misconceptionText}</div>
+          </div>
+          <div class="step-by-step">
+            <strong>📝 會考標準觀念詳解：</strong><br/>
+            題目：<code>${question.formula}</code><br/>
+            正確答案：<strong style="color:var(--color-lime); font-size:15px;">${question.correct}</strong><br/>
+            ${question.explanation}
+          </div>
+        `;
+        this.modalExplanation.style.display = 'flex';
+      }
+
+      closeExplanation() { this.modalExplanation.style.display = 'none'; }
+
+      nextQuestion() {
+        const stage = CHAPTERS[this.currentLevelIndex];
+        this.currentQuestionIndex++;
+        if (this.currentQuestionIndex >= stage.questions.length) {
+          if (this.currentLevelIndex + 1 < CHAPTERS.length) {
+            this.loadLevel(this.currentLevelIndex + 1);
+          } else {
+            this.victory();
+          }
+        } else {
+          this.loadQuestion();
+        }
+      }
+
+      updateHUD() {
+        const hpPct = Math.max(0, (this.playerHp / GAME_BALANCE.playerMaxHp) * 100);
+        this.elPlayerHp.style.width = `${hpPct}%`;
+        this.elPlayerHpText.textContent = `${this.playerHp}/${GAME_BALANCE.playerMaxHp}`;
+
+        const monsterPct = Math.max(0, this.monsterHp);
+        this.elMonsterHp.style.width = `${monsterPct}%`;
+        this.elScore.textContent = this.score.toString().padStart(5, '0');
+      }
+
+      victory() {
+        audio.playVictory();
+        document.getElementById('final-victory-score').textContent = this.score;
+        this.screenVictory.style.display = 'flex';
+      }
+
+      gameOver() {
+        audio.playWrong();
+        document.getElementById('final-gameover-score').textContent = this.score;
+        this.screenGameOver.style.display = 'flex';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.game = new GameManager();
+    });
+  </script>
+<!-- BEGIN:SIMPLE_HINT_TEXT_FIX -->
+<script>
+(() => {
+  const selector = '.question-hint-text, .formula-hint, .question-hint, #formula-hint, #question-hint';
+  let editing = false;
+  function shorten(el) {
+    if (editing || !el) return;
+    const raw = (el.textContent || '').replace(/^\s*💡\s*(?:會考核心)?提示\s*[：:]\s*/, '').trim();
+    if (!raw) return;
+    const first = raw.match(/^.{1,52}?[。！？!?](?:\s|$)/u)?.[0]?.trim();
+    const brief = first || (raw.length > 52 ? raw.slice(0, 52).trim() + '…' : raw);
+    const next = '💡 提示：' + brief;
+    if (el.textContent !== next) { editing = true; el.textContent = next; editing = false; }
+  }
+  function apply() { document.querySelectorAll(selector).forEach(el => { shorten(el); const options = document.getElementById('options-grid') || document.querySelector('.options-grid'); if (options && el.dataset.hintMoved !== '1') { options.insertAdjacentElement('afterend', el); el.dataset.hintMoved = '1'; } }); }
+  new MutationObserver(apply).observe(document.documentElement, {subtree:true, childList:true, characterData:true});
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', apply) : apply();
+})();
+</script>
+<!-- END:SIMPLE_HINT_TEXT_FIX -->
+<!-- BEGIN:EXPERIMENT_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【實驗探究】學生研究「水中肥料濃度對藻類生長的影響」。本實驗的操作變因為何？","options":["相同天數後藻類覆蓋面積","水量、光照、溫度與藻類初始量","肥料濃度","每組實驗重複次數"],"correct":"肥料濃度","hint":"","misconceptions":{},"explanation":"操作變因是研究者主動改變的條件，本題為「肥料濃度」。"},{"formula":"【實驗探究】進行「水中肥料濃度對藻類生長的影響」時，最適合作為應變變因並加以測量的是哪一項？","options":["水量、光照、溫度與藻類初始量","實驗器材品牌","相同天數後藻類覆蓋面積","肥料濃度"],"correct":"相同天數後藻類覆蓋面積","hint":"","misconceptions":{},"explanation":"應變變因是隨操作條件改變而測量的結果，本題應記錄「相同天數後藻類覆蓋面積」。"},{"formula":"【實驗設計】為公平比較「水中肥料濃度對藻類生長的影響」，下列哪一組條件最應保持相同？","options":["操作變因與應變變因都保持相同","只需保持紀錄表格式相同","水量、光照、溫度與藻類初始量","各組可使用不同測量方法"],"correct":"水量、光照、溫度與藻類初始量","hint":"","misconceptions":{},"explanation":"公平實驗除操作變因外，其他可能影響結果的條件都要控制一致，例如：水量、光照、溫度與藻類初始量。"},{"formula":"【數據推論】若實驗數據穩定支持原先假設，下列哪一項最合理？","options":["只要有一筆資料符合即可證明假設","肥料增加會先促進藻類繁生，濃度過高可能破壞水質","刪除所有不符合預期的資料","未測量的條件也一定有相同結果"],"correct":"肥料增加會先促進藻類繁生，濃度過高可能破壞水質","hint":"","misconceptions":{},"explanation":"結論只能依實際控制的條件與測得資料推論；本實驗合理趨勢為：肥料增加會先促進藻類繁生，濃度過高可能破壞水質。"},{"formula":"【實驗品質】若各組測量結果略有差異，哪一種做法最能提高結果的可信度？","options":["只採用最接近預期的一次","改變多個條件再比較","增加重複次數並計算平均值","省略與預期不符的資料"],"correct":"增加重複次數並計算平均值","hint":"","misconceptions":{},"explanation":"重複測量並取平均可降低偶然誤差；不應任意刪除不符合預期的資料。"}]);
+</script>
+<!-- END:EXPERIMENT_QUESTIONS_V1 -->
+<!-- BEGIN:VISUAL_QUESTIONS_V1 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【柱狀圖判讀】研究「肥料濃度 對 藻類覆蓋率 的影響」。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><rect x=\"135\" y=\"145\" width=\"75\" height=\"60\" fill=\"#93c5fd\"/><rect x=\"275\" y=\"105\" width=\"75\" height=\"100\" fill=\"#60a5fa\"/><rect x=\"415\" y=\"55\" width=\"75\" height=\"150\" fill=\"#2563eb\"/><g font-size=\"22\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"172\" y=\"232\">A</text><text x=\"312\" y=\"232\">B</text><text x=\"452\" y=\"232\">C</text></g><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量值</text></svg></div> 圖中哪一組的測量值最高？","options":["A組","B組","C組","三組相同"],"correct":"C組","hint":"","misconceptions":{},"explanation":"比較三根柱子的高度，C組柱形最高，因此測量值最大。"},{"formula":"【折線圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"100,185 210,155 320,115 430,75 535,45\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"6\"/><g fill=\"#dc2626\"><circle cx=\"100\" cy=\"185\" r=\"7\"/><circle cx=\"210\" cy=\"155\" r=\"7\"/><circle cx=\"320\" cy=\"115\" r=\"7\"/><circle cx=\"430\" cy=\"75\" r=\"7\"/><circle cx=\"535\" cy=\"45\" r=\"7\"/></g><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\">操作條件增加</text><text x=\"20\" y=\"125\" font-size=\"18\" fill=\"#111827\" transform=\"rotate(-90 20 125)\">測量結果</text></svg></div> 根據圖中趨勢，下列敘述何者正確？","options":["操作條件增加時測量結果下降","兩者沒有關係","操作條件增加時測量結果上升","圖中只能判斷顏色"],"correct":"操作條件增加時測量結果上升","hint":"","misconceptions":{},"explanation":"折線由左下往右上，表示兩者呈正向變化；在本章情境可進一步檢視：肥料增加可能使藻類大量繁生。"},{"formula":"【實驗組圖】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"55\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#eff6ff\" stroke=\"#2563eb\" stroke-width=\"3\"/><rect x=\"335\" y=\"45\" width=\"210\" height=\"150\" rx=\"12\" fill=\"#fff7ed\" stroke=\"#ea580c\" stroke-width=\"3\"/><text x=\"160\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">A 組</text><text x=\"440\" y=\"85\" font-size=\"25\" fill=\"#111827\" text-anchor=\"middle\">B 組</text><text x=\"160\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">不施加處理</text><text x=\"440\" y=\"130\" font-size=\"20\" fill=\"#111827\" text-anchor=\"middle\">施加處理</text><text x=\"300\" y=\"225\" font-size=\"18\" fill=\"#334155\" text-anchor=\"middle\">其他條件均相同</text></svg></div> 若要比較「肥料濃度」造成的影響，哪一組最適合作為對照組？","options":["A組，因為未施加處理","B組，因為施加處理","兩組都不是","只測B組即可"],"correct":"A組，因為未施加處理","hint":"","misconceptions":{},"explanation":"對照組不接受操作處理，作為比較基準；實驗組則接受處理。"},{"formula":"【數據表判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"95\" y=\"35\" width=\"410\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"95\" y1=\"80\" x2=\"505\" y2=\"80\" stroke=\"#334155\" stroke-width=\"2\"/><line x1=\"95\" y1=\"122\" x2=\"505\" y2=\"122\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"95\" y1=\"164\" x2=\"505\" y2=\"164\" stroke=\"#cbd5e1\" stroke-width=\"2\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"2\"/><g font-size=\"19\" fill=\"#111827\" text-anchor=\"middle\"><text x=\"198\" y=\"65\">測量次數</text><text x=\"402\" y=\"65\">測量值</text><text x=\"198\" y=\"109\">第1次</text><text x=\"402\" y=\"109\">12</text><text x=\"198\" y=\"151\">第2次</text><text x=\"402\" y=\"151\">15</text><text x=\"198\" y=\"193\">第3次</text><text x=\"402\" y=\"193\">18</text></g></svg></div> 三次測量值的平均為何？","options":["12","15","18","45"],"correct":"15","hint":"","misconceptions":{},"explanation":"平均值＝(12＋15＋18)÷3＝45÷3＝15。"},{"formula":"【散布圖判讀】<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #94a3b8;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"題目圖表\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"560\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><g fill=\"#16a34a\"><circle cx=\"120\" cy=\"175\" r=\"8\"/><circle cx=\"205\" cy=\"160\" r=\"8\"/><circle cx=\"290\" cy=\"125\" r=\"8\"/><circle cx=\"380\" cy=\"98\" r=\"8\"/><circle cx=\"475\" cy=\"62\" r=\"8\"/></g><line x1=\"105\" y1=\"185\" x2=\"500\" y2=\"50\" stroke=\"#16a34a\" stroke-width=\"4\" stroke-dasharray=\"9 7\"/><text x=\"315\" y=\"238\" font-size=\"18\" fill=\"#111827\" text-anchor=\"middle\"></svg></div> 關於圖中「肥料濃度」與「藻類覆蓋率」的關係，何者最合理？","options":["肥料增加可能使藻類大量繁生","兩者必定呈完全反比","所有點都必須落在同一位置","只憑一個點即可下結論"],"correct":"肥料增加可能使藻類大量繁生","hint":"","misconceptions":{},"explanation":"多個資料點呈現整體趨勢，合理解讀為：肥料增加可能使藻類大量繁生；仍應避免超出實驗範圍推論。"}]);
+</script>
+<!-- END:VISUAL_QUESTIONS_V1 -->
+<!-- BEGIN:MORE_BIO_VISUALS_V2 -->
+<script>
+CHAPTERS[CHAPTERS.length - 1].questions.push(...[{"formula":"【比例圖】生態調查 的四類資料如下圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><circle cx=\"300\" cy=\"125\" r=\"92\" fill=\"#dbeafe\"/><path d=\"M300 125 L300 33 A92 92 0 0 1 392 125 Z\" fill=\"#60a5fa\"/><path d=\"M300 125 L392 125 A92 92 0 0 1 300 217 Z\" fill=\"#34d399\"/><path d=\"M300 125 L300 217 A92 92 0 0 1 208 125 Z\" fill=\"#fbbf24\"/><path d=\"M300 125 L208 125 A92 92 0 0 1 300 33 Z\" fill=\"#fca5a5\"/><g font-size=\"22\" fill=\"#111827\" font-weight=\"700\"><text x=\"336\" y=\"82\">A</text><text x=\"342\" y=\"177\">B</text><text x=\"245\" y=\"177\">C</text><text x=\"245\" y=\"82\">D</text></g></svg></div> 圖中四區面積相同，哪一敘述正確？","options":["四類比例相同","A類一定最多","D類一定最少","無法比較任何比例"],"correct":"四類比例相同","hint":"","misconceptions":{},"explanation":"圓被分成四個相同的四分之一，因此A、B、C、D所占比例相同。"},{"formula":"【流程圖】生態調查 的歷程如圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><defs><marker id=\"a\" markerWidth=\"10\" markerHeight=\"10\" refX=\"8\" refY=\"3\" orient=\"auto\"><path d=\"M0,0 L0,6 L9,3 z\" fill=\"#2f7d4a\"/></marker></defs><g fill=\"#e3f3e7\" stroke=\"#2f7d4a\" stroke-width=\"3\"><rect x=\"30\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"175\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"320\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/><rect x=\"465\" y=\"85\" width=\"110\" height=\"70\" rx=\"12\"/></g><g font-size=\"28\" fill=\"#183c27\" text-anchor=\"middle\" font-weight=\"700\"><text x=\"85\" y=\"130\">A</text><text x=\"230\" y=\"130\">B</text><text x=\"375\" y=\"130\">C</text><text x=\"520\" y=\"130\">D</text></g><g stroke=\"#2f7d4a\" stroke-width=\"4\" marker-end=\"url(#a)\"><line x1=\"140\" y1=\"120\" x2=\"170\" y2=\"120\"/><line x1=\"285\" y1=\"120\" x2=\"315\" y2=\"120\"/><line x1=\"430\" y1=\"120\" x2=\"460\" y2=\"120\"/></g></svg></div> 正確順序為何？","options":["A→B→C→D","D→C→B→A","A→C→B→D","B→A→D→C"],"correct":"A→B→C→D","hint":"","misconceptions":{},"explanation":"依箭頭方向由左至右判讀，順序為A、B、C、D。"},{"formula":"【雙折線圖】比較甲、乙兩組的 族群數量。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><line x1=\"70\" y1=\"205\" x2=\"555\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"70\" y1=\"25\" x2=\"70\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><polyline points=\"90,180 200,145 310,105 420,70 530,45\" fill=\"none\" stroke=\"#2563eb\" stroke-width=\"5\"/><polyline points=\"90,185 200,172 310,158 420,146 530,135\" fill=\"none\" stroke=\"#dc2626\" stroke-width=\"5\"/><text x=\"480\" y=\"65\" font-size=\"20\" fill=\"#2563eb\">甲</text><text x=\"480\" y=\"130\" font-size=\"20\" fill=\"#dc2626\">乙</text></svg></div> 哪一組隨時間增加較快？","options":["甲組","乙組","兩組完全相同","無法判斷"],"correct":"甲組","hint":"","misconceptions":{},"explanation":"甲組折線斜率較大，表示相同時間內測量值增加較快。"},{"formula":"【視野圖】同一標本在兩種倍率下的視野如圖。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><circle cx=\"190\" cy=\"125\" r=\"95\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"5\"/><circle cx=\"420\" cy=\"125\" r=\"95\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"5\"/><g fill=\"#16a34a\"><circle cx=\"150\" cy=\"90\" r=\"12\"/><circle cx=\"205\" cy=\"82\" r=\"12\"/><circle cx=\"235\" cy=\"140\" r=\"12\"/><circle cx=\"165\" cy=\"165\" r=\"12\"/></g><g fill=\"#2563eb\"><circle cx=\"390\" cy=\"105\" r=\"22\"/><circle cx=\"445\" cy=\"145\" r=\"22\"/></g><text x=\"190\" y=\"235\" font-size=\"20\" text-anchor=\"middle\" fill=\"#111827\">視野甲</text><text x=\"420\" y=\"235\" font-size=\"20\" text-anchor=\"middle\" fill=\"#111827\">視野乙</text></svg></div> 哪一視野較可能使用較高倍率？","options":["視野甲","視野乙","兩者倍率一定相同","只看顏色判斷"],"correct":"視野乙","hint":"","misconceptions":{},"explanation":"高倍率視野範圍較小、可見物體數較少但影像較大，因此視野乙較符合。"},{"formula":"【分類矩陣】四組資料依兩項特徵分在矩陣中。<div class=\"visual-question\" style=\"margin:12px auto;max-width:620px;background:#fff;border:2px solid #9bc4a5;border-radius:12px;padding:10px\"><svg viewBox=\"0 0 600 250\" role=\"img\" aria-label=\"生物圖題\" style=\"width:100%;height:auto;display:block\"><rect width=\"600\" height=\"250\" fill=\"#fff\"/><rect x=\"120\" y=\"35\" width=\"360\" height=\"170\" fill=\"#f8fafc\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"300\" y1=\"35\" x2=\"300\" y2=\"205\" stroke=\"#334155\" stroke-width=\"3\"/><line x1=\"120\" y1=\"120\" x2=\"480\" y2=\"120\" stroke=\"#334155\" stroke-width=\"3\"/><g font-size=\"28\" fill=\"#111827\" font-weight=\"700\" text-anchor=\"middle\"><text x=\"210\" y=\"88\">A</text><text x=\"390\" y=\"88\">B</text><text x=\"210\" y=\"173\">C</text><text x=\"390\" y=\"173\">D</text></g></svg></div> 位於右下區的是哪一組？","options":["A組","B組","C組","D組"],"correct":"D組","hint":"","misconceptions":{},"explanation":"依圖中位置判讀，右下方格標示為D。"}]);
+</script>
+<!-- END:MORE_BIO_VISUALS_V2 -->
+</body>
+</html>
